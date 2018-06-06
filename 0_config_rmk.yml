@@ -1,0 +1,26 @@
+packages:
+  - sp
+  - scipiper
+  - dplyr
+
+sources:
+  - 0_config/code/nldas_cube_utils.R
+targets:
+  all: 
+    depends: 
+      - nldas_sub_files
+  
+  nldas_time_range:
+    command: list(t0=I(0), t1 = I(12))
+    
+  nldas_time_stride:
+    command: c(I(10))
+    
+  nldas_cells:
+    command: data.frame(x=I(c(231,239,223)),y=I(c(135,135,141))) # will come from code or spatial data...
+    
+  nldas_cube:
+    command: nldas_cube_diff(nldas_cells, '0_config/in/nldas_cells.rds')
+    
+  nldas_sub_files:
+    command: calc_nldas_files(nldas_time_range, nldas_time_stride, nldas_cube, I('dlwrfsfc'), I('pressfc'))
