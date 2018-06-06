@@ -1,3 +1,5 @@
+target_default: 0_config
+
 packages:
   - sp
   - scipiper
@@ -6,9 +8,9 @@ packages:
 sources:
   - 0_config/code/nldas_cube_utils.R
 targets:
-  all: 
+  0_config: 
     depends: 
-      - nldas_sub_files
+      - 1_nldas_cubes_rmk.yml
   
   nldas_time_range:
     command: list(t0=I(0), t1 = I(12))
@@ -24,3 +26,6 @@ targets:
     
   nldas_sub_files:
     command: calc_nldas_files(nldas_time_range, nldas_time_stride, nldas_cube, I('dlwrfsfc'), I('pressfc'))
+
+  "1_nldas_cubes_rmk.yml":
+    command: create_cube_task_makefile(target_name, nldas_sub_files, include = I("0_config"), nc_dir = I("1_nldas_cubes/out"), ind_dir=I('1_nldas_cubes/log'), packages = I(c('dplyr')), sources = '1_nldas_cubes/code/nccopy_utils.R')
