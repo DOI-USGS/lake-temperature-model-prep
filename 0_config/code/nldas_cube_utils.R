@@ -132,7 +132,7 @@ create_cube_task_makefile <- function(makefile, sub_files, include, nc_dir, ind_
     command = "nccopy_nldas(target_name)"
   )
   
-  cube_task_plan <- create_task_plan(sub_files, list(cube_task_step), final_steps='nccopy', ind_dir='ind_dir')
+  cube_task_plan <- create_task_plan(sub_files, list(cube_task_step), final_steps='nccopy', ind_dir=ind_dir)
   
   create_task_makefile(
     cube_task_plan, makefile = makefile, ind_complete = TRUE, 
