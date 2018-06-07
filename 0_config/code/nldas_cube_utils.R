@@ -112,7 +112,7 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
   
   for (variable in variables){
     box <- boxes[boxes$variable == variable, ]
-    space_chunk <- sprintf("%s.%s_%s.%s", box$x0, box$x1, box$y0, box$y1)
+    space_chunk <- sprintf("%s.%s_%s.%s", box$y0, box$y1, box$x0, box$x1)
     for (i in 1:length(time_chunks)){
       # create file like this: #NLDAS_0.9999_132.196_221.344_pressfc.nc
       nldas_files[file_i] <- sprintf("NLDAS_%s_%s_%s.nc", time_chunks[i], space_chunk, variable) 
