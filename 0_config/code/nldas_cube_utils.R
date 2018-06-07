@@ -15,13 +15,16 @@ nldas_diff_box <- function(new_cells_list, old_cells_df_filename){
   # expand the list into a data.frame comprable to `old_cells_df`
   new_cells_df <- cell_list_to_df(new_cells_list)
   
-  
+  # leaves only the rows in `new_cells_df` that don't exist in `old_cells_df`
+  # these are cell locations where we don't have any data for that variable
   diffed_cells <- dplyr::anti_join(new_cells_df, old_cells_df,  by = c('x','y','variable')) 
   
   if (any(is.na(diffed_cells))){
+    # shouldn't be any NAs, but if there are, throw an error
     stop('found NA(s) in NLDAS cell diff. Check ', old_cells_df_filename, ' and `new_cells_df` data')
   }
   
+  # convert this x,y,variable data.frame into a bounding box data.frame
   box_bounds <- as_box_bounds(diffed_cells)
   
   return(box_bounds)
@@ -45,7 +48,7 @@ as_box_bounds <- function(cells_df){
 
 out_of_box <- function(x, y, var, boxes){
   out_logical <- rep(FALSE, length(x))
-  # possible to vectorize?
+  # possible to vectorize easily? worth it?
   for (j in seq_len(length(x))){
     box <- boxes[boxes$variable == var[j], ]
     if (nrow(box) != 0) { # zero rows is case where there is no subset box for this variable
@@ -94,10 +97,11 @@ nldas_times_diff <- function(new_times_range, old_times_df_filename){
   return(append_time_range)
 }
 
-#' does this handle zero time_range? (should produce zero files)
-calc_nldas_files <- function(boxes, time_range, time_stride){
+#' build a file list according to spatial domain `boxes`, time domain according to `time_range`, 
+#' and file chunk size according to `time_chunk`
+calc_nldas_files <- function(boxes, time_range, time_chunk){
   
-  time_chunk_lead <- seq(time_range[["t0"]], time_range[["t1"]], by = time_stride)
+  time_chunk_lead <- seq(time_range[["t0"]], time_range[["t1"]], by = time_chunk)
   time_chunk_follow <- c(tail(time_chunk_lead, -1L) - 1, time_range[["t1"]])
   
   time_chunks <- sprintf('%s.%s', time_chunk_lead, time_chunk_follow)
@@ -110,7 +114,8 @@ calc_nldas_files <- function(boxes, time_range, time_stride){
     box <- boxes[boxes$variable == variable, ]
     space_chunk <- sprintf("%s.%s_%s.%s", box$x0, box$x1, box$y0, box$y1)
     for (i in 1:length(time_chunks)){
-      nldas_files[file_i] <- sprintf("NLDAS_%s_%s_%s.nc", time_chunks[i], space_chunk, variable) #NLDAS_0.9999_132.196_221.344_pressfc.nc
+      # create file like this: #NLDAS_0.9999_132.196_221.344_pressfc.nc
+      nldas_files[file_i] <- sprintf("NLDAS_%s_%s_%s.nc", time_chunks[i], space_chunk, variable) 
       file_i <- file_i+1
     }
   }

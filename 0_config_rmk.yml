@@ -16,7 +16,7 @@ targets:
   nldas_subset_time:
     command: c(t0=I(0), t1 = I(12))
     
-  nldas_time_stride:
+  nldas_time_chunk:
     command: c(I(10))
     
   nldas_cells:
@@ -32,10 +32,10 @@ targets:
     command: nldas_times_diff(nldas_subset_time, '0_config/in/nldas_times.rds')
     
   nldas_subset_files:
-    command: calc_nldas_files(nldas_subset_box, nldas_subset_time, nldas_time_stride)
+    command: calc_nldas_files(nldas_subset_box, nldas_subset_time, nldas_time_chunk)
   
   nldas_append_files:
-    command: calc_nldas_files(nldas_append_box, nldas_append_time, nldas_time_stride)
+    command: calc_nldas_files(nldas_append_box, nldas_append_time, nldas_time_chunk)
 
   "1_nldas_subset_rmk.yml":
     command: create_cube_task_makefile(target_name, nldas_subset_files, include = I("0_config"), nc_dir = I("1_nldas_cubes/out"), ind_dir=I('1_nldas_cubes/log'), packages = I(c('dplyr')), sources = '1_nldas_cubes/code/nccopy_utils.R')
