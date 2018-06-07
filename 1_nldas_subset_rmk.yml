@@ -23,7 +23,7 @@ targets:
   1_nldas_cubes/out/NLDAS_0.9_135.135_231.239_dlwrfsfc.nc:
     command: nccopy_nldas(target_name)
 
-  ind_dir/NLDAS_0.9_135.135_231.239_dlwrfsfc.nc.ind:
+  1_nldas_cubes/log/NLDAS_0.9_135.135_231.239_dlwrfsfc.nc.ind:
     command: sc_indicate(target_name)
     depends:
       - 1_nldas_cubes/out/NLDAS_0.9_135.135_231.239_dlwrfsfc.nc
@@ -33,7 +33,7 @@ targets:
   1_nldas_cubes/out/NLDAS_10.19_135.135_231.239_dlwrfsfc.nc:
     command: nccopy_nldas(target_name)
 
-  ind_dir/NLDAS_10.19_135.135_231.239_dlwrfsfc.nc.ind:
+  1_nldas_cubes/log/NLDAS_10.19_135.135_231.239_dlwrfsfc.nc.ind:
     command: sc_indicate(target_name)
     depends:
       - 1_nldas_cubes/out/NLDAS_10.19_135.135_231.239_dlwrfsfc.nc
@@ -43,7 +43,7 @@ targets:
   1_nldas_cubes/out/NLDAS_0.9_135.141_223.239_pressfc.nc:
     command: nccopy_nldas(target_name)
 
-  ind_dir/NLDAS_0.9_135.141_223.239_pressfc.nc.ind:
+  1_nldas_cubes/log/NLDAS_0.9_135.141_223.239_pressfc.nc.ind:
     command: sc_indicate(target_name)
     depends:
       - 1_nldas_cubes/out/NLDAS_0.9_135.141_223.239_pressfc.nc
@@ -53,7 +53,7 @@ targets:
   1_nldas_cubes/out/NLDAS_10.19_135.141_223.239_pressfc.nc:
     command: nccopy_nldas(target_name)
 
-  ind_dir/NLDAS_10.19_135.141_223.239_pressfc.nc.ind:
+  1_nldas_cubes/log/NLDAS_10.19_135.141_223.239_pressfc.nc.ind:
     command: sc_indicate(target_name)
     depends:
       - 1_nldas_cubes/out/NLDAS_10.19_135.141_223.239_pressfc.nc
@@ -61,9 +61,9 @@ targets:
   # --- Overall job --- #
 
   1_nldas_subset_rmk:
-    command: sc_indicate(I('ind_dir/1_nldas_subset_rmk.ind'), hash_depends=I(TRUE), depends_target=I('1_nldas_subset_rmk'), depends_makefile=I('1_nldas_subset_rmk.yml'))
+    command: sc_indicate(I('1_nldas_cubes/log/1_nldas_subset_rmk.ind'), hash_depends=I(TRUE), depends_target=I('1_nldas_subset_rmk'), depends_makefile=I('1_nldas_subset_rmk.yml'))
     depends: 
-      - ind_dir/NLDAS_0.9_135.135_231.239_dlwrfsfc.nc.ind
-      - ind_dir/NLDAS_10.19_135.135_231.239_dlwrfsfc.nc.ind
-      - ind_dir/NLDAS_0.9_135.141_223.239_pressfc.nc.ind
-      - ind_dir/NLDAS_10.19_135.141_223.239_pressfc.nc.ind
+      - 1_nldas_cubes/log/NLDAS_0.9_135.135_231.239_dlwrfsfc.nc.ind
+      - 1_nldas_cubes/log/NLDAS_10.19_135.135_231.239_dlwrfsfc.nc.ind
+      - 1_nldas_cubes/log/NLDAS_0.9_135.141_223.239_pressfc.nc.ind
+      - 1_nldas_cubes/log/NLDAS_10.19_135.141_223.239_pressfc.nc.ind

@@ -23,7 +23,7 @@ targets:
   1_nldas_cubes/out/NLDAS_7.16_141.141_223.223_dlwrfsfc.nc:
     command: nccopy_nldas(target_name)
 
-  ind_dir/NLDAS_7.16_141.141_223.223_dlwrfsfc.nc.ind:
+  1_nldas_cubes/log/NLDAS_7.16_141.141_223.223_dlwrfsfc.nc.ind:
     command: sc_indicate(target_name)
     depends:
       - 1_nldas_cubes/out/NLDAS_7.16_141.141_223.223_dlwrfsfc.nc
@@ -33,7 +33,7 @@ targets:
   1_nldas_cubes/out/NLDAS_17.19_141.141_223.223_dlwrfsfc.nc:
     command: nccopy_nldas(target_name)
 
-  ind_dir/NLDAS_17.19_141.141_223.223_dlwrfsfc.nc.ind:
+  1_nldas_cubes/log/NLDAS_17.19_141.141_223.223_dlwrfsfc.nc.ind:
     command: sc_indicate(target_name)
     depends:
       - 1_nldas_cubes/out/NLDAS_17.19_141.141_223.223_dlwrfsfc.nc
@@ -41,7 +41,7 @@ targets:
   # --- Overall job --- #
 
   1_nldas_append_rmk:
-    command: sc_indicate(I('ind_dir/1_nldas_append_rmk.ind'), hash_depends=I(TRUE), depends_target=I('1_nldas_append_rmk'), depends_makefile=I('1_nldas_append_rmk.yml'))
+    command: sc_indicate(I('1_nldas_cubes/log/1_nldas_append_rmk.ind'), hash_depends=I(TRUE), depends_target=I('1_nldas_append_rmk'), depends_makefile=I('1_nldas_append_rmk.yml'))
     depends: 
-      - ind_dir/NLDAS_7.16_141.141_223.223_dlwrfsfc.nc.ind
-      - ind_dir/NLDAS_17.19_141.141_223.223_dlwrfsfc.nc.ind
+      - 1_nldas_cubes/log/NLDAS_7.16_141.141_223.223_dlwrfsfc.nc.ind
+      - 1_nldas_cubes/log/NLDAS_17.19_141.141_223.223_dlwrfsfc.nc.ind

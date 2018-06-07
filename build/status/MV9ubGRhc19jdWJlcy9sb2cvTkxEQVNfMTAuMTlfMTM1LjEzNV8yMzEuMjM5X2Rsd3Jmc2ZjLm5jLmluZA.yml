@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_nldas_cubes/log/NLDAS_10.19_135.135_231.239_dlwrfsfc.nc.ind
+type: file
+hash: edc52b6df248a17f1ad2f70217a1af47
+time: 2018-06-07 18:53:27 UTC
+depends:
+  1_nldas_cubes/out/NLDAS_10.19_135.135_231.239_dlwrfsfc.nc: a771bb497279824e98e8f82b63c901dc
+fixed: 426a46c13c120797eb3c8abfdf54a6a0
+code:
+  functions: {}
+
