@@ -2,7 +2,7 @@
 # from the task_makefile.mustache template
 # by create_task_makefile() via create_cube_task_makefile()
 
-target_default: 1_nldas_cubes_rmk
+target_default: 1_nldas_subset_rmk
 
 include:
   - 0_config
@@ -17,25 +17,25 @@ file_extensions:
   - "ind"
 
 targets:
-  # --- NLDAS_0.9_223.239_135.141_dlwrfsfc.nc --- #
+  # --- NLDAS_0.9_231.239_135.135_dlwrfsfc.nc --- #
   
-  1_nldas_cubes/out/NLDAS_0.9_223.239_135.141_dlwrfsfc.nc:
+  1_nldas_cubes/out/NLDAS_0.9_231.239_135.135_dlwrfsfc.nc:
     command: nccopy_nldas(target_name)
 
-  ind_dir/NLDAS_0.9_223.239_135.141_dlwrfsfc.nc.ind:
+  ind_dir/NLDAS_0.9_231.239_135.135_dlwrfsfc.nc.ind:
     command: sc_indicate(target_name)
     depends:
-      - 1_nldas_cubes/out/NLDAS_0.9_223.239_135.141_dlwrfsfc.nc
+      - 1_nldas_cubes/out/NLDAS_0.9_231.239_135.135_dlwrfsfc.nc
 
-  # --- NLDAS_10.12_223.239_135.141_dlwrfsfc.nc --- #
+  # --- NLDAS_10.12_231.239_135.135_dlwrfsfc.nc --- #
   
-  1_nldas_cubes/out/NLDAS_10.12_223.239_135.141_dlwrfsfc.nc:
+  1_nldas_cubes/out/NLDAS_10.12_231.239_135.135_dlwrfsfc.nc:
     command: nccopy_nldas(target_name)
 
-  ind_dir/NLDAS_10.12_223.239_135.141_dlwrfsfc.nc.ind:
+  ind_dir/NLDAS_10.12_231.239_135.135_dlwrfsfc.nc.ind:
     command: sc_indicate(target_name)
     depends:
-      - 1_nldas_cubes/out/NLDAS_10.12_223.239_135.141_dlwrfsfc.nc
+      - 1_nldas_cubes/out/NLDAS_10.12_231.239_135.135_dlwrfsfc.nc
 
   # --- NLDAS_0.9_223.239_135.141_pressfc.nc --- #
   
@@ -59,10 +59,10 @@ targets:
 
   # --- Overall job --- #
 
-  1_nldas_cubes_rmk:
-    command: sc_indicate(I('ind_dir/1_nldas_cubes_rmk.ind'), hash_depends=I(TRUE), depends_target=I('1_nldas_cubes_rmk'), depends_makefile=I('1_nldas_cubes_rmk.yml'))
+  1_nldas_subset_rmk:
+    command: sc_indicate(I('ind_dir/1_nldas_subset_rmk.ind'), hash_depends=I(TRUE), depends_target=I('1_nldas_subset_rmk'), depends_makefile=I('1_nldas_subset_rmk.yml'))
     depends: 
-      - ind_dir/NLDAS_0.9_223.239_135.141_dlwrfsfc.nc.ind
-      - ind_dir/NLDAS_10.12_223.239_135.141_dlwrfsfc.nc.ind
+      - ind_dir/NLDAS_0.9_231.239_135.135_dlwrfsfc.nc.ind
+      - ind_dir/NLDAS_10.12_231.239_135.135_dlwrfsfc.nc.ind
       - ind_dir/NLDAS_0.9_223.239_135.141_pressfc.nc.ind
       - ind_dir/NLDAS_10.12_223.239_135.141_pressfc.nc.ind
