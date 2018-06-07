@@ -38,3 +38,6 @@ rsconnect/
 .remake/
 **.nc
 *.Rproj
+
+1_nldas_subset_rmk.yml
+1_nldas_append_rmk.yml
