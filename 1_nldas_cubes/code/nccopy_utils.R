@@ -4,7 +4,7 @@ nccopy_nldas <- function(nc_filepath){
   
   nldas_url <- nldas_url_from_file(nc_filename)
   message(nldas_url)
-  output <- system(sprintf("nccopy -m 15m %s %s", nldas_url, nc_filepath))
+  output <- system(sprintf("nccopy -w %s %s", nldas_url, nc_filepath))
   
   if(output){
     unlink(nc_filename)

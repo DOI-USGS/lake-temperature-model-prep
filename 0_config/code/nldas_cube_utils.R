@@ -122,7 +122,8 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
   return(nldas_files)
 }
 
-create_cube_task_makefile <- function(makefile, sub_files, include, nc_dir, ind_dir, packages, sources){
+
+create_cube_task_plan <- function(sub_files, nc_dir, ind_dir){
   
   cube_task_step <- create_task_step(
     step_name = 'nccopy',
@@ -133,7 +134,8 @@ create_cube_task_makefile <- function(makefile, sub_files, include, nc_dir, ind_
   )
   
   cube_task_plan <- create_task_plan(sub_files, list(cube_task_step), final_steps='nccopy', ind_dir=ind_dir)
-  
+}
+create_cube_task_makefile <- function(makefile, cube_task_plan, include, packages, sources){
   create_task_makefile(
     cube_task_plan, makefile = makefile, ind_complete = TRUE, 
     include = include, sources = sources, 
