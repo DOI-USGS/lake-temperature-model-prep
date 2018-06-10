@@ -35,3 +35,11 @@ vignettes/*.pdf
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
 .Rproj.user
+.remake/
+**.nc
+*.Rproj
+
+1_nldas_subset_rmk.yml
+1_nldas_append_rmk.yml
+
+1_nldas_cubes/log/*.nc.ind

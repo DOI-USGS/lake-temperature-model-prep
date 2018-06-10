@@ -112,7 +112,7 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
   
   for (variable in variables){
     box <- boxes[boxes$variable == variable, ]
-    space_chunk <- sprintf("%s.%s_%s.%s", box$x0, box$x1, box$y0, box$y1)
+    space_chunk <- sprintf("%s.%s_%s.%s", box$y0, box$y1, box$x0, box$x1)
     for (i in 1:length(time_chunks)){
       # create file like this: #NLDAS_0.9999_132.196_221.344_pressfc.nc
       nldas_files[file_i] <- sprintf("NLDAS_%s_%s_%s.nc", time_chunks[i], space_chunk, variable) 
@@ -122,7 +122,8 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
   return(nldas_files)
 }
 
-create_cube_task_makefile <- function(makefile, sub_files, include, nc_dir, ind_dir, packages, sources){
+
+create_cube_task_plan <- function(sub_files, nc_dir, ind_dir){
   
   cube_task_step <- create_task_step(
     step_name = 'nccopy',
@@ -132,8 +133,9 @@ create_cube_task_makefile <- function(makefile, sub_files, include, nc_dir, ind_
     command = "nccopy_nldas(target_name)"
   )
   
-  cube_task_plan <- create_task_plan(sub_files, list(cube_task_step), final_steps='nccopy', ind_dir='ind_dir')
-  
+  cube_task_plan <- create_task_plan(sub_files, list(cube_task_step), final_steps='nccopy', ind_dir=ind_dir)
+}
+create_cube_task_makefile <- function(makefile, cube_task_plan, include, packages, sources){
   create_task_makefile(
     cube_task_plan, makefile = makefile, ind_complete = TRUE, 
     include = include, sources = sources, 
