@@ -1,0 +1,30 @@
+
+
+include:
+  - 2_driver_cells_rmk.yml
+
+packages:
+  - dplyr
+  - ncdf4
+  - feather
+
+sources:
+  - 0_config/code/nldas_feather_utils.R
+  - 0_config/code/nldas_cube_utils.R
+
+file_extensions:
+  - "ind"
+
+targets:
+
+  2_driver_cells/out/NLDAS_time[0.9999]_x[223]_y[141]_var[apcpsfc].feather:
+    command: nc_to_feather(target_name, NLDAS_0.9999_132.196_221.344_apcpsfc)
+    
+  2_driver_cells/out/NLDAS_time[0.9999]_x[344]_y[132]_var[apcpsfc].feather: 
+    command: nc_to_feather(target_name, NLDAS_0.9999_132.196_221.344_apcpsfc)
+
+  2_driver_cells/out/NLDAS_0.9999_132.196_221.344_apcpsfc_files.ind:
+    command: sc_indicate(target_name)
+    depends: 
+      - 2_driver_cells/out/NLDAS_time[0.9999]_x[223]_y[141]_var[apcpsfc].feather
+      - 2_driver_cells/out/NLDAS_time[0.9999]_x[344]_y[132]_var[apcpsfc].feather
