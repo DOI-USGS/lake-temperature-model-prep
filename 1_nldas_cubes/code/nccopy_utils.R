@@ -24,22 +24,20 @@ nccopy_nldas <- function(nc_filepath){
 }
 
 nldas_steps_from_file <- function(nc_filename){
-  file_chunks <- strsplit(nc_filename,'[_]')[[1]]
-  time_range <- strsplit(file_chunks[2],'[.]')[[1]] %>% as.numeric
+  time_range <- parse_nc_filename(nc_filename, 'time')
   return(seq(time_range[1], time_range[2]))
 }
 
 nldas_url_from_file <- function(nc_filename){
   file_chunks <- strsplit(nc_filename,'[_]')[[1]]
-  lat_i <- write_grid(file_chunks[3])
-  lon_i <- write_grid(file_chunks[4])
-  time_i <- write_grid(file_chunks[2])
-  var <- strsplit(file_chunks[5],'[.]')[[1]][1]
+  lat_i <- write_grid(x = parse_nc_filename(nc_filename, 'y'))
+  lon_i <- write_grid(x = parse_nc_filename(nc_filename, 'x'))
+  time_i <- write_grid(x = parse_nc_filename(nc_filename, 'time'))
+  var <- parse_nc_filename(nc_filename, 'var')
   sprintf('http://hydro1.sci.gsfc.nasa.gov/dods/NLDAS_FORA0125_H.002?lon%s,time%s,lat%s,%s%s%s%s', lon_i, time_i, lat_i, var, time_i, lat_i, lon_i)
 }
 
 write_grid <- function(x){
-  v <- strsplit(x,'[.]')[[1]]
-  sprintf("[%s:1:%s]",v[1],v[2])
+  sprintf("[%1.0f:1:%1.0f]",x[1],x[2])
 }
 

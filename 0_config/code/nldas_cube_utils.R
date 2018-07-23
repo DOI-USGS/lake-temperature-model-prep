@@ -116,16 +116,20 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
 }
 
 
-parse_nc_filename <- function(filename, out = c('y','x','time')){
+parse_nc_filename <- function(filename, out = c('y','x','time','var')){
   
   filename <- basename(filename)
   word_indx <- switch(out, 
                       y = 2,
                       x = 3, 
-                      time = 1)
-  char <- gsub("\\_|\\_", "", regmatches(filename, gregexpr("\\_.*?\\_", filename))[[1]][word_indx])
-  out <- as.numeric(strsplit(char, '[.]')[[1]])
-  return(out)
+                      time = 1, 
+                      var = 4)
+  char <- gsub("\\[|\\]", "", regmatches(filename, gregexpr("\\[.*?\\]", filename))[[1]][word_indx])
+  if (out == 'var'){
+    return(char)
+  } else {
+    return(as.numeric(strsplit(char, '[.]')[[1]]))
+  }
 }
 
 create_cube_task_plan <- function(sub_files, nc_dir, ind_dir){

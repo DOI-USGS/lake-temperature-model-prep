@@ -16,10 +16,10 @@ targets:
       - 1_nldas_append_rmk.yml
   
   nldas_subset_time:
-    command: c(t0=I(0), t1 = I(12300))#345551))
+    command: c(t0=I(0), t1 = I(145551))#345551
     
   nldas_time_chunk:
-    command: c(I(10000))
+    command: c(I(5000))
     
   nldas_cells:
     command: list(x=I(c(221,221,344,344,223)), y=I(c(132,196,132,196,141)), variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # will come from code or spatial data...
