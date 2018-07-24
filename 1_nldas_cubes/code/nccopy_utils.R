@@ -6,8 +6,8 @@ nccopy_nldas <- function(nc_filepath){
   message(nldas_url)
   output <- system(sprintf("nccopy -w %s %s", nldas_url, nc_filepath))
   
-  if(output | file.size(nc_filename) == 0){
-    unlink(nc_filename)
+  if(output | file.size(nc_filepath) == 0){
+    unlink(nc_filepath)
     stop(nldas_url, ' **FAILED nccopy**', call. = FALSE)
   }
   # check/verify file has the appropriate number of timesteps...fail if not
@@ -16,7 +16,7 @@ nccopy_nldas <- function(nc_filepath){
   nc_steps <- nc$dim$time$len
   ncdf4::nc_close(nc)
   if (nc_steps != expected_steps){
-    unlink(nc_filename)
+    unlink(nc_filepath)
     stop('incomplete file ', nc_filename , '\nexpected ', 
          expected_steps, ' steps, found ', nc_steps, ' steps\nfor ', nldas_url, call. = FALSE)
   }
