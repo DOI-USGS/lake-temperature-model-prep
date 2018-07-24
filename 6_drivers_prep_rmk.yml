@@ -1,0 +1,59 @@
+target_default: 6_drivers_prep
+
+packages:
+  - sp
+  - scipiper
+  - dplyr
+
+sources:
+  - 6_drivers_prep/code/nldas_cube_utils.R
+  - 6_drivers_prep/code/nldas_feather_utils.R
+  
+targets:
+  6_drivers_prep: 
+    depends: 
+      - 7_nldas_subset_rmk.yml
+      - 7_nldas_append_rmk.yml
+  
+  nldas_subset_time:
+    command: c(t0=I(0), t1 = I(145551))#345551
+    
+  nldas_time_chunk:
+    command: c(I(5000))
+    
+  nldas_cells:
+    command: list(x=I(c(221,221,344,344,223)), y=I(c(132,196,132,196,141)), variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # will come from code or spatial data...
+      
+  nldas_subset_box: # this is a FULL time pull
+    command: nldas_diff_box(nldas_cells, '6_drivers_prep/in/nldas_cells.rds') 
+      
+  nldas_append_box: # this is a PARTIAL time pull, where partial time could be 0 (complete)
+    command: nldas_update_box(nldas_cells, nldas_subset_box) 
+
+  nldas_append_time:
+    command: nldas_times_diff(nldas_subset_time, '6_drivers_prep/in/nldas_times.rds')
+    
+  nldas_subset_files:
+    command: calc_nldas_files(nldas_subset_box, nldas_subset_time, nldas_time_chunk)
+  
+  nldas_append_files:
+    command: calc_nldas_files(nldas_append_box, nldas_append_time, nldas_time_chunk)
+  
+  nldas_pull_cells:
+    command: nldas_diff_cells(nldas_cells, '6_drivers_prep/in/nldas_cells.rds') 
+    
+  nldas_cap_cells:
+    command: nldas_update_cells(nldas_cells, nldas_pull_cells, '6_drivers_prep/in/nldas_times.rds')
+  
+  nldas_subset_plan:
+    command: create_cube_task_plan(nldas_subset_files, nc_dir = I("7_drivers_fetch/out"), ind_dir=I('7_drivers_fetch/log'))
+
+  nldas_append_plan:
+    command: create_cube_task_plan(nldas_append_files, nc_dir = I("7_drivers_fetch/out"), ind_dir=I('7_drivers_fetch/log'))
+
+  "7_nldas_subset_rmk.yml":
+    command: create_cube_task_makefile(target_name, nldas_subset_plan, include = I("6_drivers_prep_rmk.yml"), packages = I(c('dplyr','ncdf4')), sources = '7_drivers_fetch/code/nccopy_utils.R')
+    
+  "7_nldas_append_rmk.yml":
+    command: create_cube_task_makefile(target_name, nldas_append_plan, include = I("6_drivers_prep_rmk.yml"), packages = I(c('dplyr','ncdf4')), sources = '7_drivers_fetch/code/nccopy_utils.R')  
+  
