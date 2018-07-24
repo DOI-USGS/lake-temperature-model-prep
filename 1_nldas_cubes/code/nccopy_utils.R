@@ -6,7 +6,7 @@ nccopy_nldas <- function(nc_filepath){
   message(nldas_url)
   output <- system(sprintf("nccopy -w %s %s", nldas_url, nc_filepath))
   
-  if(output){
+  if(output | file.size(nc_filename) == 0){
     unlink(nc_filename)
     stop(nldas_url, ' **FAILED nccopy**', call. = FALSE)
   }

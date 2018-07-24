@@ -97,7 +97,7 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
   time_chunk_lead <- seq(time_range[["t0"]], time_range[["t1"]], by = time_chunk)
   time_chunk_follow <- c(tail(time_chunk_lead, -1L) - 1, time_range[["t1"]])
   
-  time_chunks <- sprintf('time[%s.%s]', time_chunk_lead, time_chunk_follow)
+  time_chunks <- sprintf('time[%1.0f.%1.0f]', time_chunk_lead, time_chunk_follow)
   
   variables <- boxes$variable
   nldas_files <- rep(NA_character_, length(time_chunk_lead)*length(variables))
@@ -105,7 +105,7 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
   
   for (variable in variables){
     box <- boxes[boxes$variable == variable, ]
-    space_chunk <- sprintf("y[%s.%s]_x[%s.%s]", box$y0, box$y1, box$x0, box$x1)
+    space_chunk <- sprintf("y[%1.0f.%1.0f]_x[%1.0f.%1.0f]", box$y0, box$y1, box$x0, box$x1)
     for (i in 1:length(time_chunks)){
       # create file like this: #NLDAS_time[0.9999]_y[132.196]_x[221.344]_var[pressfc].nc
       nldas_files[file_i] <- sprintf("NLDAS_%s_%s_var[%s].nc", time_chunks[i], space_chunk, variable) 
