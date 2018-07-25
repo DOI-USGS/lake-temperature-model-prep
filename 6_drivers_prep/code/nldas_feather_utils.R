@@ -44,9 +44,9 @@ nldas_update_cells <- function(new_cells_list, pull_cells, old_times_df_filename
   return(update_cells)
 }
 
-create_feather_filename <- function(t0, t1, x, y, variable, prefix = 'NLDAS', dirname = '2_driver_cells/out'){
+create_feather_filename <- function(t0, t1, x, y, variable, prefix = 'NLDAS', dirname = '8_drivers_munge/out'){
   sapply(seq_len(length(t0)), function(i) {
-    file.path(dirname, sprintf("%s_time[%s.%s]_x[%s]_y[%s]_var[%s].feather", prefix, t0[i], t1[i], x[i], y[i], variable[i]))
+    file.path(dirname, sprintf("%s_time[%1.0f.%1.0f]_x[%1.0f]_y[%1.0f]_var[%s].feather", prefix, t0[i], t1[i], x[i], y[i], variable[i]))
     }, USE.NAMES = FALSE)
 }
 
@@ -57,28 +57,67 @@ parse_feather_filename <- function(filename, out = c('var','y','x','time')){
                       y = 3,
                       x = 2, 
                       time = 1)
-  gsub("\\[|\\]", "", regmatches(filename, gregexpr("\\[.*?\\]", filename))[[1]][word_indx])
+  char <- gsub("\\[|\\]", "", regmatches(filename, gregexpr("\\[.*?\\]", filename))[[1]][word_indx])
+  if (out == 'var'){
+    return(char)
+  } else {
+    return(as.numeric(strsplit(char, '[.]')[[1]]))
+  }
+}
+
+
+cubes_to_cell_file <- function(filename, ...){
+  cell_x_index <- parse_feather_filename(filename, 'x')
+  cell_y_index <- parse_feather_filename(filename, 'y')
+  cell_time_range <- parse_feather_filename(filename, 'time')
+  cell_time_indices <- seq(cell_time_range[1], cell_time_range[2]) + 1 # our data vectors aren't 0 indexed
+  cell_var <- parse_feather_filename(filename, 'var')
   
+  cell_out <- data.frame(data = rep(NA_real_, length(cell_time_indices))) %>% setNames(cell_var)
+  nc_files <- c(...)
+  for (nc_file in nc_files){
+    file_time_range <- parse_nc_filename(nc_file, 'time')
+    time_indices <- seq(file_time_range[1], file_time_range[2]) + 1 # our data vectors aren't 0 indexed
+    
+    if (any(!time_indices %in% cell_time_indices)){
+      stop('attempting to get cube data outside of bounds of cell data', call. = FALSE)
+    }
+    
+    cell_out[[cell_var]][time_indices] <- cube_to_cell(nc_file, cell_x_index, cell_y_index, cell_var)
+  }
+  if(any(is.na(cell_out[[cell_var]]))){
+    stop('cell has NA values after extracting data from cubes', call. = FALSE)
+  }
+  feather::write_feather(cell_out, filename)
+  invisible(filename)
+}
+
+# dumps all time for now...no time arg
+cube_to_cell <- function(cube_file, x_index, y_index, var){
+  cube_x_range <- parse_nc_filename(cube_file, 'x')
+  cube_y_range <- parse_nc_filename(cube_file, 'y')
+  cube_var <- parse_nc_filename(cube_file, 'var')
+  
+  stopifnot(x_index %in% seq(cube_x_range[1], cube_x_range[2]))
+  stopifnot(y_index %in% seq(cube_y_range[1], cube_y_range[2]))
+  stopifnot(var == cube_var)
+  
+  x_start <- cube_x_range[1]-x_index + 1 # our data vectors aren't 0 indexed
+  y_start <- cube_y_range[1]-y_index + 1 # our data vectors aren't 0 indexed
+  
+  nc <- nc_open(cube_file, suppress_dimvals = TRUE)
+  cell_data <- ncvar_get(nc, varid = var, start = c(cell.x[1], cell.y[1], 1), count = c(1, 1, -1))
+  nc_close(nc)
+  
+  return(cell_data)
 }
 
 
-nc_matrix <- function(filename){
-  nc_object <- nc_open(filename)
-  nc_data <- ncvar_get(nc_object) # need to index...
-  browser()
-  attr(nc_data)
-  nc_close(nc_object)
-  return(nc_data)
-}
-
-nc_to_feather <- function(filename, nc_matrix){
-  nc_data <- ncvar_get(nc_object, varid = parse_feather_filename(filename, out = 'var'))
-  write_feather(data.frame(x = c(2,3,52)), path = filename)
-}
-
-append_cell_file <- function(filename){
-  # throwaway test...
-  data_in <- read_feather(filename)
-  data_in$y = c(3,3,2)
+append_cell_file <- function(filename, ...){
+  stop('not implemented')
+  
+  data_in <- read_feather(filename) # old file name vs new?
+  
+  stop('not implemented')
   write_feather(data_in, path = filename)
 }
