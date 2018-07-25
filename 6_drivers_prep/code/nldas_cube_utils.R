@@ -10,14 +10,7 @@ cell_list_to_df <- function(cells_list){
 #' returns the spatial box and variable names for the cells that are need full/clean data
 nldas_diff_box <- function(new_cells_list, old_cells_df_filename){
   
-  old_cells_df <- readRDS(old_cells_df_filename)
-  
-  # expand the list into a data.frame comprable to `old_cells_df`
-  new_cells_df <- cell_list_to_df(new_cells_list)
-  
-  # leaves only the rows in `new_cells_df` that don't exist in `old_cells_df`
-  # these are cell locations where we don't have any data for that variable
-  diffed_cells <- dplyr::anti_join(new_cells_df, old_cells_df,  by = c('x','y','variable')) 
+  diffed_cells <- nldas_diff_cells(new_cells_list, old_cells_df_filename)
   
   if (any(is.na(diffed_cells))){
     # shouldn't be any NAs, but if there are, throw an error
@@ -104,7 +97,7 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
   time_chunk_lead <- seq(time_range[["t0"]], time_range[["t1"]], by = time_chunk)
   time_chunk_follow <- c(tail(time_chunk_lead, -1L) - 1, time_range[["t1"]])
   
-  time_chunks <- sprintf('%s.%s', time_chunk_lead, time_chunk_follow)
+  time_chunks <- sprintf('time[%1.0f.%1.0f]', time_chunk_lead, time_chunk_follow)
   
   variables <- boxes$variable
   nldas_files <- rep(NA_character_, length(time_chunk_lead)*length(variables))
@@ -112,16 +105,32 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
   
   for (variable in variables){
     box <- boxes[boxes$variable == variable, ]
-    space_chunk <- sprintf("%s.%s_%s.%s", box$y0, box$y1, box$x0, box$x1)
+    space_chunk <- sprintf("y[%1.0f.%1.0f]_x[%1.0f.%1.0f]", box$y0, box$y1, box$x0, box$x1)
     for (i in 1:length(time_chunks)){
-      # create file like this: #NLDAS_0.9999_132.196_221.344_pressfc.nc
-      nldas_files[file_i] <- sprintf("NLDAS_%s_%s_%s.nc", time_chunks[i], space_chunk, variable) 
+      # create file like this: #NLDAS_time[0.9999]_y[132.196]_x[221.344]_var[pressfc].nc
+      nldas_files[file_i] <- sprintf("NLDAS_%s_%s_var[%s].nc", time_chunks[i], space_chunk, variable) 
       file_i <- file_i+1
     }
   }
   return(nldas_files)
 }
 
+
+parse_nc_filename <- function(filename, out = c('y','x','time','var')){
+  
+  filename <- basename(filename)
+  word_indx <- switch(out, 
+                      y = 2,
+                      x = 3, 
+                      time = 1, 
+                      var = 4)
+  char <- gsub("\\[|\\]", "", regmatches(filename, gregexpr("\\[.*?\\]", filename))[[1]][word_indx])
+  if (out == 'var'){
+    return(char)
+  } else {
+    return(as.numeric(strsplit(char, '[.]')[[1]]))
+  }
+}
 
 create_cube_task_plan <- function(sub_files, nc_dir, ind_dir){
   
