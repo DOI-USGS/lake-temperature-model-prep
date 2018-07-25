@@ -66,7 +66,12 @@ parse_feather_filename <- function(filename, out = c('var','y','x','time')){
 }
 
 
-cubes_to_cell_file <- function(filename, ...){
+#' @param filename the feather file to be written, generated w/ `create_feather_filename`
+#' @param ... nc files passed in as unnamed arguments
+#' @param nc_files a vector of nc files (if used, `...`` is ignored)
+#' 
+cubes_to_cell_file <- function(filename, ..., nc_files = NULL){
+  
   cell_x_index <- parse_feather_filename(filename, 'x')
   cell_y_index <- parse_feather_filename(filename, 'y')
   cell_time_range <- parse_feather_filename(filename, 'time')
@@ -74,13 +79,17 @@ cubes_to_cell_file <- function(filename, ...){
   cell_var <- parse_feather_filename(filename, 'var')
   
   cell_out <- data.frame(data = rep(NA_real_, length(cell_time_indices))) %>% setNames(cell_var)
-  nc_files <- c(...)
+  
+  if (is.null(nc_files)){
+    nc_files <- c(...)
+  } 
+  
   for (nc_file in nc_files){
     file_time_range <- parse_nc_filename(nc_file, 'time')
     time_indices <- seq(file_time_range[1], file_time_range[2]) + 1 # our data vectors aren't 0 indexed
     
     if (any(!time_indices %in% cell_time_indices)){
-      stop('attempting to get cube data outside of bounds of cell data', call. = FALSE)
+      stop('attempting to get cube data outside of bounds of cell data in ', nc_file, call. = FALSE)
     }
     
     cell_out[[cell_var]][time_indices] <- cube_to_cell(nc_file, cell_x_index, cell_y_index, cell_var)
@@ -88,6 +97,7 @@ cubes_to_cell_file <- function(filename, ...){
   if(any(is.na(cell_out[[cell_var]]))){
     stop('cell has NA values after extracting data from cubes', call. = FALSE)
   }
+  
   feather::write_feather(cell_out, filename)
   invisible(filename)
 }
