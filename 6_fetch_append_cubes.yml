@@ -1,0 +1,26 @@
+# Do not edit - automatically generated
+# from the task_makefile.mustache template
+# by create_task_makefile() via create_cube_task_makefile()
+
+target_default: 6_fetch_append_cubes
+
+include:
+  - 6_drivers_pre.yml
+
+packages:
+  - dplyr
+  - ncdf4
+
+sources:
+  - 6_drivers/src/nccopy_utils.R
+
+file_extensions:
+  - "ind"
+
+targets:
+
+  # --- Overall job --- #
+
+  6_fetch_append_cubes:
+    command: sc_indicate(I('6_drivers/log/6_fetch_append_cubes.ind'), hash_depends=I(TRUE), depends_target=I('6_fetch_append_cubes'), depends_makefile=I('6_fetch_append_cubes.yml'))
+    depends: 

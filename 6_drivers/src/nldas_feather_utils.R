@@ -38,7 +38,7 @@ nldas_update_cells <- function(new_cells_list, pull_cells, old_times_df_filename
   
   update_cells <- dplyr::anti_join(new_cells_df, pull_cells,  by = c('x','y','variable')) %>% 
     left_join(old_times_df, by = c('variable')) %>% 
-    mutate(orig_file = create_feather_filename(t0, t1, x, y, variable)) %>% 
+    mutate(src_filename = create_feather_filename(t0, t1, x, y, variable)) %>% 
     select(-t0, -t1)
   
   return(update_cells)
