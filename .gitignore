@@ -39,7 +39,6 @@ rsconnect/
 **.nc
 *.Rproj
 
-7_nldas_subset_rmk.yml
-7_nldas_append_rmk.yml
+**_tasks.yml
 
-7_drivers_fetch/log/*.nc.ind
+6_drivers/log/*.nc.ind
