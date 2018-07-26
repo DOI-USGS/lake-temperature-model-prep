@@ -16,13 +16,13 @@ targets:
       - append_cubes
   
   replete_time_range:
-    command: c(t0=I(0), t1 = I(5551))#345551
+    command: c(t0=I(0), t1 = I(345551))
     
   append_time_range:
     command: nldas_times_diff(replete_time_range, '6_drivers/in/nldas_times.rds')
     
   nccopy_time_stride:
-    command: c(I(1000))
+    command: c(I(5000))
     
   nldas_cells:
     command: list(x=I(c(221,221,344,344,223)), y=I(c(132,196,132,196,141)), variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # will come from code or spatial data...
