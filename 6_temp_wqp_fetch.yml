@@ -26,7 +26,7 @@ targets:
     command: wqp_calc_wants(wqp_sites, wqp_pull_params)
 
   wqp_needs: # made up inventory of what sites and variables for which we have data
-    command: wqp_calc_needs(wqp_wants, wqp_haves = '0_config/input/wqp_haves.rds')
+    command: wqp_calc_needs(wqp_wants, wqp_haves = '6_temp_wqp_fetch/inout/wqp_haves.txt')
 
   wqp_inventory:
     command: inventory_wqp(wqp_needs, wqp_pull_params)
