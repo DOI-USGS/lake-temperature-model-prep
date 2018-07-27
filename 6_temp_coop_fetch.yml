@@ -1,0 +1,41 @@
+target_default: 6_temp_coop_fetch
+
+include:
+
+packages:
+  - scipiper
+  - dplyr
+
+sources:
+  - 6_temp_coop_fetch/src/filter_files.R
+  - 6_temp_coop_fetch/src/task_fxns.R
+
+targets:
+
+  6_temp_coop_fetch:
+    depends:
+      - 6_temp_coop_fetch_tasks.yml
+
+  # -- prepare destination folders -- #
+  # in = folder to hold coop data files and corresponding .ind that need to be parsed (not on google drive)
+  # log = folder for indivator files that don't correspond to data file
+
+  6_temp_coop_fetch/out:
+    command: dir.create(target_name, showWarnings = I(FALSE))
+
+  6_temp_coop_fetch/log:
+    command: dir.create(target_name, showWarnings = I(FALSE))
+
+  # -- create makefile with targets for each file listed in gd -- #
+
+  coop_all_files:
+    command: gd_list(config_file = 'lib/cfg/gd_config.yml')
+
+  coop_wants:
+    command: filter_coop_all(coop_all_files)
+
+  coop_wants_fetch_plan:
+    command: create_coop_taskplan(coop_wants)
+
+  6_temp_coop_fetch_tasks.yml:
+    command: create_coop_fetch_makefile(target_name, coop_wants_fetch_plan)
