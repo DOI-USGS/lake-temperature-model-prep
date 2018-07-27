@@ -1,0 +1,35 @@
+target_default: 6_temp_wqp_fetch
+
+packages:
+  - dplyr
+  - scipiper
+
+sources:
+  - 6_temp_wqp_fetch/src/wants_needs.R
+  - 6_temp_wqp_fetch/src/wqp_inventory.R
+
+targets:
+  6_temp_wqp_fetch:
+    depends:
+      - wqp_pull_partitions
+
+  wqp_sites: # random sites chosen from 4 lakes in MN and 2 in WI - this will be output of upstream workflow - output of crosswalk?
+    command: c(I(c('MNPCA-11-0413-00-212', 'MNPCA-11-0412-00-203', 'MNPCA-11-0476-00-201', 'MNPCA-11-0383-00-202', 'WIDNR_WQX-643082', 'WIDNR_WQX-643380')))
+
+  wqp_pull_params:
+    command: yaml.load_file('6_temp_wqp_fetch/cfg/wqp_pull_params.yml')
+
+  wqp_partition_config:
+    command: yaml.load_file('6_temp_wqp_fetch/cfg/wqp_partition_config.yml')
+
+  wqp_wants:
+    command: wqp_calc_wants(wqp_sites, wqp_pull_params)
+
+  wqp_needs: # made up inventory of what sites and variables for which we have data
+    command: wqp_calc_needs(wqp_wants, wqp_haves = '0_config/input/wqp_haves.rds')
+
+  wqp_inventory:
+    command: inventory_wqp(wqp_needs, wqp_pull_params)
+
+  wqp_pull_partitions:
+    command: partition_wqp_inventory(wqp_inventory, wqp_partition_config)
