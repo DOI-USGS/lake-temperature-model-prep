@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/lakes_shapefile.shx.ind
+type: file
+hash: 50b81d0fbd30cd0ab9f4504f7a63bcc4
+time: 2018-07-27 21:50:52 UTC
+depends: {}
+fixed: dceae0cf67ed954c4fc940c7a5264ed7
+code:
+  functions:
+    fetch_crosswalk_shapefile: 75cc266efc22f2949e6bc8346abe57f4
+

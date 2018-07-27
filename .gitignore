@@ -40,5 +40,13 @@ rsconnect/
 **.nc.ind
 **_tasks.yml
 
-
+# Data files
+*.rds
+*.Rds
+*.feather
+*.Feather
+*.shp
+*.shx
+*.dbf
+*.prj
 

@@ -1,0 +1,15 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/lakes_sf.rds.ind
+type: file
+hash: 0d1499eab07a9225e5fbf288f164c601
+time: 2018-07-27 22:10:53 UTC
+depends:
+  1_crosswalk_fetch/out/lakes_shapefile.shp.ind: d8bf416d48196323d9ea1618689a6b0b
+  1_crosswalk_fetch/out/lakes_shapefile.dbf.ind: c07bd309156f21d99a673cb00422c084
+  1_crosswalk_fetch/out/lakes_shapefile.prj.ind: c666f0cdb46f1c6f8d81bcd739262b5c
+  1_crosswalk_fetch/out/lakes_shapefile.shx.ind: 2d4e75f8fdf3619b0f807e19a033f680
+fixed: 6b8ee30c4ea445e414547fd7f87e497d
+code:
+  functions:
+    munge_crosswalk: b6caaca3ee51eb40b8c17f61a125ec8b
+
