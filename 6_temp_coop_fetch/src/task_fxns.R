@@ -13,8 +13,8 @@ create_coop_taskplan <- function(wants) {
     target_name = function(task_name, ...) {
       file.path('6_temp_coop_fetch/in', task_name)
     },
-    command = function(task_name, ...) {
-      sprintf("gd_get('%s')", scipiper::as_ind_file(task_name))
+    command = function(target_name, ...) {
+      sprintf("gd_get('%s')", scipiper::as_ind_file(target_name))
     }
   )
 
