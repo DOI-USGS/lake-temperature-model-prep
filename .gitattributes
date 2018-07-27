@@ -30,3 +30,7 @@
 *.ez binary
 *.bz2 binary
 *.swp binary
+*.rds binary
+*.feather binary
+*.Rds binary
+*.Feather binary
