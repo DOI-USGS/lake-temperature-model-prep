@@ -103,7 +103,7 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
 
   for (variable in variables){
     box <- boxes[boxes$variable == variable, ]
-    for (i in 1:length(time_chunks)){
+    for (i in 1:length(time_chunk_lead)){
       nldas_files[file_i] <- create_nc_filename(t0 = time_chunk_lead[i], t1 = time_chunk_follow[i],
                                                 x0 = box$x0, x1 = box$x1, y0 = box$y0, y1 = box$y1, variable = variable)
       file_i <- file_i+1
@@ -141,7 +141,7 @@ create_cube_task_plan <- function(sub_files, nc_dir, ind_dir){
     target = function(task_name, step_name, ...) {
       file.path(nc_dir, task_name)
     },
-    command = "nccopy_nldas(target_name)"
+    command = "nccopy_split_combine(target_name, max_steps = I(100))"
   )
 
   cube_task_plan <- create_task_plan(sub_files, list(cube_task_step), final_steps='nccopy', ind_dir=ind_dir)
