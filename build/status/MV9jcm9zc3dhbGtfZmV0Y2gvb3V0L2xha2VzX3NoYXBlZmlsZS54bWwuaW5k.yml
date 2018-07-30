@@ -1,8 +1,8 @@
 version: 0.3.0
 name: 1_crosswalk_fetch/out/lakes_shapefile.xml.ind
 type: file
-hash: b235ad9d544384d90a455fc978ffbdc9
-time: 2018-07-27 21:50:05 UTC
+hash: ac0169e41649623459cc67293088dc4a
+time: 2018-07-30 14:01:00 UTC
 depends: {}
 fixed: dd5264e48f54c5ef0e1749492be7be40
 code:
