@@ -21,7 +21,7 @@ targets:
   # in = folder to hold coop data files and corresponding .ind that need to be parsed (not on google drive)
   # log = folder for indivator files that don't correspond to data file
 
-  6_temp_coop_fetch/out:
+  6_temp_coop_fetch/in:
     command: dir.create(target_name, showWarnings = I(FALSE))
 
   6_temp_coop_fetch/log:
