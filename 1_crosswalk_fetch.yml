@@ -1,0 +1,45 @@
+target_default: 1_crosswalk_fetch
+
+packages:
+  - dplyr
+  - scipiper
+
+sources:
+  - 1_crosswalk_fetch/src/fetch_crosswalk.R
+  - 1_crosswalk_fetch/src/munge_crosswalk.R
+
+targets:
+  1_crosswalk_fetch:
+    depends:
+      - 1_crosswalk_fetch/out/lakes_shapefile.xml.ind
+      - 1_crosswalk_fetch/out/lakes_sf.rds.ind
+
+  1_crosswalk_fetch/out/lakes_shapefile.xml.ind:
+    command: fetch_crosswalk_shapefile(target_name)
+  1_crosswalk_fetch/out/lakes_shapefile.dbf.ind:
+    command: fetch_crosswalk_shapefile(target_name)
+  1_crosswalk_fetch/out/lakes_shapefile.prj.ind:
+    command: fetch_crosswalk_shapefile(target_name)
+  1_crosswalk_fetch/out/lakes_shapefile.shp.ind:
+    command: fetch_crosswalk_shapefile(target_name)
+  1_crosswalk_fetch/out/lakes_shapefile.shx.ind:
+    command: fetch_crosswalk_shapefile(target_name)
+
+  1_crosswalk_fetch/out/lakes_shapefile.xml:
+    command: gd_get('1_crosswalk_fetch/out/lakes_shapefile.xml.ind')
+  1_crosswalk_fetch/out/lakes_shapefile.dbf:
+    command: gd_get('1_crosswalk_fetch/out/lakes_shapefile.dbf.ind')
+  1_crosswalk_fetch/out/lakes_shapefile.prj:
+    command: gd_get('1_crosswalk_fetch/out/lakes_shapefile.prj.ind')
+  1_crosswalk_fetch/out/lakes_shapefile.shp:
+    command: gd_get('1_crosswalk_fetch/out/lakes_shapefile.shp.ind')
+  1_crosswalk_fetch/out/lakes_shapefile.shx:
+    command: gd_get('1_crosswalk_fetch/out/lakes_shapefile.shx.ind')
+
+  1_crosswalk_fetch/out/lakes_sf.rds.ind:
+    command: munge_crosswalk(
+      out_ind=target_name,
+      shp_ind='1_crosswalk_fetch/out/lakes_shapefile.shp.ind',
+      '1_crosswalk_fetch/out/lakes_shapefile.dbf.ind',
+      '1_crosswalk_fetch/out/lakes_shapefile.prj.ind',
+      '1_crosswalk_fetch/out/lakes_shapefile.shx.ind')
