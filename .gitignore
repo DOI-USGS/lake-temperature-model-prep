@@ -51,3 +51,7 @@ rsconnect/
 *.prj
 *.xml
 
+# "in" cooperator data
+/1_all_raw_data/in/*
+!/1_all_raw_data/in/*.ind
+
