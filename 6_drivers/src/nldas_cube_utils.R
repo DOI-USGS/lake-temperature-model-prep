@@ -92,7 +92,7 @@ nldas_times_diff <- function(new_times_range, old_times_df_filename){
 
 #' build a file list according to spatial domain `boxes`, time domain according to `time_range`,
 #' and file chunk size according to `time_chunk`
-calc_nldas_files <- function(boxes, time_range, time_chunk){
+calc_nldas_files <- function(boxes, time_range, time_chunk, nc_dir){
 
   time_chunk_lead <- seq(time_range[["t0"]], time_range[["t1"]], by = time_chunk)
   time_chunk_follow <- c(tail(time_chunk_lead, -1L) - 1, time_range[["t1"]])
@@ -109,12 +109,15 @@ calc_nldas_files <- function(boxes, time_range, time_chunk){
       file_i <- file_i+1
     }
   }
-  return(nldas_files)
+  return(file.path(nc_dir, nldas_files))
 }
 
 # create file like this: #NLDAS_time[0.9999]_y[132.196]_x[221.344]_var[pressfc].nc
 create_nc_filename <- function(t0, t1, x0, x1, y0, y1, variable, prefix = 'NLDAS'){
-  sprintf("%s_time[%1.0f.%1.0f]_x[%1.0f.%1.0f]_y[%1.0f.%1.0f]_var[%s].nc", prefix, t0, t1, x0, x1, y0, y1, variable)
+  stopifnot(t1 < 1000000) # we'd need to change our number padding logic
+  t0 <- stringr::str_pad(sprintf("%1.0f", t0), width = 6, pad = '0')
+  t1 <- stringr::str_pad(sprintf("%1.0f", t1), width = 6, pad = '0')
+  sprintf("%s_time[%s.%s]_x[%1.0f.%1.0f]_y[%1.0f.%1.0f]_var[%s].nc", prefix, t0, t1, x0, x1, y0, y1, variable)
 }
 
 
@@ -134,17 +137,20 @@ parse_nc_filename <- function(filename, out = c('y','x','time','var')){
   }
 }
 
-create_cube_task_plan <- function(sub_files, nc_dir, ind_dir){
-
+create_cube_task_plan <- function(sub_files, ind_dir){
+  nc_dir <- dirname(sub_files) %>% unique()
+  if (length(nc_dir) != 1){
+    stop('using more than one dir is not supported for this function currently', call. = FALSE)
+  }
   cube_task_step <- create_task_step(
     step_name = 'nccopy',
     target = function(task_name, step_name, ...) {
       file.path(nc_dir, task_name)
     },
-    command = "nccopy_split_combine(target_name, max_steps = I(100))"
+    command = "nccopy_split_combine(target_name, max_steps = I(250))"
   )
 
-  cube_task_plan <- create_task_plan(sub_files, list(cube_task_step), final_steps='nccopy', ind_dir=ind_dir)
+  cube_task_plan <- create_task_plan(basename(sub_files), list(cube_task_step), final_steps='nccopy', ind_dir=ind_dir)
 }
 create_cube_task_makefile <- function(makefile, cube_task_plan, include, packages, sources){
   create_task_makefile(
