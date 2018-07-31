@@ -5,6 +5,7 @@ include:
 packages:
   - scipiper
   - dplyr
+  - googledrive
 
 sources:
   - 6_temp_coop_fetch/src/filter_files.R
@@ -28,8 +29,11 @@ targets:
 
   # -- create makefile with targets for each file listed in gd -- #
 
+  coop_file_upload_location:
+    command: as_id(I('1dutCiFEOoRObXLn6n3BRKhZDDAijK65Q'))
+
   coop_all_files:
-    command: gd_list(config_file = 'lib/cfg/gd_config.yml')
+    command: drive_ls(path = coop_file_upload_location)
 
   coop_wants:
     command: filter_coop_all(coop_all_files)
