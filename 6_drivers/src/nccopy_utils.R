@@ -1,27 +1,11 @@
-nccopy_nldas <- function(nc_filepath){
+#' takes a single .nc file target and splits it up into one or more 
+#' opendap requests, then combines them into the single output target
+#' after all small requests are complete
 
-  nc_filename <- basename(nc_filepath)
+#'@ param nc_filepath the output file path, created using `create_nc_filename`
+#'@ param max_steps the maximum number of OPeNDAP timesteps to use for each call
 
-  nldas_url <- nldas_url_from_file(nc_filename)
-  message(nldas_url)
-  output <- system(sprintf("nccopy -w %s %s", nldas_url, nc_filepath))
-
-  if(output | file.size(nc_filepath) == 0){
-    unlink(nc_filepath)
-    stop(nldas_url, ' **FAILED nccopy**', call. = FALSE)
-  }
-  # check/verify file has the appropriate number of timesteps...fail if not
-  expected_steps <- length(nldas_steps_from_file(nc_filename))
-  nc <- ncdf4::nc_open( nc_filepath )
-  nc_steps <- nc$dim$time$len
-  ncdf4::nc_close(nc)
-  if (nc_steps != expected_steps){
-    unlink(nc_filepath)
-    stop('incomplete file ', nc_filename , '\nexpected ',
-         expected_steps, ' steps, found ', nc_steps, ' steps\nfor ', nldas_url, call. = FALSE)
-  }
-  invisible(nc_filepath)
-}
+#'@ return the file handle
 
 nccopy_split_combine <- function(nc_filepath, max_steps = 100){
   nc_filename <- basename(nc_filepath)
@@ -80,6 +64,9 @@ nccopy_split_combine <- function(nc_filepath, max_steps = 100){
   invisible(nc_filepath)
 }
 
+
+#' take a bunch of nc files that share the same variable and combine them into a single file
+#' needs to remove time as a record dimension w/ ncks
 combine_nc_files <- function(filepaths_to_combine, nc_out_filepath){
 
   nc_unl_filepath <- file.path(tempdir(), "NLDAS_COMBINED_unl.nc")
@@ -99,6 +86,7 @@ combine_nc_files <- function(filepaths_to_combine, nc_out_filepath){
   invisible(nc_out_filepath)
 }
 
+#' fault tolerate OPeNDAP request
 nccopy_retry <- function(url, file_out, retries = 5, verbose = FALSE){
   retry <- 0
   while (retry < retries){
@@ -120,6 +108,7 @@ nccopy_retry <- function(url, file_out, retries = 5, verbose = FALSE){
   }
 }
 
+#' check that the .nc file output has the right number of timesteps
 verify_nc_output <- function(nc_filepath){
   nc_filename <- basename(nc_filepath)
   expected_steps <- length(nldas_steps_from_file(nc_filename))
