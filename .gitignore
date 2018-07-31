@@ -52,6 +52,6 @@ rsconnect/
 *.xml
 
 # "in" cooperator data
-/1_all_raw_data/in/*
-!/1_all_raw_data/in/*.ind
+/6_temp_coop_fetch/in/*
+!/6_temp_coop_fetch/in/*.ind
 
