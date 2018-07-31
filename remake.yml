@@ -11,3 +11,5 @@ targets:
       - 1_crosswalk_fetch
       - 6_drivers_prep
       - 6_temp_wqp_fetch
+      - 6_temp_coop_fetch
+      - 6_temp_coop_fetch_tasks
