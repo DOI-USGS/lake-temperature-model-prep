@@ -13,6 +13,10 @@ targets:
     depends:
       - wqp_pull_partitions
 
+  # Wants - the complete dataset we would like to obtain (all elements in sites x parameters, ignoring time)
+  # Haves - the data elements we already have
+  # Needs - the data elements we want and don't yet have, therefore need to acquire
+
   wqp_sites: # random sites chosen from 4 lakes in MN and 2 in WI - this will be output of upstream workflow - output of crosswalk?
     command: c(I(c('MNPCA-11-0413-00-212', 'MNPCA-11-0412-00-203', 'MNPCA-11-0476-00-201', 'MNPCA-11-0383-00-202', 'WIDNR_WQX-643082', 'WIDNR_WQX-643380')))
 
