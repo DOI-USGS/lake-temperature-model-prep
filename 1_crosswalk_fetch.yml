@@ -13,6 +13,7 @@ targets:
     depends:
       - 1_crosswalk_fetch/out/lakes_shapefile.xml.ind
       - 1_crosswalk_fetch/out/lakes_sf.rds.ind
+      - 1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind
 
   1_crosswalk_fetch/out/lakes_shapefile.xml.ind:
     command: fetch_crosswalk_shapefile(target_name)
@@ -43,3 +44,6 @@ targets:
       '1_crosswalk_fetch/out/lakes_shapefile.dbf.ind',
       '1_crosswalk_fetch/out/lakes_shapefile.prj.ind',
       '1_crosswalk_fetch/out/lakes_shapefile.shx.ind')
+
+  1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind:
+    command: fetch_crosswalk_wqp_nhd(target_name)
