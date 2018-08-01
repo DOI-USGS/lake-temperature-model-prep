@@ -109,7 +109,6 @@ cubes_to_cell_file <- function(filename, ..., nc_files = NULL){
     if (any(!time_indices %in% cell_time_indices)){
       stop('attempting to get cube data outside of bounds of cell data in ', nc_file, call. = FALSE)
     }
-
     cell_out[[cell_var]][time_indices] <- cube_to_cell(nc_file, cell_x_index, cell_y_index, cell_var)
   }
   if(any(is.na(cell_out[[cell_var]]))){
@@ -130,11 +129,11 @@ cube_to_cell <- function(cube_file, x_index, y_index, var){
   stopifnot(y_index %in% seq(cube_y_range[1], cube_y_range[2]))
   stopifnot(var == cube_var)
 
-  x_start <- cube_x_range[1]-x_index + 1 # our data vectors aren't 0 indexed
-  y_start <- cube_y_range[1]-y_index + 1 # our data vectors aren't 0 indexed
+  x_start <- x_index - cube_x_range[1] + 1 # our data vectors aren't 0 indexed
+  y_start <- y_index - cube_y_range[1] + 1 # our data vectors aren't 0 indexed
 
   nc <- nc_open(cube_file, suppress_dimvals = TRUE)
-  cell_data <- ncvar_get(nc, varid = var, start = c(cell.x[1], cell.y[1], 1), count = c(1, 1, -1))
+  cell_data <- ncvar_get(nc, varid = var, start = c(x_start, y_start, 1), count = c(1, 1, -1))
   nc_close(nc)
 
   return(cell_data)

@@ -1,4 +1,4 @@
-#' takes a single .nc file target and splits it up into one or more 
+#' takes a single .nc file target and splits it up into one or more
 #' opendap requests, then combines them into the single output target
 #' after all small requests are complete
 
@@ -87,7 +87,7 @@ combine_nc_files <- function(filepaths_to_combine, nc_out_filepath){
 }
 
 #' fault tolerate OPeNDAP request
-nccopy_retry <- function(url, file_out, retries = 5, verbose = FALSE){
+nccopy_retry <- function(url, file_out, retries = 15, verbose = FALSE, snooze = 5){
   retry <- 0
   while (retry < retries){
     output <- system(sprintf("nccopy -w %s %s", url, file_out), ignore.stdout = TRUE, ignore.stderr = TRUE)
@@ -95,6 +95,7 @@ nccopy_retry <- function(url, file_out, retries = 5, verbose = FALSE){
     if(output | file.size(file_out) == 0){
       unlink(file_out)
       retry <- retry + 1
+      Sys.sleep(snooze)
       if (verbose) message('retry:', retry)
     } else {
       if (verbose) message('success! after retry:', retry)

@@ -125,8 +125,8 @@ parse_nc_filename <- function(filename, out = c('y','x','time','var')){
 
   filename <- basename(filename)
   word_indx <- switch(out,
-                      y = 2,
-                      x = 3,
+                      y = 3,
+                      x = 2,
                       time = 1,
                       var = 4)
   char <- gsub("\\[|\\]", "", regmatches(filename, gregexpr("\\[.*?\\]", filename))[[1]][word_indx])
@@ -139,7 +139,7 @@ parse_nc_filename <- function(filename, out = c('y','x','time','var')){
 
 create_cube_task_plan <- function(sub_files, ind_dir){
   nc_dir <- dirname(sub_files) %>% unique()
-  if (length(nc_dir) != 1){
+  if (length(nc_dir) != 1 & length(sub_files) > 0){
     stop('using more than one dir is not supported for this function currently', call. = FALSE)
   }
   cube_task_step <- create_task_step(
@@ -147,7 +147,7 @@ create_cube_task_plan <- function(sub_files, ind_dir){
     target = function(task_name, step_name, ...) {
       file.path(nc_dir, task_name)
     },
-    command = "nccopy_split_combine(target_name, max_steps = I(250))"
+    command = "nccopy_split_combine(target_name, max_steps = I(100))"
   )
 
   cube_task_plan <- create_task_plan(basename(sub_files), list(cube_task_step), final_steps='nccopy', ind_dir=ind_dir)
