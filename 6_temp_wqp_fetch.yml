@@ -11,14 +11,21 @@ sources:
 targets:
   6_temp_wqp_fetch:
     depends:
-      - wqp_pull_partitions
+      - 6_temp_wqp_fetch/tmp/wqp_pull_partitions.feather
 
   # Wants - the complete dataset we would like to obtain (all elements in sites x parameters, ignoring time)
   # Haves - the data elements we already have
   # Needs - the data elements we want and don't yet have, therefore need to acquire
 
-  wqp_sites: # random sites chosen from 4 lakes in MN and 2 in WI - this will be output of upstream workflow - output of crosswalk?
+  # placeholder = random sites chosen from 4 lakes in MN and 2 in WI - this will be output of upstream workflow - output of crosswalk?
+  wqp_sites:
     command: c(I(c('MNPCA-11-0413-00-212', 'MNPCA-11-0412-00-203', 'MNPCA-11-0476-00-201', 'MNPCA-11-0383-00-202', 'WIDNR_WQX-643082', 'WIDNR_WQX-643380')))
+
+  # placeholder command for now; this will be an output of upstream workflow
+  spatial_crosswalk:
+    command: data_frame(
+      MonitoringLocationIdentifier=I(c('MNPCA-11-0413-00-212', 'MNPCA-11-0412-00-203', 'MNPCA-11-0476-00-201', 'MNPCA-11-0383-00-202', 'WIDNR_WQX-643082', 'WIDNR_WQX-643380')),
+      NHDComID=I(c('179285','203496','312465','203496','312465','402394')))
 
   wqp_pull_params:
     command: yaml.load_file('6_temp_wqp_fetch/cfg/wqp_pull_params.yml')
@@ -29,11 +36,14 @@ targets:
   wqp_wants:
     command: wqp_calc_wants(wqp_sites, wqp_pull_params)
 
+  6_temp_wqp_fetch/inout/wqp_haves.txt:
+    command: wqp_calc_haves(target_name)
+
   wqp_needs: # made up inventory of what sites and variables for which we have data
     command: wqp_calc_needs(wqp_wants, wqp_haves = '6_temp_wqp_fetch/inout/wqp_haves.txt')
 
   wqp_inventory:
     command: inventory_wqp(wqp_needs, wqp_pull_params)
 
-  wqp_pull_partitions:
-    command: partition_wqp_inventory(wqp_inventory, wqp_partition_config)
+  6_temp_wqp_fetch/tmp/wqp_pull_partitions.feather:
+    command: partition_wqp_inventory(wqp_inventory, wqp_partition_config, spatial_crosswalk=spatial_crosswalk)

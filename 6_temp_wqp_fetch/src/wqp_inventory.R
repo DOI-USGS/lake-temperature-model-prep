@@ -55,68 +55,101 @@ inventory_wqp <- function(wqp_needs, wqp_variables) {
 #'   dataRetrieval::whatWQPdata).
 #' @param wqp_nrecords_chunk The maximum number of records that should be in a
 #'   single call to WQP.
+#' @param spatial_crosswalk a table of site crosswalk information including
+#'   columns for MonitoringLocationIdentifier and NHDComID
 #' @return A dataframe with the same number of rows in wqp_needs - e.g., for
 #'   each site/variable combination. The dataframe stores the number of
 #'   observations for that site/variable in WQP and the unique task identifier
 #'   that partitions site/variables into WQP pulls.
-partition_wqp_inventory <- function(wqp_inventory, wqp_nrecords_chunk) {
-  partitions <- bind_rows(lapply(unique(wqp_inventory$constituent), function(temp_constituent) {
-    # an atomic group is a combination of parameters that can't be reasonably
-    # split into multiple WQP pulls - in this case we're defining atomic groups
-    # as distinct combinations of constituent (a group of characteristicNames)
-    # and site ID.
+partition_wqp_inventory <- function(wqp_inventory, wqp_nrecords_chunk, spatial_crosswalk) {
+  partitions <- bind_rows(lapply(unique(wqp_inventory$constituent), function(constit) {
 
-    # right now, just grouping by unique site ID (MonitoringLocationIdentifier),
-    # however, if we have crosswalk available at this step, could put in the
-    # unique NHDID for each lake to ensure each lake gets in same file
-    atomic_groups <-  wqp_inventory %>%
-      filter(constituent == temp_constituent) %>%
-      group_by(MonitoringLocationIdentifier) %>%
-      summarize(NumObs=sum(resultCount)) %>%
-      arrange(desc(NumObs))
+    # Subset to those rows of the inventory relevant to this constituent
+    constit_inventory <- wqp_inventory %>%
+      filter(constituent == constit) %>%
+      select(MonitoringLocationIdentifier, resultCount) %>%
+      left_join(spatial_crosswalk, by='MonitoringLocationIdentifier')
 
-    # split the full pull (combine atomic groups) into right-sized partitions by
-    # an old but fairly effective paritioning heuristic: pick the number of
-    # partitions desired, sort the atomic groups by descending size, and then go
-    # down the list, each time adding the next atomic group to the partition
-    # that's currently smallest
+    # Define the atomic_groups to use in setting up data pull partitions. An
+    # atomic group is a combination of parameters that can't be reasonably split
+    # into multiple WQP pulls. For now we're defining the atomic groups as
+    # distinct combinations of constituent (a group of characteristicNames) and
+    # site ID (MonitoringLocationIdentifier); however, once we have the
+    # crosswalk available at this step, we'll instead use the unique NHD ComID
+    # for each lake to ensure all sites from each lake get into the same file
+    atomic_groups <- constit_inventory %>%
+      group_by(NHDComID) %>%
+      summarize(LakeNumObs=sum(resultCount)) %>%
+      arrange(desc(LakeNumObs))
 
-    # first, pull out sites that by themselves are larger than the cutoff number
-    # for these sites, we will "break" the chunk rule, and get in a single pull
-    # from WQP
-    single_site_partitions <- filter(atomic_groups, NumObs >= wqp_nrecords_chunk)
-    n_single_site_partitions <- nrow(single_site_partitions)
+    # Partition the full pull into sets of atomic groups that form right-sized
+    # partitions. Use an old but fairly effective paritioning heuristic: pick
+    # the number of partitions desired, sort the atomic groups by descending
+    # size, and then go down the list, each time adding the next atomic group to
+    # the partition that's currently smallest. With this approach we can balance
+    # the distribution of data across partitions while ensuring that each site's
+    # observations are completely contained within one file.
 
-    multi_site_partitions <- filter(atomic_groups, NumObs < wqp_nrecords_chunk)
+    # Decide how many partitions to create. This will be (A) the number of sites
+    # (or lakes) with more observations than the target partition size, because
+    # each of these sites/lakes will get its own partition + (B) the number of
+    # remaining observations divided by the target partition size.
+    n_single_site_partitions <- filter(atomic_groups, LakeNumObs >= wqp_nrecords_chunk) %>% nrow()
+    n_multi_site_partitions <- filter(atomic_groups, LakeNumObs < wqp_nrecords_chunk) %>%
+      pull(LakeNumObs) %>%
+      sum() %>%
+      { ceiling(./wqp_nrecords_chunk) }
+    num_partitions <- n_single_site_partitions + n_multi_site_partitions
 
-    num_partitions <- ceiling(sum(multi_site_partitions$NumObs) / wqp_nrecords_chunk)
-
+    # Assign each site (or lake) to a partition. Sites/lakes with huge numbers
+    # of observations will each get their own partition.
     partition_sizes <- rep(0, num_partitions)
-    assignments <- rep(0, nrow(multi_site_partitions))
-    for(i in seq_len(nrow(multi_site_partitions))) {
-      size_i <- multi_site_partitions[[i,"NumObs"]]
+    assignments <- rep(NA, nrow(atomic_groups)) # use a vector rather than adding a col to atomic_groups b/c it'll be way faster
+    for(i in seq_len(nrow(atomic_groups))) {
       smallest_partition <- which.min(partition_sizes)
       assignments[i] <- smallest_partition
+      size_i <- atomic_groups[[i,"LakeNumObs"]]
       partition_sizes[smallest_partition] <- partition_sizes[smallest_partition] + size_i
     }
 
-    last_assignment <- max(assignments)
-
-    single_site_partitions <- single_site_partitions %>%
+    # Prepare one data_frame containing info about each site and lake, including
+    # the pull, constituent, and task name (where task name will become the core
+    # of the filename)
+    pull_time <- Sys.time()
+    attr(pull_time, 'tzone') <- 'UTC'
+    pull_id <- format(pull_time, '%y%m%d%H%M%S')
+    partitions <- atomic_groups %>%
       mutate(
-        constituent=temp_constituent,
-        PullTask=sprintf('%s_%s_%03d', 'WQP', constituent, seq(last_assignment + 1, last_assignment + nrow(single_site_partitions))))
+        PullDate = pull_time,
+        Constituent = constit,
+        PullTask = sprintf('%s_%s_%03d', constit, pull_id, assignments)) %>%
+      left_join(select(constit_inventory, NHDComID, MonitoringLocationIdentifier, SiteNumObs=resultCount), by='NHDComID') %>%
+      select(NHDComID, LakeNumObs, MonitoringLocationIdentifier, SiteNumObs, PullTask, PullDate, Constituent)
 
-    # create a filename column
+    # As a side effect, append this data_frame to an archive file that records
+    # all planned partitions. We will likely end up with too many such files
+    # while testing the partitioning/pulling code, but we'd rather have too many
+    # than risk having to dig through the data files to recover a mapping of
+    # which sites have data in which files.
+    side_effect_ind <- '6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind'
+    side_effect_file <- sc_retrieve(side_effect_ind)
+    partitions_archive <- feather::read_feather(side_effect_file)
+    partitions_all <- bind_rows(partitions_archive, partitions_all)
+    feather::write_feather(partitions_all, side_effect_file)
+    gd_put(side_effect_ind, side_effect_file)
 
-    multi_site_partitions <- multi_site_partitions %>%
-      mutate(
-        constituent=temp_constituent,
-        PullTask=sprintf('%s_%s_%03d', 'WQP', constituent, assignments))
-
-    partitions <- bind_rows(multi_site_partitions, single_site_partitions)
-
+    # Also write the data_frame to a location that will get overwritten with each new pass through this
     return(partitions)
 
   }))
+}
+
+initialize_partitions_archive <- function(archive_ind) {
+  # only write the file if it doesn't already exist
+  if(file.exists(archive_ind)) return()
+
+  empty_archive <- data_frame(PullTask='initialization') %>% filter(FALSE)
+  feather::
+  archive_file <- scipiper::as_data_file(archive_ind)
+  gd_put(archive_ind, archive_file)
 }
