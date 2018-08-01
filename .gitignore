@@ -39,6 +39,7 @@ rsconnect/
 **.nc
 **.nc.ind
 **_tasks.yml
+6_drivers/log/feather/*.feather.ind
 
 
 
