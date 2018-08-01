@@ -1,4 +1,4 @@
-target_default: 6_drivers_prep
+target_default: 6_drivers_fetch
 
 packages:
   - sp
@@ -12,14 +12,14 @@ sources:
   - 6_drivers/src/nldas_feather_utils.R
 
 targets:
-  6_drivers_prep:
+  6_drivers_fetch:
     depends:
       - new_cubes
       # - append_cubes # how to make a task plan that can be empty?
       - new_feathers
 
   replete_time_range:
-    command: c(t0=I(0), t1 = I(346848))
+    command: c(t0=I(0), t1 = I(999))#346848))
 
   append_time_range:
     command: nldas_times_diff(replete_time_range, '6_drivers/in/nldas_times.rds')
@@ -55,10 +55,10 @@ targets:
     command: create_cube_task_plan(nldas_append_cube_files, ind_dir=I('6_drivers/log/nc'))
 
   "6_fetch_new_cubes_tasks.yml":
-    command: create_cube_task_makefile(target_name, nldas_new_cube_plan, include = I("6_drivers_prep.yml"), packages = I(c('dplyr','ncdf4','progress')), sources = '6_drivers/src/nccopy_utils.R')
+    command: create_cube_task_makefile(target_name, nldas_new_cube_plan, include = I("6_drivers_fetch.yml"), packages = I(c('dplyr','ncdf4','progress')), sources = '6_drivers/src/nccopy_utils.R')
 
   "6_fetch_append_cubes_tasks.yml":
-    command: create_cube_task_makefile(target_name, nldas_append_cube_plan, include = I("6_drivers_prep.yml"), packages = I(c('dplyr','ncdf4','progress')), sources = '6_drivers/src/nccopy_utils.R')
+    command: create_cube_task_makefile(target_name, nldas_append_cube_plan, include = I("6_drivers_fetch.yml"), packages = I(c('dplyr','ncdf4','progress')), sources = '6_drivers/src/nccopy_utils.R')
 
   new_cubes:
     command: loop_tasks(task_plan = nldas_new_cube_plan, task_makefile = "6_fetch_new_cubes_tasks.yml")
@@ -71,7 +71,7 @@ targets:
 
   "6_fetch_new_feather_tasks.yml":
     command: create_feather_task_makefile(target_name, new_feather_plan,
-      include = I("6_drivers_prep.yml"), packages = I(c('dplyr','ncdf4')), sources = '6_drivers/src/nldas_feather_utils.R')
+      include = I("6_drivers_fetch.yml"), packages = I(c('dplyr','ncdf4')), sources = '6_drivers/src/nldas_feather_utils.R')
 
   new_feathers:
     command: loop_tasks(task_plan = new_feather_plan, task_makefile = "6_fetch_new_feather_tasks.yml")
