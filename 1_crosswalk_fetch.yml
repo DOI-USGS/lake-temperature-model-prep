@@ -47,3 +47,5 @@ targets:
 
   1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind:
     command: fetch_crosswalk_wqp_nhd(target_name)
+  1_crosswalk_fetch/out/wqp_nhdLookup.rds:
+    command: gd_get('1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind')

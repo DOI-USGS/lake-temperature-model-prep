@@ -39,7 +39,7 @@ fetch_crosswalk_wqp_nhd <- function(ind_file) {
   # download from a hard coded URL pointing to the 2017 data release; also
   # available at https://doi.org/10.5281/zenodo.595612, but the github URL
   # allows us to download just this file rather than the whole zipped repo
-  url <- 'https://github.com/USGS-R/necsc-lake-modeling/blob/master/data/wqp_nhd/wqp_nhdLookup.rds'
+  url <- 'https://github.com/USGS-R/necsc-lake-modeling/blob/master/data/wqp_nhd/wqp_nhdLookup.rds?raw=true'
   download.file(url=url, destfile=data_file, mode='wb')
 
   # post to google drive and return an indicator file
