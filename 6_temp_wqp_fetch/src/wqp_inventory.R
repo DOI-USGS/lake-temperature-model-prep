@@ -51,24 +51,30 @@ inventory_wqp <- function(wqp_needs, wqp_variables) {
 #' Partition calls to WQP based on number of records available in WQP and a
 #' number of records that is a reasonable call to WQP.
 #'
-#' @param wqp_inventory A dataframe with WQP record counts (e.g., the output of
+#' @param partitions_ind Filename of the partitions indicator file to create.
+#' @param wqp_inventory Dataframe with WQP record counts (e.g., the output of
 #'   dataRetrieval::whatWQPdata).
-#' @param wqp_nrecords_chunk The maximum number of records that should be in a
+#' @param wqp_partition_config YAML file containing an element called
+#'   $target_pull_size, giving the maximum number of records that should be in a
 #'   single call to WQP.
-#' @param spatial_crosswalk a table of site crosswalk information including
-#'   columns for MonitoringLocationIdentifier and NHDComID
-#' @return A dataframe with the same number of rows in wqp_needs - e.g., for
+#' @param feature_crosswalk a table of site crosswalk information including
+#'   columns for MonitoringLocationIdentifier and site_id. May be sf.
+#' @param archive_ind Name of the indicator file for the current archive of
+#'   partitions information, which will be modified as a side effect of this
+#'   function
+#' @return Nothing useful is returned; however, this function (1) Writes to partitions_ind a table having the same number of rows as wqp_needs - e.g., for
 #'   each site/variable combination. The dataframe stores the number of
 #'   observations for that site/variable in WQP and the unique task identifier
 #'   that partitions site/variables into WQP pulls.
-partition_wqp_inventory <- function(wqp_inventory, wqp_nrecords_chunk, spatial_crosswalk) {
+partition_wqp_inventory <- function(partitions_ind, wqp_inventory, wqp_partition_config, feature_crosswalk, archive_ind) {
   partitions <- bind_rows(lapply(unique(wqp_inventory$constituent), function(constit) {
 
     # Subset to those rows of the inventory relevant to this constituent
     constit_inventory <- wqp_inventory %>%
       filter(constituent == constit) %>%
       select(MonitoringLocationIdentifier, resultCount) %>%
-      left_join(spatial_crosswalk, by='MonitoringLocationIdentifier')
+      mutate(resultCount=as.integer(resultCount)) %>%
+      left_join(select(feature_crosswalk, site_id, MonitoringLocationIdentifier), by='MonitoringLocationIdentifier')
 
     # Define the atomic_groups to use in setting up data pull partitions. An
     # atomic group is a combination of parameters that can't be reasonably split
@@ -78,7 +84,7 @@ partition_wqp_inventory <- function(wqp_inventory, wqp_nrecords_chunk, spatial_c
     # crosswalk available at this step, we'll instead use the unique NHD ComID
     # for each lake to ensure all sites from each lake get into the same file
     atomic_groups <- constit_inventory %>%
-      group_by(NHDComID) %>%
+      group_by(site_id) %>%
       summarize(LakeNumObs=sum(resultCount)) %>%
       arrange(desc(LakeNumObs))
 
@@ -94,11 +100,11 @@ partition_wqp_inventory <- function(wqp_inventory, wqp_nrecords_chunk, spatial_c
     # (or lakes) with more observations than the target partition size, because
     # each of these sites/lakes will get its own partition + (B) the number of
     # remaining observations divided by the target partition size.
-    n_single_site_partitions <- filter(atomic_groups, LakeNumObs >= wqp_nrecords_chunk) %>% nrow()
-    n_multi_site_partitions <- filter(atomic_groups, LakeNumObs < wqp_nrecords_chunk) %>%
+    target_pull_size <- wqp_partition_config$target_pull_size
+    n_single_site_partitions <- filter(atomic_groups, LakeNumObs >= target_pull_size) %>% nrow()
+    n_multi_site_partitions <- filter(atomic_groups, LakeNumObs < target_pull_size) %>%
       pull(LakeNumObs) %>%
-      sum() %>%
-      { ceiling(./wqp_nrecords_chunk) }
+      { ceiling(sum(.)/target_pull_size) }
     num_partitions <- n_single_site_partitions + n_multi_site_partitions
 
     # Assign each site (or lake) to a partition. Sites/lakes with huge numbers
@@ -123,33 +129,72 @@ partition_wqp_inventory <- function(wqp_inventory, wqp_nrecords_chunk, spatial_c
         PullDate = pull_time,
         Constituent = constit,
         PullTask = sprintf('%s_%s_%03d', constit, pull_id, assignments)) %>%
-      left_join(select(constit_inventory, NHDComID, MonitoringLocationIdentifier, SiteNumObs=resultCount), by='NHDComID') %>%
-      select(NHDComID, LakeNumObs, MonitoringLocationIdentifier, SiteNumObs, PullTask, PullDate, Constituent)
+      left_join(select(constit_inventory, site_id, MonitoringLocationIdentifier, SiteNumObs=resultCount), by='site_id') %>%
+      select(site_id, LakeNumObs, MonitoringLocationIdentifier, SiteNumObs, PullTask, PullDate, Constituent)
 
     # As a side effect, append this data_frame to an archive file that records
     # all planned partitions. We will likely end up with too many such files
     # while testing the partitioning/pulling code, but we'd rather have too many
     # than risk having to dig through the data files to recover a mapping of
     # which sites have data in which files.
-    side_effect_ind <- '6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind'
-    side_effect_file <- sc_retrieve(side_effect_ind)
-    partitions_archive <- feather::read_feather(side_effect_file)
-    partitions_all <- bind_rows(partitions_archive, partitions_all)
-    feather::write_feather(partitions_all, side_effect_file)
-    gd_put(side_effect_ind, side_effect_file)
+    archive_file <- sc_retrieve(archive_ind)
+    partitions_archive <- feather::read_feather(archive_file)
+    partitions_all <- bind_rows(partitions_archive, partitions)
+    feather::write_feather(partitions_all, archive_file)
+    gd_put(archive_ind) # 1-arg version requires scipiper 0.0.11+
 
-    # Also write the data_frame to a location that will get overwritten with each new pass through this
-    return(partitions)
+    # Also write the data_frame to a location that will get overwritten with
+    # each new pass through this function
+    feather::write_feather(partitions, scipiper::as_data_file(partitions_ind))
+    gd_put(partitions_ind) # 1-arg version requires scipiper 0.0.11+
 
   }))
 }
 
+#' Create and push an empty partitions archive if needed. If a partitions
+#' archive already exists, this function does nothing.
+#'
+#' @param archive_ind the .ind file for the desired partitions archive feather
+#'   file
 initialize_partitions_archive <- function(archive_ind) {
   # only write the file if it doesn't already exist
-  if(file.exists(archive_ind)) return()
+  if(file.exists(archive_ind)) {
+    message('partitions archive already exists; skipping initialization')
+    return()
+  }
 
-  empty_archive <- data_frame(PullTask='initialization') %>% filter(FALSE)
-  feather::
+  empty_archive <-
+    data_frame(
+      site_id='',
+      LakeNumObs=0L,
+      MonitoringLocationIdentifier='',
+      SiteNumObs=0L,
+      PullTask='',
+      PullDate=Sys.time(),
+      Constituent='') %>%
+    filter(FALSE)
   archive_file <- scipiper::as_data_file(archive_ind)
+  feather::write_feather(empty_archive, path=archive_file)
   gd_put(archive_ind, archive_file)
 }
+
+# not ready for prime time:
+#' #' This function can be manually run every so often to clean out partitions
+#' #' records for data pulls that never happened. When running this, be careful to ...
+#' clean_partitions_archive <- function(archive_ind, partitions_file) {
+#'
+#'   # read in the current (pending) partitions file and ...
+#'   partitions_current <- feather::read_feather(partitions_file)
+#'
+#'   # retrieve and read in the archive file
+#'   archive_file <- sc_retrieve(archive_ind)
+#'   partitions_archive <- feather::read_feather(archive_file)
+#'
+#'   # clean up the archive file by comparing to ...
+#'
+#'
+#'   # save and push the archive file back to the shared cache
+#'   feather::write_feather(partitions_all, archive_file)
+#'   gd_put(archive_ind, archive_file)
+#'
+#' }

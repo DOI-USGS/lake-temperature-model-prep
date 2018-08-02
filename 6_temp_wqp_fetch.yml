@@ -3,9 +3,10 @@ target_default: 6_temp_wqp_fetch
 packages:
   - dplyr
   - scipiper
+  - yaml
 
 sources:
-  - 6_temp_wqp_fetch/src/wants_needs.R
+  - 6_temp_wqp_fetch/src/wants_haves_needs.R
   - 6_temp_wqp_fetch/src/wqp_inventory.R
 
 targets:
@@ -17,15 +18,17 @@ targets:
   # Haves - the data elements we already have
   # Needs - the data elements we want and don't yet have, therefore need to acquire
 
-  # placeholder = random sites chosen from 4 lakes in MN and 2 in WI - this will be output of upstream workflow - output of crosswalk?
+  # placeholder = random sites for now. this will be output of upstream workflow later
   wqp_sites:
-    command: c(I(c('MNPCA-11-0413-00-212', 'MNPCA-11-0412-00-203', 'MNPCA-11-0476-00-201', 'MNPCA-11-0383-00-202', 'WIDNR_WQX-643082', 'WIDNR_WQX-643380')))
+    command: c(I(c('MNPCA-62-0081-00-100','MNPCA-62-0081-00-201','USGS-461316086262101','USGS-461316086262103','USGS-461316086262105','21MICH-770066','21MICH_WQX-770066','WIDNR_WQX-10007240','WIDNR_WQX-10007825','WIDNR_WQX-10017967','MNPCA-18-0392-00-100')))
 
-  # placeholder command for now; this will be an output of upstream workflow
-  spatial_crosswalk:
+  # placeholder = subset of crosswalk. waiting for crosswalk PR review
+  feature_crosswalk:
     command: data_frame(
-      MonitoringLocationIdentifier=I(c('MNPCA-11-0413-00-212', 'MNPCA-11-0412-00-203', 'MNPCA-11-0476-00-201', 'MNPCA-11-0383-00-202', 'WIDNR_WQX-643082', 'WIDNR_WQX-643380')),
-      NHDComID=I(c('179285','203496','312465','203496','312465','402394')))
+      MonitoringLocationIdentifier=I(c('MNPCA-62-0081-00-100','MNPCA-62-0081-00-201','USGS-461316086262101','USGS-461316086262102','USGS-461316086262103','USGS-461316086262105','USGS-461316086262106','21MICH-770066','21MICH_WQX-770066','WIDNR_WQX-10007240','WIDNR_WQX-10007825','WIDNR_WQX-10017967',NA,'MNPCA-18-0392-00-100')),
+      site_id=I(c('nhd_1099454','nhd_1099454','nhd_12221194','nhd_12221194','nhd_12221194','nhd_12221194','nhd_12221194','nhd_12221194','nhd_12221194','nhd_13291050','nhd_13634431','nhd_13634431','nhd_2644060','nhd_4946353')))
+  #feature_crosswalk:
+  #  command: readRDS(I('2_crosswalk_munge/out/feature_crosswalk.rds'))
 
   wqp_pull_params:
     command: yaml.load_file('6_temp_wqp_fetch/cfg/wqp_pull_params.yml')
@@ -36,14 +39,52 @@ targets:
   wqp_wants:
     command: wqp_calc_wants(wqp_sites, wqp_pull_params)
 
-  6_temp_wqp_fetch/inout/wqp_haves.txt:
-    command: wqp_calc_haves(target_name)
+  # a complete [re]pulling workflow should include 2-3 rebuilds of wqp_haves. the first time
+  # we'll get a list of all data currently known to be pulled. the second time might happen
+  # if stop after building the partitions. in this case we'll get the same list in wqp_haves,
+  # so nothing downstream will be forced to rebuild. the last time should happen by scmake(force=TRUE)
+  # after the data [re]pull is complete - this time nothing will naturally target the rebuild, but
+  # there should be new filese in the haves_dir that this final build will recognize to create
+  # a complete mapping of sites to data files.
+  6_temp_wqp_fetch/inout/wqp_haves.feather.ind:
+    command: wqp_calc_haves(
+      haves_ind=target_name,
+      haves_dir=I('6_temp_wqp_fetch/out'),
+      archive_ind='6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind')
+  6_temp_wqp_fetch/inout/wqp_haves.feather:
+    command: gd_get('6_temp_wqp_fetch/inout/wqp_haves.feather.ind')
 
   wqp_needs: # made up inventory of what sites and variables for which we have data
-    command: wqp_calc_needs(wqp_wants, wqp_haves = '6_temp_wqp_fetch/inout/wqp_haves.txt')
+    command: wqp_calc_needs(wqp_wants, haves_ind='6_temp_wqp_fetch/inout/wqp_haves.feather.ind')
 
   wqp_inventory:
-    command: inventory_wqp(wqp_needs, wqp_pull_params)
+    command: data_frame(
+      constituent=I('temperature'),
+      MonitoringLocationIdentifier=wqp_sites,
+      resultCount=I(c(6,131,7,25,51,103,27,133,86,44,31)))
+  #6_temp_wqp_fetch/inout/wqp_inventory.feather.ind:
+  #  command: inventory_wqp(target_name, wqp_needs, wqp_pull_params)
+  #6_temp_wqp_fetch/inout/wqp_inventory.feather:
+  #  command: gd_get('6_temp_wqp_fetch/inout/wqp_inventory.feather.ind')
 
-  6_temp_wqp_fetch/tmp/wqp_pull_partitions.feather:
-    command: partition_wqp_inventory(wqp_inventory, wqp_partition_config, spatial_crosswalk=spatial_crosswalk)
+  # partitions_archive is altered each time we iterate through the wants-haves-needs-pull process.
+  # at first the file doesn't exist and so is created by initialize_partitions_archive.
+  # once the file does exist, the .ind file will be "rebuilt" by remake, but initialize_partitions_archive will do nothing.
+  # the important changes to the partitions_archive actually happen in partition_wqp_inventory,
+  # which appends any new partition info to partitions_archive each time it runs. these updates
+  # will cause rebuilds of wqp_haves and wqp_needs, but if no data files have actually been pulled,
+  # those files will be unchanged and will not drive a repull of the inventory.
+  6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind:
+    command: initialize_partitions_archive(target_name)
+  6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather:
+    command: gd_get('6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind')
+
+  6_temp_wqp_fetch/inout/wqp_pull_partitions.feather.ind:
+    command: partition_wqp_inventory(
+      partitions_ind=target_name,
+      wqp_inventory,
+      wqp_partition_config,
+      feature_crosswalk,
+      archive_ind='6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind')
+  6_temp_wqp_fetch/inout/wqp_pull_partitions.feather:
+    command: gd_get('6_temp_wqp_fetch/inout/wqp_pull_partitions.feather.ind')
