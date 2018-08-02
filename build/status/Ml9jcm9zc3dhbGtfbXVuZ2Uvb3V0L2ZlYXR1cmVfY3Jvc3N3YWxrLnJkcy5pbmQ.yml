@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/feature_crosswalk.rds.ind
+type: file
+hash: 0cb9f6bc109f613b527ffaada6992a0a
+time: 2018-08-02 17:20:09 UTC
+depends:
+  1_crosswalk_fetch/out/lakes_sf.rds.ind: 0d1499eab07a9225e5fbf288f164c601
+  1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind: 95bd31d9644d23dce53fa6c4d8353ef6
+fixed: 5918de7401ac8cb875a94b52b63a5eee
+code:
+  functions:
+    merge_id_crosswalks: ed394fc7ff478f92a51327df6e44b55a
+
