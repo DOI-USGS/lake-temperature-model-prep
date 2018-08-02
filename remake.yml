@@ -2,12 +2,14 @@ target_default: everything
 
 include:
   - 1_crosswalk_fetch.yml
-  - 6_drivers_prep.yml
+  - 2_crosswalk_munge.yml
+  - 6_drivers_fetch.yml
   - 6_temp_wqp_fetch.yml
 
 targets:
   everything:
     depends:
       - 1_crosswalk_fetch
-      - 6_drivers_prep
+      - 2_crosswalk_munge
+      - 6_drivers_fetch
       - 6_temp_wqp_fetch

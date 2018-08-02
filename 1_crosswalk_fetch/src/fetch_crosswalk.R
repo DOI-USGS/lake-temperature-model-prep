@@ -24,9 +24,23 @@ fetch_crosswalk_shapefile <- function(ind_file) {
     # into the item data
     shapefiles <- item$facets[[1]]$files
     shapefile <- shapefiles[[which(vapply(shapefiles, function(shapefile) { tools::file_ext(shapefile$name) == filename_ext }, FUN.VALUE=TRUE))]]
-    dest <- file.path(out_dir, sprintf('%s.%s', filename_body, filename_ext))
-    download.file(url=shapefile$downloadUri, destfile=dest, mode='wb')
+    download.file(url=shapefile$downloadUri, destfile=data_file, mode='wb')
   }
+
+  # post to google drive and return an indicator file
+  gd_put(ind_file, data_file)
+}
+
+fetch_crosswalk_wqp_nhd <- function(ind_file) {
+
+  # figure out where we will be putting the file
+  data_file <- scipiper::as_data_file(ind_file)
+
+  # download from a hard coded URL pointing to the 2017 data release; also
+  # available at https://doi.org/10.5281/zenodo.595612, but the github URL
+  # allows us to download just this file rather than the whole zipped repo
+  url <- 'https://github.com/USGS-R/necsc-lake-modeling/blob/master/data/wqp_nhd/wqp_nhdLookup.rds?raw=true'
+  download.file(url=url, destfile=data_file, mode='wb')
 
   # post to google drive and return an indicator file
   gd_put(ind_file, data_file)
