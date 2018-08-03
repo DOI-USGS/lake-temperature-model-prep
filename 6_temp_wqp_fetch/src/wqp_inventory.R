@@ -69,7 +69,9 @@ inventory_wqp <- function(wqp_needs, wqp_variables) {
 partition_wqp_inventory <- function(partitions_ind, wqp_inventory, wqp_partition_config, feature_crosswalk, archive_ind) {
   partitions <- bind_rows(lapply(unique(wqp_inventory$constituent), function(constit) {
 
-    # Subset to those rows of the inventory relevant to this constituent
+    # Subset to those rows of the inventory relevant to this constituent, and
+    # join with feature_crosswalk so that we can collect sites by the lakes they
+    # belong to
     constit_inventory <- wqp_inventory %>%
       filter(constituent == constit) %>%
       select(MonitoringLocationIdentifier, resultCount) %>%
@@ -86,7 +88,8 @@ partition_wqp_inventory <- function(partitions_ind, wqp_inventory, wqp_partition
     atomic_groups <- constit_inventory %>%
       group_by(site_id) %>%
       summarize(LakeNumObs=sum(resultCount)) %>%
-      arrange(desc(LakeNumObs))
+      arrange(desc(LakeNumObs)) %>%
+      filter(!is.na(site_id))
 
     # Partition the full pull into sets of atomic groups that form right-sized
     # partitions. Use an old but fairly effective paritioning heuristic: pick
