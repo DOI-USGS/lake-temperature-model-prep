@@ -19,7 +19,7 @@ targets:
       - new_feathers
 
   replete_time_range:
-    command: c(t0=I(0), t1 = I(999))#346848))
+    command: c(t0=I(0), t1 = I(346848))
 
   append_time_range:
     command: nldas_times_diff(replete_time_range, '6_drivers/in/nldas_times.rds')
