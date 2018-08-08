@@ -28,7 +28,7 @@ targets:
     command: c(I(25000))
 
   nldas_cells:
-    command: list(x=I(c(221,221,344,344,223,244)), y=I(c(132,196,132,196,141,144)), variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # will come from code or spatial data...
+    command: list(x=I(c(221,221,344,344,223,244,239)), y=I(c(132,196,132,196,141,144,156)), variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # will come from code or spatial data...
 
   nldas_empty_box: # this is the domain that will require a FULL data pull in the time dimension
     command: nldas_diff_box(nldas_cells, '6_drivers/in/nldas_cells.rds')
@@ -67,7 +67,9 @@ targets:
     command: loop_tasks(task_plan = nldas_append_cube_plan, task_makefile = "6_fetch_append_cubes_tasks.yml")
 
   new_feather_plan:
-    command: create_cell_task_plan(nldas_new_cells, replete_time_range, nldas_new_cube_files, feather_dir = I('6_drivers/out/feather'), ind_dir=I('6_drivers/log/feather'))
+    command: create_cell_task_plan(nldas_new_cells, replete_time_range, nldas_new_cube_files,
+      feather_dir = I('6_drivers/out/feather'), ind_dir=I('6_drivers/log/feather'),
+      cube_nc_dir = I('6_drivers/out/nc'), cube_ind_dir = I('6_drivers/log/nc'))
 
   "6_fetch_new_feather_tasks.yml":
     command: create_feather_task_makefile(target_name, new_feather_plan,

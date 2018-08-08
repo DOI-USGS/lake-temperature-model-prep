@@ -1,4 +1,4 @@
-create_cell_task_plan <- function(cells, time_range, cube_files, ind_dir, feather_dir){
+create_cell_task_plan <- function(cells, time_range, cube_files, feather_dir, ind_dir, cube_nc_dir, cube_ind_dir){
 
   cube_task_step <- create_task_step(
     step_name = 'build_feathers',
@@ -8,8 +8,9 @@ create_cell_task_plan <- function(cells, time_range, cube_files, ind_dir, feathe
     command = function(target_name, task_name, ...) {
       this_var <- parse_feather_filename(task_name, 'var') # better filtering needed?
       these_files <- cube_files[grepl(this_var, cube_files)] %>%
+        basename() %>% paste0('.ind') %>% file.path(cube_ind_dir, .) %>%
         paste("\n       \'", ., collapse = "\',", sep = "")
-      sprintf('cubes_to_cell_file(target_name, %s\')', these_files)
+      sprintf('cubes_to_cell_file(target_name, nc_dir = I(\'%s\'), %s\')', cube_nc_dir, these_files)
     }
   )
 
@@ -85,10 +86,11 @@ parse_feather_filename <- function(filename, out = c('var','y','x','time')){
 
 
 #' @param filename the feather file to be written, generated w/ `create_feather_filename`
-#' @param ... nc files passed in as unnamed arguments
-#' @param nc_files a vector of nc files (if used, `...`` is ignored)
+#' @param ... nc.ind files passed in as unnamed arguments
+#' @param nc_dir the directory of nc files (ignored if `nc_files` is not NULL)
+#' @param nc_files a vector of nc files (if used, `...` is ignored)
 #'
-cubes_to_cell_file <- function(filename, ..., nc_files = NULL){
+cubes_to_cell_file <- function(filename, ..., nc_dir, nc_files = NULL){
 
   cell_x_index <- parse_feather_filename(filename, 'x')
   cell_y_index <- parse_feather_filename(filename, 'y')
@@ -99,7 +101,8 @@ cubes_to_cell_file <- function(filename, ..., nc_files = NULL){
   cell_out <- data.frame(data = rep(NA_real_, length(cell_time_indices))) %>% setNames(cell_var)
 
   if (is.null(nc_files)){
-    nc_files <- c(...)
+    nc.ind_files <- c(...)
+    nc_files <- file.path(nc_dir, tools::file_path_sans_ext(basename(nc.ind_files)))
   }
 
   for (nc_file in nc_files){
