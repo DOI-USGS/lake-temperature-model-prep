@@ -1,0 +1,37 @@
+target_default: 8_drivers_munge
+
+include:
+  - 6_drivers_fetch.yml
+
+packages:
+  - scipiper
+  - dplyr
+  - stringr
+
+sources:
+  - 6_drivers/src/nldas_feather_utils.R
+  - 8_drivers_munge/src/GLM_driver_utils.R
+
+targets:
+  8_drivers_munge:
+    depends:
+      - "8_drivers_munge_tasks.yml"
+
+  meteo_file_dir:
+    command: c(I("8_drivers_munge/out"))
+
+  feather_ind_files:
+    command: calc_feather_ind_files(nldas_cells, replete_time_range, ind_dir = feather_ind_dir) # where is the side-effect of writing to '6_drivers/in/nldas_times.rds'?? (updates cubes)
+
+  GLM_driver_files:
+    command: calc_driver_files(feather_ind_files, dirname = meteo_file_dir)
+
+  GLM_driver_plan:
+    command: create_driver_task_plan(GLM_driver_files, feather_ind_files, data_dir = feather_data_dir, ind_dir = meteo_file_dir)
+
+  "8_drivers_munge_tasks.yml":
+    command: create_driver_task_makefile(target_name, GLM_driver_plan, include = I("8_drivers_munge.yml"), packages = I(c('dplyr')),
+      sources = '8_drivers_munge/src/GLM_driver_utils.R')
+
+  "8_drivers_munge/out/8_drivers_munge_tasks.ind":
+    command: loop_tasks(task_plan = GLM_driver_plan, task_makefile = "8_drivers_munge_tasks.yml")
