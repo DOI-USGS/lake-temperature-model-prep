@@ -27,6 +27,18 @@ targets:
   nccopy_time_stride:
     command: c(I(25000))
 
+  cube_data_dir:
+    command: c(I("6_drivers/out/nc"))
+
+  cube_ind_dir:
+    command: c(I("6_drivers/log/nc"))
+
+  feather_data_dir:
+    command: c(I("6_drivers/out/feather"))
+
+  feather_ind_dir:
+    command: c(I("6_drivers/log/feather"))
+
   nldas_cells:
     command: list(x=I(c(221,221,344,344,223,244,239)), y=I(c(132,196,132,196,141,144,156)), variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # will come from code or spatial data...
 
@@ -37,10 +49,10 @@ targets:
     command: nldas_update_box(nldas_cells, nldas_empty_box)
 
   nldas_new_cube_files:
-    command: calc_nldas_files(nldas_empty_box, replete_time_range, nccopy_time_stride, nc_dir = I("6_drivers/out/nc"))
+    command: calc_nldas_files(nldas_empty_box, replete_time_range, nccopy_time_stride, nc_dir = cube_data_dir)
 
   nldas_append_cube_files:
-    command: calc_nldas_files(nldas_partial_box, append_time_range, nccopy_time_stride, nc_dir = I("6_drivers/out/nc"))
+    command: calc_nldas_files(nldas_partial_box, append_time_range, nccopy_time_stride, nc_dir = cube_data_dir)
 
   nldas_new_cells:
     command: nldas_diff_cells(nldas_cells, '6_drivers/in/nldas_cells.rds')
@@ -49,10 +61,10 @@ targets:
     command: nldas_update_cells(nldas_cells, nldas_new_cells, '6_drivers/in/nldas_times.rds')
 
   nldas_new_cube_plan:
-    command: create_cube_task_plan(nldas_new_cube_files, ind_dir=I('6_drivers/log/nc'))
+    command: create_cube_task_plan(nldas_new_cube_files, ind_dir = cube_ind_dir)
 
   nldas_append_cube_plan:
-    command: create_cube_task_plan(nldas_append_cube_files, ind_dir=I('6_drivers/log/nc'))
+    command: create_cube_task_plan(nldas_append_cube_files, ind_dir = cube_ind_dir)
 
   "6_fetch_new_cubes_tasks.yml":
     command: create_cube_task_makefile(target_name, nldas_new_cube_plan, include = I("6_drivers_fetch.yml"), packages = I(c('dplyr','ncdf4','progress')), sources = '6_drivers/src/nccopy_utils.R')
@@ -68,8 +80,8 @@ targets:
 
   new_feather_plan:
     command: create_cell_task_plan(nldas_new_cells, replete_time_range, nldas_new_cube_files,
-      feather_dir = I('6_drivers/out/feather'), ind_dir=I('6_drivers/log/feather'),
-      cube_nc_dir = I('6_drivers/out/nc'), cube_ind_dir = I('6_drivers/log/nc'))
+      feather_dir = feather_data_dir, ind_dir = feather_ind_dir,
+      cube_nc_dir = cube_data_dir, cube_ind_dir = cube_ind_dir)
 
   "6_fetch_new_feather_tasks.yml":
     command: create_feather_task_makefile(target_name, new_feather_plan,
