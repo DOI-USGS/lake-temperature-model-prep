@@ -1,16 +1,16 @@
-create_cell_task_plan <- function(cells, time_range, cube_files, feather_dir, ind_dir, cube_nc_dir, cube_ind_dir){
+create_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, cell_ind_dir, cube_data_dir, cube_ind_dir){
 
   cube_task_step <- create_task_step(
     step_name = 'build_feathers',
     target = function(task_name, step_name, ...) {
-      file.path(feather_dir, task_name)
+      file.path(cell_data_dir, task_name)
     },
     command = function(target_name, task_name, ...) {
       this_var <- parse_feather_filename(task_name, 'var') # better filtering needed?
       these_files <- cube_files[grepl(this_var, cube_files)] %>%
         basename() %>% paste0('.ind') %>% file.path(cube_ind_dir, .) %>%
-        paste("\n       \'", ., collapse = "\',", sep = "")
-      sprintf('cubes_to_cell_file(target_name, nc_dir = I(\'%s\'), %s\')', cube_nc_dir, these_files)
+        paste0("\n       '", ., "'", collapse = ",")
+      sprintf('cubes_to_cell_file(target_name, nc_dir = I(\'%s\'), %s)', cube_data_dir, these_files)
     }
   )
 
@@ -18,11 +18,16 @@ create_cell_task_plan <- function(cells, time_range, cube_files, feather_dir, in
     cell <- cells[j, ]
     create_feather_filename(t0 = time_range[['t0']], t1 = time_range[['t1']], x = cell$x, y = cell$y, variable = cell$variable, dirname = '')
   })
-  create_task_plan(cell_filenames, list(cube_task_step), final_steps='build_feathers', ind_dir=ind_dir)
+  create_task_plan(cell_filenames, list(cube_task_step), final_steps='build_feathers', ind_dir=cell_ind_dir)
 }
 
 
-create_feather_task_makefile <- function(makefile, cell_task_plan, include, packages, sources){
+create_cell_task_makefile <- function(makefile, cell_task_plan){
+
+  include <- "6_drivers_fetch.yml"
+  packages <- c('dplyr','ncdf4')
+  sources <- '6_drivers/src/nldas_feather_utils.R'
+
   create_task_makefile(
     cell_task_plan, makefile = makefile, ind_complete = TRUE,
     include = include, sources = sources,
@@ -102,7 +107,7 @@ cubes_to_cell_file <- function(filename, ..., nc_dir, nc_files = NULL){
 
   if (is.null(nc_files)){
     nc.ind_files <- c(...)
-    nc_files <- file.path(nc_dir, tools::file_path_sans_ext(basename(nc.ind_files)))
+    nc_files <- file.path(nc_dir, scipiper::as_data_file(basename(nc.ind_files)))
   }
 
   for (nc_file in nc_files){

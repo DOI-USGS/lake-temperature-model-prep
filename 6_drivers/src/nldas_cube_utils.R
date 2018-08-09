@@ -152,7 +152,11 @@ create_cube_task_plan <- function(sub_files, ind_dir){
 
   cube_task_plan <- create_task_plan(basename(sub_files), list(cube_task_step), final_steps='nccopy', ind_dir=ind_dir)
 }
-create_cube_task_makefile <- function(makefile, cube_task_plan, include, packages, sources){
+create_cube_task_makefile <- function(makefile, cube_task_plan){
+  packages <- c('dplyr','ncdf4','progress')
+  include <- "6_drivers_fetch.yml"
+  sources <- '6_drivers/src/nccopy_utils.R'
+
   create_task_makefile(
     cube_task_plan, makefile = makefile, ind_complete = TRUE,
     include = include, sources = sources,
