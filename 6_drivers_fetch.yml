@@ -14,7 +14,7 @@ sources:
 targets:
   6_drivers_fetch:
     depends:
-      - new_cubes
+      - "6_drivers/log/nc/6_fetch_new_cubes_tasks.ind"
       # - append_cubes # how to make a task plan that can be empty?
       - "6_drivers/log/feather/6_fetch_new_cell_tasks.ind"
 
@@ -72,10 +72,10 @@ targets:
   "6_fetch_append_cubes_tasks.yml":
     command: create_cube_task_makefile(target_name, nldas_append_cube_plan)
 
-  new_cubes:
+  "6_drivers/log/nc/6_fetch_new_cubes_tasks.ind":
     command: loop_tasks(task_plan = nldas_new_cube_plan, task_makefile = "6_fetch_new_cubes_tasks.yml")
 
-  append_cubes:
+  "6_drivers/log/nc/6_fetch_append_cubes_tasks.ind":
     command: loop_tasks(task_plan = nldas_append_cube_plan, task_makefile = "6_fetch_append_cubes_tasks.yml")
 
   new_cell_plan:
