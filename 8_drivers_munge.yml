@@ -15,7 +15,7 @@ sources:
 targets:
   8_drivers_munge:
     depends:
-      - "8_drivers_munge_tasks.yml"
+      - "8_drivers_munge/out/8_drivers_munge_tasks.ind"
 
   meteo_file_dir:
     command: c(I("8_drivers_munge/out"))
@@ -30,7 +30,7 @@ targets:
     command: create_driver_task_plan(GLM_driver_files, feather_ind_files, data_dir = feather_data_dir, ind_dir = meteo_file_dir)
 
   "8_drivers_munge_tasks.yml":
-    command: create_driver_task_makefile(target_name, GLM_driver_plan, include = I("8_drivers_munge.yml"), packages = I(c('dplyr')),
+    command: create_driver_task_makefile(target_name, GLM_driver_plan, include = I("8_drivers_munge.yml"), packages = I(c('dplyr', 'feather')),
       sources = '8_drivers_munge/src/GLM_driver_utils.R')
 
   "8_drivers_munge/out/8_drivers_munge_tasks.ind":
