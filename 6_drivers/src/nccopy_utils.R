@@ -43,7 +43,7 @@ nccopy_split_combine <- function(nc_filepath, max_steps = 100){
     nc_temp_file_unl <- split_file_info %>% filter(file_meta == split_file) %>% pull(nc_temp_file_unl)
 
     nldas_url <- nldas_url_from_file(split_file)
-    nccopy_retry(nldas_url, nc_temp_file_fixed)
+    nccopy_retry(nldas_url, nc_temp_file_fixed, variable = var)
 
     # make the time dimension unlimited so we can append to this file:
     system(sprintf("ncks --mk_rec_dmn time %s -o %s", nc_temp_file_fixed, nc_temp_file_unl))
@@ -87,16 +87,20 @@ combine_nc_files <- function(filepaths_to_combine, nc_out_filepath){
 }
 
 #' fault tolerate OPeNDAP request
-nccopy_retry <- function(url, file_out, retries = 15, verbose = FALSE, snooze = 5){
+nccopy_retry <- function(url, file_out, retries = 15, verbose = FALSE, snooze = 5, variable){
   retry <- 0
   while (retry < retries){
-    output <- system(sprintf("nccopy -m 15m  %s %s", url, file_out), ignore.stdout = TRUE, ignore.stderr = TRUE)
+    output <- system(sprintf("nccopy -w  %s %s", url, file_out), ignore.stdout = TRUE, ignore.stderr = TRUE)
 
     if(output | file.size(file_out) == 0){
       unlink(file_out)
       retry <- retry + 1
       Sys.sleep(snooze)
-      if (verbose) message('retry:', retry)
+      if (verbose) message('Zero file, retry:', retry)
+    } else if (!verify_nc_clean(file_out, variable = variable)){
+      unlink(file_out)
+      retry <- retry + 1
+      if (verbose) message('Bad file banding, retry:', retry)
     } else {
       if (verbose) message('success! after retry:', retry)
       break
@@ -109,13 +113,34 @@ nccopy_retry <- function(url, file_out, retries = 15, verbose = FALSE, snooze = 
   }
 }
 
+verify_nc_clean <- function(nc_filepath, variable){
+  # odd issue w/ zero data "banding" on junk files
+
+
+  nc <- ncdf4::nc_open(nc_filepath)
+  x_max <- length(ncvar_get(nc, 'lon'))
+  # read all x, one y, one time:
+  first_band <- ncvar_get(nc, varid = variable, start = c(1, 1, 1), count = c(-1, 1, 1))
+  ncdf4::nc_close(nc)
+  if (all(first_band[seq(2, x_max, 2)] < 0) & all(first_band[seq(1, x_max, 2)] == 0)){
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
+}
+
 #' check that the .nc file output has the right number of timesteps
 verify_nc_output <- function(nc_filepath){
   nc_filename <- basename(nc_filepath)
   expected_steps <- length(nldas_steps_from_file(nc_filename))
   nc <- ncdf4::nc_open(nc_filepath)
-  nc_steps <- nc$dim$time$len
+  time <- ncvar_get(nc, 'time')
   ncdf4::nc_close(nc)
+  if (!all(time == cummax(time))){
+    stop('time is not monotonically increasing in ', nc_filename, call. = FALSE)
+  }
+  nc_steps <- length(time)
+
   if (nc_steps != expected_steps){
     unlink(nc_temp_combined_file)
     stop('incomplete file ', nc_filename , '\nexpected ',
