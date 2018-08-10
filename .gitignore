@@ -39,6 +39,8 @@ rsconnect/
 **.nc
 **.nc.ind
 **_tasks.yml
+6_drivers/log/feather/*.feather.ind
+build/status/MV9ubGRhc19jdWjlcy9sb2cvTkxEQVNfM*.yml
 
 # Data files
 *.rds

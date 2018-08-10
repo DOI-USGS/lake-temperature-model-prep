@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind
+type: file
+hash: 95bd31d9644d23dce53fa6c4d8353ef6
+time: 2018-08-02 14:28:24 UTC
+depends: {}
+fixed: c13e7bfbdf15a3cc78ee9f62fb2f4af9
+code:
+  functions:
+    fetch_crosswalk_wqp_nhd: b157f7b3a91b42862fe7b9cc7a32a63e
+
