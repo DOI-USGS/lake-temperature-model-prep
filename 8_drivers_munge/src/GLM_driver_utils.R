@@ -72,6 +72,13 @@ create_driver_task_makefile <- function(makefile, task_plan){
 }
 
 
+#' convert a bunch of variable-specific feather files into a single driver file
+#'
+#' @param filepath the output file to use
+#' @param ... feather indicator files
+#' @param dirname the directory for _data_ files corresponding to the feather .ind files
+#' @param feather_files a vector of feather file paths (data files).
+#'    If specified, `...` and `dirname` are ignored
 feathers_to_driver_file <- function(filepath, ..., dirname, feather_files = NULL){
   if (is.null(feather_files)){
     feather_inds <- c(...)
@@ -107,12 +114,12 @@ feathers_to_driver_file <- function(filepath, ..., dirname, feather_files = NULL
 }
 
 # from old MATLAB code:
-#    INPUT:   Ta - air temperature  [C]
-#             Pa - (optional) pressure [mb]
-#
-#    OUTPUT:  q  - saturation specific humidity  [kg/kg]
-qsat = function(Ta, Pa){
-  ew = 6.1121*(1.0007+3.46e-6*Pa)*exp((17.502*Ta)/(240.97+Ta)) # in mb
-  q  = 0.62197*(ew/(Pa-0.378*ew))                              # mb -> kg/kg
+#' @param Ta - air temperature  [C]
+#' @param Pa - pressure [mb]
+#'
+#' @return  q  - saturation specific humidity  [kg/kg]
+qsat <- function(Ta, Pa){
+  ew <- 6.1121*(1.0007+3.46e-6*Pa)*exp((17.502*Ta)/(240.97+Ta)) # in mb
+  q <- 0.62197*(ew/(Pa-0.378*ew))                              # mb -> kg/kg
   return(q)
 }

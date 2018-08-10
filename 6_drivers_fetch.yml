@@ -40,7 +40,7 @@ targets:
     command: c(I("6_drivers/log/feather"))
 
   nldas_cells:
-    command: list(x=I(c(221,221,344,344,223,244,239)), y=I(c(132,196,132,196,141,144,156)), variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # will come from code or spatial data...
+    command: list(x=I(c(221,221,344,344,223,244,239,222)), y=I(c(132,196,132,196,141,144,156,150)), variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # will come from code or spatial data...
 
   nldas_empty_box: # this is the domain that will require a FULL data pull in the time dimension
     command: nldas_diff_box(nldas_cells, '6_drivers/in/nldas_cells.rds')
