@@ -32,10 +32,26 @@ create_ldas_grid <- function(x0, y0, x_num, y_num, cell_res){
 #'
 #' @return a data.frame with x and y fields that correspond to cell indices
 cells_containing_points <- function(cell_grid, points){
-  grid_contains <- st_contains(cell_grid, points)
+  grid_contains <- st_intersects(cell_grid, points) # intersects (instead of st_contains) covers the edge case where the point lies right on an edge or vertex
 
   cells_w_pts <- cell_grid %>% mutate(contains_point = lengths(grid_contains) > 0) %>%
     filter(contains_point) %>% st_set_geometry(NULL) %>%
     select(x, y)
   return(cells_w_pts)
+}
+
+
+sf_file_centroids <- function(filepath){
+  .obj <- readRDS(filepath)
+  st_centroid(.obj)
+}
+
+as_OPeNDAP_cells <- function(cell_indices_df, variables){
+  list(x = cell_indices_df$x, y = cell_indices_df$y, variables = variables)
+}
+
+crosswalk_point_to_poly <- function(points, polys, poly_attrs, point_attrs){
+
+  NULL
+
 }
