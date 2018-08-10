@@ -41,13 +41,17 @@ cells_containing_points <- function(cell_grid, points){
 }
 
 
-sf_file_centroids <- function(filepath){
+sf_file_centroids <- function(filepath, ...){
+
   .obj <- readRDS(filepath)
-  st_centroid(.obj)
+  use_values <- list(...)
+  st_centroid(.obj[.obj[[names(use_values)]] %in% use_values[[1]] ,])
 }
 
 as_OPeNDAP_cells <- function(cell_indices_df, variables){
-  list(x = cell_indices_df$x, y = cell_indices_df$y, variables = variables)
+  x_cells <- c(cell_indices_df$x, 221, 344) # hack to keep the outer bounds of the cells the same as the data we've already downloaded
+  y_cells <- c(cell_indices_df$y, 132, 196)
+  list(x = x_cells, y = y_cells, variables = variables)
 }
 
 crosswalk_point_to_poly <- function(points, polys, poly_attrs, point_attrs){
