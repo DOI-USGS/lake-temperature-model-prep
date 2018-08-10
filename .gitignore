@@ -53,3 +53,8 @@ build/status/MV9ubGRhc19jdWjlcy9sb2cvTkxEQVNfM*.yml
 *.prj
 *.xml
 
+# "in" cooperator data
+/6_temp_coop_fetch/in/*
+!/6_temp_coop_fetch/in/*.ind
+!/6_temp_coop_fetch/in/*.placeholder
+

@@ -5,6 +5,7 @@ include:
   - 2_crosswalk_munge.yml
   - 6_drivers_fetch.yml
   - 6_temp_wqp_fetch.yml
+  - 6_temp_coop_fetch.yml
 
 targets:
   everything:
@@ -13,3 +14,4 @@ targets:
       - 2_crosswalk_munge
       - 6_drivers_fetch
       - 6_temp_wqp_fetch
+      - 6_temp_coop_fetch
