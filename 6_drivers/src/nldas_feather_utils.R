@@ -11,7 +11,7 @@ create_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, 
   cube_task_step <- create_task_step(
     step_name = 'build_feathers',
     target = function(task_name, step_name, ...) {
-      task_name
+      file.path(cell_ind_dir, task_name)
     },
     command = function(target_name, task_name, ...) {
 
@@ -24,14 +24,18 @@ create_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, 
   )
 
   variable_indicators <- sapply(unique(cells$variable), function(x) {
-    create_cellgroup_filename(t0 = time_range[['t0']], t1 = time_range[['t1']], variable = x, dirname = cell_ind_dir)
+    create_cellgroup_filename(t0 = time_range[['t0']], t1 = time_range[['t1']], variable = x, dirname = "")
   }, USE.NAMES = FALSE)
 
   create_task_plan(variable_indicators, list(cube_task_step), final_steps='build_feathers', ind_dir=cell_ind_dir)
 }
 
 create_cellgroup_filename <- function(t0, t1, variable, dirname, prefix = 'cellgroup', ext = '.yml'){
-  file.path(dirname, sprintf("%s_time[%1.0f.%1.0f]_var[%s]%s", prefix, t0, t1, variable, ext))
+  filename <- sprintf("%s_time[%1.0f.%1.0f]_var[%s]%s", prefix, t0, t1, variable, ext)
+  if (dirname != ''){
+    filename <- file.path(dirname, filename)
+  }
+  return(filename)
 }
 parse_cellgroup_filename <- function(filename, out = c('var','time')){
 

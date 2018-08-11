@@ -5,20 +5,34 @@ calc_feather_ind_files <- function(grid_cells, time_range, ind_dir){
     pull(filepath)
 }
 
+calc_cell_group_files <- function(grid_cells, time_range, ind_dir){
+  data.frame(variable = grid_cells$variables) %>%
+    mutate(filename = create_cellgroup_filename(t0 = time_range[1], t1 = time_range[2], variable = variable, dirname = ind_dir)) %>%
+    pull(filename)
+}
 
-calc_driver_files <- function(feather_ind_files, dirname){
-  driver_files <- rep(NA_character_, length(feather_ind_files))
-  for (i in seq_len(length(feather_ind_files))){
-    ind_file <- feather_ind_files[i]
-    times <- parse_feather_filename(ind_file, out = 'time')
-    x <- parse_feather_filename(ind_file, out = 'x')
-    y <- parse_feather_filename(ind_file, out = 'y')
+calc_driver_files <- function(cell_group_table, dirname){
+  feather_files <- cell_group_table$filepath
+  driver_files <- rep(NA_character_, length(feather_files))
+  for (i in seq_len(length(feather_files))){
+    feat_file <- feather_files[i]
+    times <- parse_feather_filename(feat_file, out = 'time')
+    x <- parse_feather_filename(feat_file, out = 'x')
+    y <- parse_feather_filename(feat_file, out = 'y')
     driver_files[i] <- create_meteo_filepath(times[1], times[2], x, y, dirname = dirname)
   }
   return(unique(driver_files))
 }
 
-
+merge_cell_group_files <- function(cell_group_files){
+  file_list <- lapply(cell_group_files, function(x){
+    contents <- yaml::read_yaml(x) %>% unlist
+    hashes <- unname(contents)
+    filepaths <- names(contents)
+    data.frame(filepath = filepaths, hash = hashes)
+  })
+  return(do.call(rbind, file_list))
+}
 create_meteo_filepath <- function(t0, t1, x, y, prefix = 'NLDAS', dirname){
   file.path(dirname, sprintf("%s_time[%1.0f.%1.0f]_x[%1.0f]_y[%1.0f].csv", prefix, t0, t1, x, y))
 }
@@ -33,8 +47,38 @@ parse_meteo_filepath <- function(filepath, out = c('y','x','time')){
   return(as.numeric(strsplit(char, '[.]')[[1]]))
 }
 
+filter_cell_group_table <- function(cell_group_table, pattern){
+  filter(cell_group_table, grepl(pattern = pattern, x = filepath))
+}
 
-create_driver_task_plan <- function(driver_files, feather_ind_files, data_dir, ind_dir){
+create_driver_task_plan <- function(driver_files, cell_group_table, data_dir, ind_dir){
+
+  # now use table...was ind_files
+
+  # we want to get the name of the object passed to `cell_group_table`, so we can refer to it elsewhere
+  cl <- sys.call(0)
+  f <- get(as.character(cl[[1]]), mode="function", sys.frame(-1))
+  cl <- match.call(definition=f, call=cl)
+  cell_group_obj <- as.list(cl)[-1][['cell_group_table']] %>% as.character()
+  as_sub_group_table <- function(filename){
+    gsub(pattern = '\\[', '_', x = tools::file_path_sans_ext(filename)) %>%
+      gsub(pattern = '\\]', '', x = .) %>%
+      paste0("_cell_group_table")
+  }
+  subset_table_task_step <- create_task_step(
+    step_name = 'subset_table',
+    target = function(task_name, step_name, ...) {
+      as_sub_group_table(task_name)
+    },
+    command = function(target_name, task_name, ...) {
+      this_time <- parse_meteo_filepath(task_name, 'time') # better filtering needed?
+      this_x <- parse_meteo_filepath(task_name, 'x')
+      this_y <- parse_meteo_filepath(task_name, 'y')
+      # need to double escape to preserve the "\\"
+      pattern <- sprintf('time\\\\[%1.0f.%1.0f\\\\]_x\\\\[%1.0f\\\\]_y\\\\[%1.0f\\\\]', this_time[1], this_time[2], this_x, this_y)
+      sprintf('filter_cell_group_table(%s, pattern = I(\'%s\'))', cell_group_obj, pattern)
+    }
+  )
 
   driver_task_step <- create_task_step(
     step_name = 'munge_drivers',
@@ -42,13 +86,8 @@ create_driver_task_plan <- function(driver_files, feather_ind_files, data_dir, i
       file.path(out_dir, task_name)
     },
     command = function(target_name, task_name, ...) {
-      this_time <- parse_meteo_filepath(task_name, 'time') # better filtering needed?
-      this_x <- parse_meteo_filepath(task_name, 'x')
-      this_y <- parse_meteo_filepath(task_name, 'y')
-      pattern <- sprintf('time\\[%1.0f.%1.0f\\]_x\\[%1.0f\\]_y\\[%1.0f\\]', this_time[1], this_time[2], this_x, this_y)
-      these_files <- feather_ind_files[grepl(pattern, feather_ind_files)] %>%
-        paste("\n       \'", ., collapse = "\',", sep = "")
-      sprintf('feathers_to_driver_file(target_name, dirname = I(\'%s\'), %s\')', data_dir, these_files)
+      sub_group_table <- as_sub_group_table(task_name)
+      sprintf('feathers_to_driver_file(target_name, cell_group_table = %s)', sub_group_table)
     }
   )
 
@@ -56,7 +95,7 @@ create_driver_task_plan <- function(driver_files, feather_ind_files, data_dir, i
   stopifnot(length(out_dir) == 1) # more than one not supported with this pattern
   filenames <- basename(driver_files)
 
-  create_task_plan(filenames, list(driver_task_step), final_steps='munge_drivers', ind_dir = ind_dir)
+  create_task_plan(filenames, list(subset_table_task_step, driver_task_step), final_steps='munge_drivers', ind_dir = ind_dir)
 }
 
 create_driver_task_makefile <- function(makefile, task_plan){
@@ -79,21 +118,18 @@ create_driver_task_makefile <- function(makefile, task_plan){
 #' @param dirname the directory for _data_ files corresponding to the feather .ind files
 #' @param feather_files a vector of feather file paths (data files).
 #'    If specified, `...` and `dirname` are ignored
-feathers_to_driver_file <- function(filepath, ..., dirname, feather_files = NULL){
-  if (is.null(feather_files)){
-    feather_inds <- c(...)
-    feather_filepaths <- file.path(dirname, scipiper::as_data_file(basename(feather_inds)))
-  }
+feathers_to_driver_file <- function(filepath, cell_group_table){
+
+  feather_filepaths <- cell_group_table$filepath
+
   NLDAS_start <- as.POSIXct('1979-01-01 13:00', tz = "UTC")
   all_time_vec <- seq(NLDAS_start, by = 'hour', to = Sys.time())
   file_times <- parse_meteo_filepath(filepath, 'time') + 1 # not zero indexed
   drivers_in <- data.frame(time = all_time_vec[file_times[1]:file_times[2]], stringsAsFactors = FALSE)
   for (feather_filepath in feather_filepaths){
-    message(feather_filepath)
     data <- read_feather(feather_filepath)
     drivers_in <- cbind(drivers_in, data)
   }
-
   # https://github.com/USGS-R/mda.lakes/blob/8e4925e63f1403e0802162437373fe62b243d024/R/get_driver_nhd.R
   # turn into actual driver vars:
   drivers_out <- drivers_in %>% rename(ShortWave = dswrfsfc, LongWave = dlwrfsfc) %>%
