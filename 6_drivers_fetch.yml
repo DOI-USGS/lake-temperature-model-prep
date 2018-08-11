@@ -111,6 +111,9 @@ targets:
 
   "6_drivers/log/feather/6_fetch_new_cell_tasks.ind":
     command: loop_tasks(task_plan = new_cell_plan, task_makefile = "6_fetch_new_cell_tasks.yml")
+    depends:
+      - nldas_new_cells
 
   "6_drivers/log/feather/6_fetch_append_cell_tasks.ind":
     command: loop_tasks(task_plan = append_cell_plan, task_makefile = "6_fetch_append_cell_tasks.yml")
+    # depends: nldas_update_cells

@@ -8,7 +8,8 @@ calc_feather_ind_files <- function(grid_cells, time_range, ind_dir){
 calc_cell_group_files <- function(grid_cells, time_range, ind_dir){
   data.frame(variable = grid_cells$variables) %>%
     mutate(filename = create_cellgroup_filename(t0 = time_range[1], t1 = time_range[2], variable = variable, dirname = ind_dir)) %>%
-    pull(filename)
+    mutate(hash = sc_indicate("", data_file = filename)) %>% # have to hash, otherwise they will look unchanged
+    select(filename, hash)
 }
 
 calc_driver_files <- function(cell_group_table, dirname){
@@ -25,7 +26,7 @@ calc_driver_files <- function(cell_group_table, dirname){
 }
 
 merge_cell_group_files <- function(cell_group_files){
-  file_list <- lapply(cell_group_files, function(x){
+  file_list <- lapply(cell_group_files$filename, function(x){
     contents <- yaml::read_yaml(x) %>% unlist
     hashes <- unname(contents)
     filepaths <- names(contents)
@@ -59,7 +60,9 @@ create_driver_task_plan <- function(driver_files, cell_group_table, data_dir, in
   cl <- sys.call(0)
   f <- get(as.character(cl[[1]]), mode="function", sys.frame(-1))
   cl <- match.call(definition=f, call=cl)
+  # perhaps we should be using an .rds or .feather file here so we don't need to do this arg-grabbing?
   cell_group_obj <- as.list(cl)[-1][['cell_group_table']] %>% as.character()
+
   as_sub_group_table <- function(filename){
     gsub(pattern = '\\[', '_', x = tools::file_path_sans_ext(filename)) %>%
       gsub(pattern = '\\]', '', x = .) %>%
