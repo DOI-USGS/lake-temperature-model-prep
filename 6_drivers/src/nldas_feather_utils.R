@@ -208,19 +208,31 @@ cubes_to_cell_files <- function(filename, ..., nc_dir, cells, out_dir, nc_files 
     nc <- nc_open(nc_file, suppress_dimvals = TRUE)
     cell_data <- ncvar_get(nc, varid = cell_var, start = c(1, 1, 1), count = c(-1, -1, -1))
     nc_close(nc)
+    cube_x_range <- parse_nc_filename(nc_file, 'x')
+    cube_y_range <- parse_nc_filename(nc_file, 'y')
+
     # we are ok w/ some overwriting of data if there is a src_filepath, since it should be the same
 
-    # next up, write to the right file, for the right indices...
-    file1 <- '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[dlwrfsfc].feather'
-    sparse_nc_list[[file1]][time_indices] <- cell_data[1, 2, ]
-    #cell_out[[cell_var]][time_indices] <- cube_to_cell(nc_file, cell_x_index, cell_y_index, cell_var)
-    message(nc_file)
+    for (feather_file in file_info$filepath){
+      x_index <- parse_feather_filename(feather_file, 'x')
+      y_index <- parse_feather_filename(feather_file, 'y')
+      stopifnot(x_index %in% seq(cube_x_range[1], cube_x_range[2]))
+      stopifnot(y_index %in% seq(cube_y_range[1], cube_y_range[2]))
+
+      x_start <- x_index - cube_x_range[1] + 1 # our data vectors aren't 0 indexed
+      y_start <- y_index - cube_y_range[1] + 1 # our data vectors aren't 0 indexed
+      sparse_nc_list[[feather_file]][time_indices] <- cell_data[x_start, y_start, ]
+    }
   }
-  if(any(is.na(cell_out[[cell_var]]))){
-    stop('cell has NA values after extracting data from cubes', call. = FALSE)
+  for (feather_file in file_info$filepath){
+    data_out <- sparse_nc_list[[feather_file]]
+    if(any(is.na(data_out))){
+      stop('cell has NA values after extracting data from cubes', call. = FALSE)
+    }
+    cell_out <- data.frame(x = data_out) %>% setNames(cell_var)
+    feather::write_feather(cell_out, feather_file)
   }
-  browser()
-  feather::write_feather(cell_out, filename)
+  sc_indicate(filename, data_file = file_info$filepath)
   invisible(filename)
 }
 
