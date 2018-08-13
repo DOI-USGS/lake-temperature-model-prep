@@ -1,25 +1,30 @@
 target_default: 6_drivers_fetch
 
+include:
+  - 1_crosswalk_fetch.yml
+
 packages:
   - sp
   - scipiper
   - dplyr
   - ncdf4
+  - sf
   - stringr
 
 sources:
   - 6_drivers/src/nldas_cube_utils.R
   - 6_drivers/src/nldas_feather_utils.R
+  - 6_drivers/src/grid_utils.R
 
 targets:
   6_drivers_fetch:
     depends:
-      - new_cubes
+      - "6_drivers/log/nc/6_fetch_new_cubes_tasks.ind"
       # - append_cubes # how to make a task plan that can be empty?
-      - new_feathers
+      - "6_drivers/log/feather/6_fetch_new_cell_tasks.ind"
 
   replete_time_range:
-    command: c(t0=I(0), t1 = I(999))#346848))
+    command: c(t0=I(0), t1 = I(346848))
 
   append_time_range:
     command: nldas_times_diff(replete_time_range, '6_drivers/in/nldas_times.rds')
@@ -27,8 +32,30 @@ targets:
   nccopy_time_stride:
     command: c(I(25000))
 
+  cube_data_dir:
+    command: c(I("6_drivers/out/nc"))
+
+  cube_ind_dir:
+    command: c(I("6_drivers/log/nc"))
+
+  cell_data_dir:
+    command: c(I("6_drivers/out/feather"))
+
+  cell_ind_dir:
+    command: c(I("6_drivers/log/feather"))
+
+  feature_centroids:
+    command: sf_file_centroids("1_crosswalk_fetch/out/lakes_sf.rds", site_id = I(c('nhd_120052238','nhd_4817675','nhd_4817675','nhd_4819397',
+      'nhd_120052195','nhd_2360642','nhd_120052233','nhd_13293262','nhd_120052889','nhd_7142570','nhd_7142570','nhd_7142570','nhd_120052896','nhd_167122137')))
+
+  NLDAS_grid: # info from OPeNDAP: https://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FORA0125_H.002
+    command: create_ldas_grid(x0 = I(-124.9375), y0 = I(25.0625), x_num = I(464), y_num = I(224), cell_res = I(0.125))
+
+  feature_NLDAS_cells:
+    command: cells_containing_points(NLDAS_grid, feature_centroids)
+
   nldas_cells:
-    command: list(x=I(c(221,221,344,344,223,244)), y=I(c(132,196,132,196,141,144)), variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # will come from code or spatial data...
+    command: as_OPeNDAP_cells(feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m')))
 
   nldas_empty_box: # this is the domain that will require a FULL data pull in the time dimension
     command: nldas_diff_box(nldas_cells, '6_drivers/in/nldas_cells.rds')
@@ -37,10 +64,10 @@ targets:
     command: nldas_update_box(nldas_cells, nldas_empty_box)
 
   nldas_new_cube_files:
-    command: calc_nldas_files(nldas_empty_box, replete_time_range, nccopy_time_stride, nc_dir = I("6_drivers/out/nc"))
+    command: calc_nldas_files(nldas_empty_box, replete_time_range, nccopy_time_stride, nc_dir = cube_data_dir)
 
   nldas_append_cube_files:
-    command: calc_nldas_files(nldas_partial_box, append_time_range, nccopy_time_stride, nc_dir = I("6_drivers/out/nc"))
+    command: calc_nldas_files(nldas_partial_box, append_time_range, nccopy_time_stride, nc_dir = cube_data_dir)
 
   nldas_new_cells:
     command: nldas_diff_cells(nldas_cells, '6_drivers/in/nldas_cells.rds')
@@ -49,29 +76,41 @@ targets:
     command: nldas_update_cells(nldas_cells, nldas_new_cells, '6_drivers/in/nldas_times.rds')
 
   nldas_new_cube_plan:
-    command: create_cube_task_plan(nldas_new_cube_files, ind_dir=I('6_drivers/log/nc'))
+    command: create_cube_task_plan(nldas_new_cube_files, ind_dir = cube_ind_dir)
 
   nldas_append_cube_plan:
-    command: create_cube_task_plan(nldas_append_cube_files, ind_dir=I('6_drivers/log/nc'))
+    command: create_cube_task_plan(nldas_append_cube_files, ind_dir = cube_ind_dir)
 
   "6_fetch_new_cubes_tasks.yml":
-    command: create_cube_task_makefile(target_name, nldas_new_cube_plan, include = I("6_drivers_fetch.yml"), packages = I(c('dplyr','ncdf4','progress')), sources = '6_drivers/src/nccopy_utils.R')
+    command: create_cube_task_makefile(target_name, nldas_new_cube_plan)
 
   "6_fetch_append_cubes_tasks.yml":
-    command: create_cube_task_makefile(target_name, nldas_append_cube_plan, include = I("6_drivers_fetch.yml"), packages = I(c('dplyr','ncdf4','progress')), sources = '6_drivers/src/nccopy_utils.R')
+    command: create_cube_task_makefile(target_name, nldas_append_cube_plan)
 
-  new_cubes:
+  "6_drivers/log/nc/6_fetch_new_cubes_tasks.ind":
     command: loop_tasks(task_plan = nldas_new_cube_plan, task_makefile = "6_fetch_new_cubes_tasks.yml")
 
-  append_cubes:
+  "6_drivers/log/nc/6_fetch_append_cubes_tasks.ind":
     command: loop_tasks(task_plan = nldas_append_cube_plan, task_makefile = "6_fetch_append_cubes_tasks.yml")
 
-  new_feather_plan:
-    command: create_cell_task_plan(nldas_new_cells, replete_time_range, nldas_new_cube_files, feather_dir = I('6_drivers/out/feather'), ind_dir=I('6_drivers/log/feather'))
+  new_cell_plan:
+    command: create_cell_task_plan(nldas_new_cells, replete_time_range, nldas_new_cube_files,
+      cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir,
+      cube_data_dir = cube_data_dir, cube_ind_dir = cube_ind_dir)
 
-  "6_fetch_new_feather_tasks.yml":
-    command: create_feather_task_makefile(target_name, new_feather_plan,
-      include = I("6_drivers_fetch.yml"), packages = I(c('dplyr','ncdf4')), sources = '6_drivers/src/nldas_feather_utils.R')
+  append_cell_plan:
+    command: create_update_cell_task_plan(nldas_append_cells, replete_time_range, nldas_append_cube_files,
+      cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir,
+      cube_data_dir = cube_data_dir, cube_ind_dir = cube_ind_dir, secondary_cube_files = nldas_new_cube_files)
 
-  new_feathers:
-    command: loop_tasks(task_plan = new_feather_plan, task_makefile = "6_fetch_new_feather_tasks.yml")
+  "6_fetch_new_cell_tasks.yml":
+    command: create_cell_task_makefile(target_name, new_cell_plan)
+
+  "6_fetch_append_cell_tasks.yml":
+    command: create_cell_task_makefile(target_name, append_cell_plan)
+
+  "6_drivers/log/feather/6_fetch_new_cell_tasks.ind":
+    command: loop_tasks(task_plan = new_cell_plan, task_makefile = "6_fetch_new_cell_tasks.yml")
+
+  "6_drivers/log/feather/6_fetch_append_cell_tasks.ind":
+    command: loop_tasks(task_plan = append_cell_plan, task_makefile = "6_fetch_append_cell_tasks.yml")

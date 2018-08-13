@@ -1,0 +1,38 @@
+target_default: 6_temp_coop_fetch
+
+include:
+
+packages:
+  - scipiper
+  - dplyr
+  - googledrive
+
+sources:
+  - 6_temp_coop_fetch/src/filter_files.R
+  - 6_temp_coop_fetch/src/task_fxns.R
+
+targets:
+
+  6_temp_coop_fetch:
+    depends:
+      - 6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind
+
+  # -- create makefile with targets for each file listed in gd -- #
+
+  coop_file_upload_location:
+    command: as_id(I('1dutCiFEOoRObXLn6n3BRKhZDDAijK65Q'))
+
+  coop_all_files:
+    command: drive_ls(path = coop_file_upload_location)
+
+  coop_wants:
+    command: filter_coop_all(coop_all_files)
+
+  coop_wants_fetch_plan:
+    command: create_coop_taskplan(coop_wants)
+
+  6_temp_coop_fetch_tasks.yml:
+    command: create_coop_fetch_makefile(target_name, coop_wants_fetch_plan)
+
+  6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind:
+    command: loop_tasks(task_plan = coop_wants_fetch_plan, task_makefile = '6_temp_coop_fetch_tasks.yml')
