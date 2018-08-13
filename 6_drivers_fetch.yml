@@ -1,15 +1,20 @@
 target_default: 6_drivers_fetch
 
+include:
+  - 1_crosswalk_fetch.yml
+
 packages:
   - sp
   - scipiper
   - dplyr
   - ncdf4
+  - sf
   - stringr
 
 sources:
   - 6_drivers/src/nldas_cube_utils.R
   - 6_drivers/src/nldas_feather_utils.R
+  - 6_drivers/src/grid_utils.R
 
 targets:
   6_drivers_fetch:
@@ -39,8 +44,18 @@ targets:
   cell_ind_dir:
     command: c(I("6_drivers/log/feather"))
 
+  feature_centroids:
+    command: sf_file_centroids("1_crosswalk_fetch/out/lakes_sf.rds", site_id = I(c('nhd_120052238','nhd_4817675','nhd_4817675','nhd_4819397',
+      'nhd_120052195','nhd_2360642','nhd_120052233','nhd_13293262','nhd_120052889','nhd_7142570','nhd_7142570','nhd_7142570','nhd_120052896','nhd_167122137')))
+
+  NLDAS_grid: # info from OPeNDAP: https://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FORA0125_H.002
+    command: create_ldas_grid(x0 = I(-124.9375), y0 = I(25.0625), x_num = I(464), y_num = I(224), cell_res = I(0.125))
+
+  feature_NLDAS_cells:
+    command: cells_containing_points(NLDAS_grid, feature_centroids)
+
   nldas_cells:
-    command: list(x=I(c(221,221,344,344,223,244,239)), y=I(c(132,196,132,196,141,144,156)), variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # will come from code or spatial data...
+    command: as_OPeNDAP_cells(feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m')))
 
   nldas_empty_box: # this is the domain that will require a FULL data pull in the time dimension
     command: nldas_diff_box(nldas_cells, '6_drivers/in/nldas_cells.rds')
@@ -83,8 +98,19 @@ targets:
       cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir,
       cube_data_dir = cube_data_dir, cube_ind_dir = cube_ind_dir)
 
+  append_cell_plan:
+    command: create_update_cell_task_plan(nldas_append_cells, replete_time_range, nldas_append_cube_files,
+      cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir,
+      cube_data_dir = cube_data_dir, cube_ind_dir = cube_ind_dir, secondary_cube_files = nldas_new_cube_files)
+
   "6_fetch_new_cell_tasks.yml":
     command: create_cell_task_makefile(target_name, new_cell_plan)
 
+  "6_fetch_append_cell_tasks.yml":
+    command: create_cell_task_makefile(target_name, append_cell_plan)
+
   "6_drivers/log/feather/6_fetch_new_cell_tasks.ind":
     command: loop_tasks(task_plan = new_cell_plan, task_makefile = "6_fetch_new_cell_tasks.yml")
+
+  "6_drivers/log/feather/6_fetch_append_cell_tasks.ind":
+    command: loop_tasks(task_plan = append_cell_plan, task_makefile = "6_fetch_append_cell_tasks.yml")
