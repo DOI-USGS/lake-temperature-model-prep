@@ -6,90 +6,111 @@
 #' on NWIS that we need to fullfil our "needs" - which is a series of
 #' site/variable combinations.
 #'
-#' @param wqp_needs A dataframe with columns site and variable which describes
-#'   what we going to pull from NWIS, which was calculated as the difference
-#'   between our data "wants" and our data "haves".
-#' @param wqp_variables List of lists that contain parameters of interest (e.g.,
+#' @param needs_ind Indicator file for a table with columns site and variable
+#'   which describes what we going to pull from NWIS, which was calculated as
+#'   the difference between our data "wants" and our data "haves".
+#' @param wqp_pull_params List of lists that contain parameters of interest (e.g.,
 #'   temperature) and all corresponding synonyms available in NWIS (e.g.,
-#'   "Temperature" and "Temperature, water").
+#'   "Temperature" and "Temperature, water"), plus other pull parameters.
+#'   @param wqp_partition_config configuration information for the data/inventory pulls
 #' @return A dataframe returned by the function dataRetrieval::whatWQPdata, with
 #'   one row per site/variable combination and the 'resultCount' being the
 #'   variable from which we will make decisions about partitioning data pull
 #'   requests.
-
-inventory_wqp <- function(wqp_needs, wqp_variables) {
+inventory_wqp <- function(inv_ind, needs_ind, wqp_pull_params, wqp_partition_cfg) {
 
   # identify constituents we need
-  constituents <- as.character(unique(wqp_needs$variable))
+  needs <- feather::read_feather(sc_retrieve(needs_ind))
+  constituents <- as.character(unique(needs$ParamGroup))
 
-  # loop over the constituents, getting rows for each
-  sample_time <- system.time({
+  # get pull configuration information
+  wqp_partition_config <- yaml::yaml.load_file(wqp_partition_cfg)
+  max_inv_chunk <- wqp_partition_config$target_inv_size
+
+  # loop over the constituents and groups of sites, getting rows for each
+  total_time <- system.time({
     samples <- bind_rows(lapply(constituents, function(constituent) {
-      message(Sys.time(), ': getting inventory for ', constituent)
-      wqp_args <- list(
-        characteristicName = wqp_variables$characteristicName[[constituent]],
-        siteid = wqp_needs$site[wqp_needs$variable %in% constituent]
-      )
-      tryCatch({
-        wqp_wdat <- do.call(whatWQPdata, wqp_args)
-        mutate(wqp_wdat, constituent=constituent)
-      }, error=function(e) {
-        # keep going IFF the only error was that there weren't any matching sites
-        if(grepl('arguments imply differing number of rows', e$message)) {
-          NULL
-        } else {
-          stop(e)
-        }
-      })
-    }))
+      wqp_args <- wqp_pull_params
+      wqp_args$characteristicName <- wqp_pull_params$characteristicName[[constituent]]
+      constit_sites <- needs %>%
+        filter(ParamGroup %in% constituent) %>%
+        pull(MonitoringLocationIdentifier)
+      n_chunks <- ceiling(length(constit_sites)/max_inv_chunk)
+      bind_rows(lapply(seq_len(n_chunks), function(chunk) {
+        chunk_sites <- (1 + (chunk-1)*max_inv_chunk) : min(length(constit_sites), chunk*max_inv_chunk)
+        message(sprintf(
+          '%s: getting inventory for %s, sites %d-%d of %d...',
+          Sys.time(), constituent, head(chunk_sites, 1), tail(chunk_sites, 1), length(constit_sites)),
+          appendLF=FALSE)
+        wqp_args <- c(wqp_args, list(siteid = constit_sites[chunk_sites]))
+        call_time <- system.time({
+          wqp_wdat <- tryCatch({
+            do.call(whatWQPdata, wqp_args) %>%
+              select(MonitoringLocationIdentifier, MonitoringLocationName, resultCount)
+          }, error=function(e) {
+            # keep going IFF the only error was that there weren't any matching sites
+            if(grepl('arguments imply differing number of rows', e$message)) {
+              data_frame(MonitoringLocationIdentifier='', MonitoringLocationName='', resultCount=0) %>%
+                filter(FALSE)
+            } else {
+              stop(e)
+            }
+          })
+        })
+        message(sprintf('retrieved %d rows in %0.0f seconds', nrow(wqp_wdat), call_time[['elapsed']]))
+        return(wqp_wdat)
+      })) %>%
+        mutate(ParamGroup = constituent)
+    })) %>%
+      right_join(needs, by=c('ParamGroup', 'MonitoringLocationIdentifier')) %>%
+      mutate(resultCount=as.integer(case_when(is.na(resultCount) ~ 0, TRUE ~ resultCount)))
   })
-  message(sprintf('sample inventory complete, required %0.0f seconds', sample_time[['elapsed']]))
+  message(sprintf('sample inventory complete, required %0.0f seconds', total_time[['elapsed']]))
 
-  return(samples)
+  # write and indicate the data file
+  data_file <- scipiper::as_data_file(inv_ind)
+  feather::write_feather(samples, data_file)
+  sc_indicate(inv_ind, data_file=data_file)
 }
 
 #' Partition calls to WQP based on number of records available in WQP and a
 #' number of records that is a reasonable call to WQP.
 #'
 #' @param partitions_ind Filename of the partitions indicator file to create.
-#' @param wqp_inventory Dataframe with WQP record counts (e.g., the output of
-#'   dataRetrieval::whatWQPdata).
+#' @param inventory_ind .ind filename of a table with WQP record counts (from
+#'   the output of dataRetrieval::whatWQPdata).
 #' @param wqp_partition_config YAML file containing an element called
 #'   $target_pull_size, giving the maximum number of records that should be in a
 #'   single call to WQP.
-#' @param feature_crosswalk a table of site crosswalk information including
-#'   columns for MonitoringLocationIdentifier and site_id. May be sf.
 #' @param archive_ind Name of the indicator file for the current archive of
 #'   partitions information, which will be modified as a side effect of this
 #'   function
-#' @return Nothing useful is returned; however, this function (1) Writes to partitions_ind a table having the same number of rows as wqp_needs - e.g., for
-#'   each site/variable combination. The dataframe stores the number of
+#' @return Nothing useful is returned; however, this function (1) Writes to
+#'   partitions_ind a table having the same number of rows as wqp_needs - e.g.,
+#'   for each site/variable combination. The dataframe stores the number of
 #'   observations for that site/variable in WQP and the unique task identifier
 #'   that partitions site/variables into WQP pulls.
-partition_wqp_inventory <- function(partitions_ind, wqp_inventory, wqp_partition_config, feature_crosswalk, archive_ind) {
-  partitions <- bind_rows(lapply(unique(wqp_inventory$constituent), function(constit) {
+partition_wqp_inventory <- function(partitions_ind, inventory_ind, wqp_partition_cfg, archive_ind) {
+  # Read in the inventory, crosswalk & config
+  wqp_inventory <- feather::read_feather(sc_retrieve(inventory_ind))
+  feature_crosswalk <- readRDS(sc_retrieve(feature_crosswalk_ind))
+  wqp_partition_config <- yaml::yaml.load_file(wqp_partition_cfg)
 
-    # Subset to those rows of the inventory relevant to this constituent, and
-    # join with feature_crosswalk so that we can collect sites by the lakes they
-    # belong to
+  partitions <- bind_rows(lapply(unique(wqp_inventory$ParamGroup), function(constituent) {
+
+    # Filter the inventory to rows for this constituent
     constit_inventory <- wqp_inventory %>%
-      filter(constituent == constit) %>%
-      select(MonitoringLocationIdentifier, resultCount) %>%
-      mutate(resultCount=as.integer(resultCount)) %>%
-      left_join(select(feature_crosswalk, site_id, MonitoringLocationIdentifier), by='MonitoringLocationIdentifier')
+      filter(ParamGroup == constituent)
 
     # Define the atomic_groups to use in setting up data pull partitions. An
     # atomic group is a combination of parameters that can't be reasonably split
-    # into multiple WQP pulls. For now we're defining the atomic groups as
-    # distinct combinations of constituent (a group of characteristicNames) and
-    # site ID (MonitoringLocationIdentifier); however, once we have the
-    # crosswalk available at this step, we'll instead use the unique NHD ComID
-    # for each lake to ensure all sites from each lake get into the same file
+    # into multiple WQP pulls. We're defining the atomic groups as distinct
+    # combinations of constituent (a group of characteristicNames) and NHD-based
+    # site ID
     atomic_groups <- constit_inventory %>%
       group_by(site_id) %>%
       summarize(LakeNumObs=sum(resultCount)) %>%
-      arrange(desc(LakeNumObs)) %>%
-      filter(!is.na(site_id))
+      arrange(desc(LakeNumObs))
 
     # Partition the full pull into sets of atomic groups that form right-sized
     # partitions. Use an old but fairly effective paritioning heuristic: pick
@@ -130,28 +151,29 @@ partition_wqp_inventory <- function(partitions_ind, wqp_inventory, wqp_partition
     partitions <- atomic_groups %>%
       mutate(
         PullDate = pull_time,
-        Constituent = constit,
-        PullTask = sprintf('%s_%s_%03d', constit, pull_id, assignments)) %>%
+        ParamGroup = constituent,
+        PullTask = sprintf('%s_%s_%03d', constituent, pull_id, assignments)) %>%
       left_join(select(constit_inventory, site_id, MonitoringLocationIdentifier, SiteNumObs=resultCount), by='site_id') %>%
-      select(site_id, LakeNumObs, MonitoringLocationIdentifier, SiteNumObs, PullTask, PullDate, Constituent)
+      select(site_id, LakeNumObs, MonitoringLocationIdentifier, SiteNumObs, PullTask, PullDate, ParamGroup)
 
-    # As a side effect, append this data_frame to an archive file that records
-    # all planned partitions. We will likely end up with too many such files
-    # while testing the partitioning/pulling code, but we'd rather have too many
-    # than risk having to dig through the data files to recover a mapping of
-    # which sites have data in which files.
-    archive_file <- sc_retrieve(archive_ind)
-    partitions_archive <- feather::read_feather(archive_file)
-    partitions_all <- bind_rows(partitions_archive, partitions)
-    feather::write_feather(partitions_all, archive_file)
-    gd_put(archive_ind) # 1-arg version requires scipiper 0.0.11+
-
-    # Also write the data_frame to a location that will get overwritten with
-    # each new pass through this function
-    feather::write_feather(partitions, scipiper::as_data_file(partitions_ind))
-    gd_put(partitions_ind) # 1-arg version requires scipiper 0.0.11+
-
+    return(partitions)
   }))
+
+  # As a side effect, append this data_frame to an archive file that records
+  # all planned partitions. We will likely end up with too many such files
+  # while testing the partitioning/pulling code, but we'd rather have too many
+  # than risk having to dig through the data files to recover a mapping of
+  # which sites have data in which files.
+  archive_file <- sc_retrieve(archive_ind)
+  partitions_archive <- feather::read_feather(archive_file)
+  partitions_all <- bind_rows(partitions_archive, partitions)
+  feather::write_feather(partitions_all, archive_file)
+  gd_put(archive_ind) # 1-arg version requires scipiper 0.0.11+
+
+  # Also write the data_frame to a location that will get overwritten with
+  # each new pass through this function
+  feather::write_feather(partitions, scipiper::as_data_file(partitions_ind))
+  gd_put(partitions_ind) # 1-arg version requires scipiper 0.0.11+
 }
 
 #' Create and push an empty partitions archive if needed. If a partitions
@@ -174,7 +196,7 @@ initialize_partitions_archive <- function(archive_ind) {
       SiteNumObs=0L,
       PullTask='',
       PullDate=Sys.time(),
-      Constituent='') %>%
+      ParamGroup='') %>%
     filter(FALSE)
   archive_file <- scipiper::as_data_file(archive_ind)
   feather::write_feather(empty_archive, path=archive_file)

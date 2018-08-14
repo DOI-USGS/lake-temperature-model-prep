@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 6_temp_wqp_fetch/inout/wqp_inventory.feather.ind
+type: file
+hash: a100d9c097a88e1234096cc2694f861e
+time: 2018-08-14 18:36:40 UTC
+depends:
+  6_temp_wqp_fetch/inout/wqp_needs.feather.ind: df4a790348e4f55a835f358cc05c129e
+  wqp_pull_params: b3d1f54e5926fb213192ef6878b0eebb
+fixed: 790f0707b9a46db860975d4ccea746db
+code:
+  functions:
+    inventory_wqp: b8ebfeeeabeecbc5450d87237c222e81
+

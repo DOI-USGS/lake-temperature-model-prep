@@ -1,3 +1,24 @@
+#' Use the crosswalk to go from raw (collaborator) sites to
+nhd_add_wqp_sites <- function(site_ids, feature_crosswalk_ind) {
+  # read and filter the crosswalk to useful rows
+  feature_crosswalk <- readRDS(sc_retrieve(feature_crosswalk_ind)) %>%
+    filter(!is.na(MonitoringLocationIdentifier)) %>%
+    mutate(MonitoringLocationIdentifier = as.character(MonitoringLocationIdentifier))
+
+  # check for sites we've requested but can't have
+  if(!all(site_ids %in% feature_crosswalk$site_id)) {
+    missing_sites <- site_ids[which(!(site_ids %in% feature_crosswalk$site_id))]
+    warning('Missing site[s] in crosswalk: ', paste0(missing_sites, collapse=', '))
+  }
+
+  # return a lookup table of site_ids and WQP IDs, leaving out any for which we
+  # couldn't find a WQP ID
+  data_frame(site_id=site_ids) %>%
+    inner_join(feature_crosswalk, by='site_id') %>%
+    select(site_id, MonitoringLocationIdentifier)
+}
+
+
 #' Calculate your WQP "wants" using a vector of sites and variables to create a
 #' dataframe of all site/variable combinations.
 #'
@@ -8,12 +29,18 @@
 #'   "Temperature" and "Temperature, water").
 #' @return A dataframe with columns "site" and "variable" that captures all
 #'   possible combinations of sites and variables of interest.
-wqp_calc_wants <- function(wqp_sites, wqp_variables) {
+wqp_calc_wants <- function(wants_ind, wqp_sites, wqp_variables) {
+  df <- expand.grid(
+    MonitoringLocationIdentifier=as.character(wqp_sites$MonitoringLocationIdentifier),
+    ParamGroup=names(wqp_variables),
+    stringsAsFactors=FALSE) %>%
+    as_data_frame() %>%
+    left_join(wqp_sites, by='MonitoringLocationIdentifier')
 
-  vars <- names(wqp_variables$characteristicName)
-  df <- expand.grid(site=wqp_sites, variable=vars, stringsAsFactors=FALSE) %>%
-    mutate(filename=)
-  return(df)
+  # write and indicate the data file
+  data_file <- scipiper::as_data_file(wants_ind)
+  feather::write_feather(df, data_file)
+  sc_indicate(wants_ind, data_file=data_file)
 }
 
 #' Calculate your WQP "haves" by counting site files in haves_dir
@@ -63,24 +90,27 @@ wqp_calc_haves <- function(haves_ind, haves_dir, archive_ind) {
 #' Calculate your WQP "needs" by finding the difference between your "wants" and
 #' "haves".
 #'
-#' @param wqp_wants A dataframe of all site/variable combinations of interest.
-#' @param wqp_haves An inventory of all site/variable combinations for which you
-#'   already have data.
+#' This will not detect new needs due to an increase in the number of
+#' temperature characteristicName, though it would detect the addition of an
+#' entirely new ParamGroup. If you add a temperature characteristicName, force a
+#' rebuild of the needs, inventory, and data files.
+#'
+#' @param wants A dataframe of all site/variable combinations of interest.
+#' @param haves_ind Indicator file of an inventory of all site/variable
+#'   combinations for which you already have data.
 #' @return A dataframe that includes site/variable combinations which reflects
 #'   site/variable combinations in wqp_wants that are missing in wqp_haves.
-wqp_calc_needs <- function(wqp_wants, wqp_haves) {
+wqp_calc_needs <- function(needs_ind, wants_ind, haves_ind) {
 
-  haves <- readRDS(wqp_haves)
+  wants <- feather::read_feather(sc_retrieve(wants_ind))
+  haves <- feather::read_feather(sc_retrieve(haves_ind))
 
   # leaves only the rows in wqp_wants that don't exist in wqp_haves
   # these are site/variable combinations where we have no data
-  diffed_cells <- dplyr::anti_join(wqp_wants, haves,  by = c('site', 'variable'))
+  needs <- dplyr::anti_join(wants, haves,  by = c('site_id', 'MonitoringLocationIdentifier', 'ParamGroup'))
 
-  if (any(is.na(diffed_cells))){
-    # shouldn't be any NAs, but if there are, throw an error
-    stop('found NA(s) in NLDAS cell diff. Check ', wqp_haves, ' and `wq_wants` data')
-  }
-
-  # return the site/variable combinations what we need to pull
-  return(diffed_cells)
+  # write and indicate the data file
+  data_file <- scipiper::as_data_file(needs_ind)
+  feather::write_feather(needs, data_file)
+  sc_indicate(needs_ind, data_file=data_file)
 }
