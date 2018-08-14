@@ -93,7 +93,7 @@ targets:
     command: loop_tasks(task_plan = nldas_append_cube_plan, task_makefile = "6_fetch_append_cubes_tasks.yml")
 
   new_cell_plan:
-    command: create_cell_task_plan(nldas_new_cells, replete_time_range, nldas_new_cube_files,
+    command: create_new_cell_task_plan(nldas_new_cells, replete_time_range, nldas_new_cube_files,
       cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir,
       cube_data_dir = cube_data_dir, cube_ind_dir = cube_ind_dir)
 

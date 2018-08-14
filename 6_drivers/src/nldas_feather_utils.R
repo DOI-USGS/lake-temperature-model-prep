@@ -1,11 +1,11 @@
-create_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, cell_ind_dir, cube_data_dir, cube_ind_dir){
+create_new_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, cell_ind_dir, cube_data_dir, cube_ind_dir){
 
   # from https://stackoverflow.com/questions/17256834/getting-the-arguments-of-a-parent-function-in-r-with-names
   # we want to get the name of the object passed to `cells`, so we can refer to it elsewhere
   cl <- sys.call(0)
   f <- get(as.character(cl[[1]]), mode="function", sys.frame(-1))
   cl <- match.call(definition=f, call=cl)
-  cell_obj <- as.list(cl)[-1][['cells']]
+  cell_obj <- as.list(cl)[-1][['cells']] %>% as.character()
 
 
   cube_task_step <- create_task_step(
@@ -19,7 +19,11 @@ create_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, 
       these_files <- cube_files[grepl(this_var, cube_files)] %>%
         basename() %>% paste0('.ind') %>% file.path(cube_ind_dir, .) %>%
         paste0("\n       '", ., "'", collapse = ",")
-      sprintf('cubes_to_cell_files(target_name, cells = %s, out_dir = I(\'%s\'),nc_dir = I(\'%s\'), %s)', as.character(cell_obj), cell_data_dir, cube_data_dir, these_files)
+      # cells = the data.frame object of cells to use
+      # out_dir = the directory to write the feather files
+      # nc_dir = the directory where the .nc files live
+      # ... = a vector of .nc indicator filepaths that have a 1:1 relationship with the actual .nc data files
+      sprintf('cubes_to_cell_files(target_name, cells = %s, out_dir = I(\'%s\'), nc_dir = I(\'%s\'), %s)', cell_obj, cell_data_dir, cube_data_dir, these_files)
     }
   )
 
@@ -30,27 +34,13 @@ create_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, 
   create_task_plan(variable_indicators, list(cube_task_step), final_steps='build_feathers', ind_dir=cell_ind_dir)
 }
 
-create_cellgroup_filename <- function(t0, t1, variable, dirname, prefix = 'cellgroup', ext = '.yml'){
-  filename <- sprintf("%s_time[%1.0f.%1.0f]_var[%s]%s", prefix, t0, t1, variable, ext)
-  if (dirname != ''){
-    filename <- file.path(dirname, filename)
-  }
-  return(filename)
-}
-parse_cellgroup_filename <- function(filename, out = c('var','time')){
-
-  word_indx <- switch(out,
-                      var = 2,
-                      time = 1)
-  char <- gsub("\\[|\\]", "", regmatches(filename, gregexpr("\\[.*?\\]", filename))[[1]][word_indx])
-  if (out == 'var'){
-    return(char)
-  } else {
-    return(as.numeric(strsplit(char, '[.]')[[1]]))
-  }
-}
 create_update_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, cell_ind_dir, cube_data_dir, cube_ind_dir, secondary_cube_files = c()){
 
+  # we want to get the name of the object passed to `cells`, so we can refer to it elsewhere
+  cl <- sys.call(0)
+  f <- get(as.character(cl[[1]]), mode="function", sys.frame(-1))
+  cl <- match.call(definition=f, call=cl)
+  cell_obj <- as.list(cl)[-1][['cells']] %>% as.character()
 
   cube_files <- c(cube_files, secondary_cube_files)
 
@@ -72,8 +62,6 @@ create_update_cell_task_plan <- function(cells, time_range, cube_files, cell_dat
       all_this_time <- this_time[1]:this_time[2]
       all_that_time <- that_time[1]:that_time[2]
 
-
-
       var_files <- cube_files[grepl(this_var, cube_files)] %>%
         basename() %>% paste0('.ind') %>% file.path(cube_ind_dir, .)
 
@@ -83,7 +71,12 @@ create_update_cell_task_plan <- function(cells, time_range, cube_files, cell_dat
       time_out_range <- !sapply(var_files, time_is_in_range, times = all_that_time, USE.NAMES = FALSE)
       these_files <- var_files[time_in_range & time_out_range] %>%
         paste0("\n       '", ., "'", collapse = ",")
-      sprintf('cubes_to_cell_file(target_name, nc_dir = I(\'%s\'),\n       src_filepath = \'%s\', %s)', cube_data_dir, src_filepath, these_files)
+      # cells = the data.frame object of cells to use
+      # out_dir = the directory to write the feather files
+      # nc_dir = the directory where the .nc files live
+      # ... = a vector of .nc indicator filepaths that have a 1:1 relationship with the actual .nc data files
+      sprintf('cubes_to_cell_files(target_name, cells = %s, out_dir = I(\'%s\'), nc_dir = I(\'%s\'),\n       src_filepath = \'%s\', %s)',
+              cell_obj, cell_data_dir, cube_data_dir, src_filepath, these_files)
     }
   )
 
@@ -93,7 +86,28 @@ create_update_cell_task_plan <- function(cells, time_range, cube_files, cell_dat
   })
 
   cells$cell_filename <- cell_filename
+
   create_task_plan(cells$cell_filename, list(cube_task_step), final_steps='build_feathers', ind_dir=cell_ind_dir)
+}
+
+create_cellgroup_filename <- function(t0, t1, variable, dirname, prefix = 'cellgroup', ext = '.yml'){
+  filename <- sprintf("%s_time[%1.0f.%1.0f]_var[%s]%s", prefix, t0, t1, variable, ext)
+  if (dirname != ''){
+    filename <- file.path(dirname, filename)
+  }
+  return(filename)
+}
+parse_cellgroup_filename <- function(filename, out = c('var','time')){
+
+  word_indx <- switch(out,
+                      var = 2,
+                      time = 1)
+  char <- gsub("\\[|\\]", "", regmatches(filename, gregexpr("\\[.*?\\]", filename))[[1]][word_indx])
+  if (out == 'var'){
+    return(char)
+  } else {
+    return(as.numeric(strsplit(char, '[.]')[[1]]))
+  }
 }
 
 
@@ -193,7 +207,7 @@ cubes_to_cell_files <- function(filename, ..., nc_dir, cells, out_dir, nc_files 
   }
 
   if (!is.null(src_filepath)){
-    stop('haven"t updated this yet')
+    stop('haven\'t updated this yet')
     starter_cell_data <- read_feather(src_filepath)
     file_time_range <- parse_feather_filename(src_filepath, 'time')
     time_indices <- seq(file_time_range[1], file_time_range[2]) + 1
@@ -260,12 +274,3 @@ cube_to_cell <- function(cube_file, x_index, y_index, var){
   return(cell_data)
 }
 
-
-append_cell_file <- function(filename, ...){
-  stop('not implemented')
-
-  data_in <- read_feather(filename) # old file name vs new?
-
-  stop('not implemented')
-  write_feather(data_in, path = filename)
-}

@@ -25,6 +25,8 @@ calc_driver_files <- function(cell_group_table, dirname){
   return(unique(driver_files))
 }
 
+#' combine a bunction of .yml files that are the result of `sc_indicate` into
+#'   a single file
 merge_cell_group_files <- function(cell_group_files){
   file_list <- lapply(cell_group_files$filename, function(x){
     contents <- yaml::read_yaml(x) %>% unlist
@@ -60,7 +62,7 @@ create_driver_task_plan <- function(driver_files, cell_group_table, data_dir, in
   cl <- sys.call(0)
   f <- get(as.character(cl[[1]]), mode="function", sys.frame(-1))
   cl <- match.call(definition=f, call=cl)
-  # perhaps we should be using an .rds or .feather file here so we don't need to do this arg-grabbing?
+  # **perhaps we should be using an .rds or .feather file here so we don't need to do this goofy arg-grabbing?**
   cell_group_obj <- as.list(cl)[-1][['cell_group_table']] %>% as.character()
 
   as_sub_group_table <- function(filename){
@@ -117,10 +119,8 @@ create_driver_task_makefile <- function(makefile, task_plan){
 #' convert a bunch of variable-specific feather files into a single driver file
 #'
 #' @param filepath the output file to use
-#' @param ... feather indicator files
-#' @param dirname the directory for _data_ files corresponding to the feather .ind files
-#' @param feather_files a vector of feather file paths (data files).
-#'    If specified, `...` and `dirname` are ignored
+#' @param cell_group_table a data.frame with `filepath` and `hash`, where `filepath`
+#'    points to the location of feather files to use for each cell
 feathers_to_driver_file <- function(filepath, cell_group_table){
 
   feather_filepaths <- cell_group_table$filepath
