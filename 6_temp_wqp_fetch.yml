@@ -16,6 +16,7 @@ sources:
 targets:
   6_temp_wqp_fetch:
     depends:
+      - 6_temp_wqp_fetch/log/6_temp_wqp_fetch_tasks.ind
       - 6_temp_wqp_fetch/inout/wqp_haves.feather.ind
 
   # -- compute wants, haves, and needs --
