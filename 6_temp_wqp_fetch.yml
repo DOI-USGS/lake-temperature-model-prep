@@ -26,7 +26,7 @@ targets:
 
   # placeholder = random sites for now. this will be output of upstream workflow later
   site_ids:
-    command: c(I(c('nhd_10847960', 'nhd_1102410', 'nhd_10596486', 'nhd_1097384', 'nhd_1099554')))#, 'nhd_1099234')))
+    command: c(I(c('nhd_10847960', 'nhd_1102410', 'nhd_10596486', 'nhd_1097384', 'nhd_1099554', 'nhd_1099234')))
 
   wqp_want_sites:
     command: nhd_add_wqp_sites(site_ids, '2_crosswalk_munge/out/feature_crosswalk.rds.ind')
