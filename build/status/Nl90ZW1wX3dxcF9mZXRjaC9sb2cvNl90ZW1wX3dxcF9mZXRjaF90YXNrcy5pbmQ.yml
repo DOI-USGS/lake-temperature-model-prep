@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 6_temp_wqp_fetch/log/6_temp_wqp_fetch_tasks.ind
+type: file
+hash: 244b2ac43f7dee714cec078288cca5e2
+time: 2018-08-14 23:19:06 UTC
+depends:
+  wqp_pull_plan: a991d56af984dbc6d42849fb9a8f9ecc
+  6_temp_wqp_fetch_tasks.yml: 273abad5cf6a0b110df7551d58f6ef14
+fixed: c5cfdfacf90cb942deb045710cb0842c
+code:
+  functions: {}
+
