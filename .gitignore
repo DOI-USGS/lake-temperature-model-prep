@@ -55,3 +55,8 @@ rsconnect/
 *.prj
 *.xml
 
+# "in" cooperator data
+/6_temp_coop_fetch/in/*
+!/6_temp_coop_fetch/in/*.ind
+!/6_temp_coop_fetch/in/*.placeholder
+
