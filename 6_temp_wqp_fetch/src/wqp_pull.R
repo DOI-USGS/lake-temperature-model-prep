@@ -25,7 +25,7 @@ plan_wqp_pull <- function(partitions_ind) {
       sprintf('partition_%s', task_name)
     },
     command = function(task_name, ...) {
-      sprintf("filter_partitions(partitions_ind='6_temp_wqp_fetch/inout/wqp_pull_partitions.feather.ind', I('%s'))", task_name)
+      sprintf("filter_partitions(partitions_ind='%s', I('%s'))", partitions_ind, task_name)
     }
   )
 
