@@ -1,8 +1,5 @@
 target_default: 6_drivers_fetch
 
-include:
-  - 1_crosswalk_fetch.yml
-
 packages:
   - sp
   - scipiper
