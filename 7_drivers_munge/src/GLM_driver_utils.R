@@ -104,9 +104,9 @@ create_driver_task_plan <- function(driver_files, cell_group_table, data_dir, in
 }
 
 create_driver_task_makefile <- function(makefile, task_plan){
-  include <- "8_drivers_munge.yml"
+  include <- "7_drivers_munge.yml"
   packages <- c('dplyr', 'feather', 'readr','lubridate')
-  sources <- '8_drivers_munge/src/GLM_driver_utils.R'
+  sources <- '7_drivers_munge/src/GLM_driver_utils.R'
 
   create_task_makefile(
     task_plan, makefile = makefile, ind_complete = TRUE,

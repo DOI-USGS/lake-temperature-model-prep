@@ -1,4 +1,4 @@
-target_default: 8_drivers_munge
+target_default: 7_drivers_munge
 
 include:
   - 6_drivers_fetch.yml
@@ -10,15 +10,15 @@ packages:
 
 sources:
   - 6_drivers/src/nldas_feather_utils.R
-  - 8_drivers_munge/src/GLM_driver_utils.R
+  - 7_drivers_munge/src/GLM_driver_utils.R
 
 targets:
-  8_drivers_munge:
+  7_drivers_munge:
     depends:
-      - "8_drivers_munge/out/8_drivers_munge_tasks.ind"
+      - "7_drivers_munge/out/7_drivers_munge_tasks.ind"
 
   meteo_file_dir:
-    command: c(I("8_drivers_munge/out"))
+    command: c(I("7_drivers_munge/out"))
 
   cell_group_files:
     command: calc_cell_group_files(nldas_cells, replete_time_range, ind_dir = cell_ind_dir) # where is the side-effect of writing to '6_drivers/in/nldas_times.rds'?? (updates cubes)
@@ -32,8 +32,8 @@ targets:
   GLM_driver_plan:
     command: create_driver_task_plan(GLM_driver_files, cell_group_table, data_dir = cell_data_dir, ind_dir = meteo_file_dir)
 
-  "8_drivers_munge_tasks.yml":
+  "7_drivers_munge_tasks.yml":
     command: create_driver_task_makefile(target_name, GLM_driver_plan)
 
-  "8_drivers_munge/out/8_drivers_munge_tasks.ind":
-    command: loop_tasks(task_plan = GLM_driver_plan, task_makefile = "8_drivers_munge_tasks.yml")
+  "7_drivers_munge/out/7_drivers_munge_tasks.ind":
+    command: loop_tasks(task_plan = GLM_driver_plan, task_makefile = "7_drivers_munge_tasks.yml")
