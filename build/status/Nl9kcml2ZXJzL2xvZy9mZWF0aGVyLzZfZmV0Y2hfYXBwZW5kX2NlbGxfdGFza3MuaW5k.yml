@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 6_drivers/log/feather/6_fetch_append_cell_tasks.ind
+type: file
+hash: 86c208070c5f09732aac00b34c606428
+time: 2018-08-10 00:48:47 UTC
+depends:
+  append_cell_plan: c6b03ecd720e991cb00edb708f0ed96f
+  6_fetch_append_cell_tasks.yml: 906a154404581be4c6e9c52f60e61ca8
+fixed: ~
+code:
+  functions: {}
+
