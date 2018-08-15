@@ -25,7 +25,7 @@ nhd_add_wqp_sites <- function(site_ids, feature_crosswalk_ind) {
 #' @param wqp_sites A vector of all site IDs from which you would like to have
 #'   WQP data.
 #' @param wqp_variables List of lists that contain parameters of interest (e.g.,
-#'   temperature) and all corresponding synonyms available in NWIS (e.g.,
+#'   temperature) and all corresponding synonyms available in WQP (e.g.,
 #'   "Temperature" and "Temperature, water").
 #' @return A dataframe with columns "site" and "variable" that captures all
 #'   possible combinations of sites and variables of interest.

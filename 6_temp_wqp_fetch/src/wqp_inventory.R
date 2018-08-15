@@ -1,18 +1,19 @@
 #' Get an inventory of the number of records per site/variable combination in
-#' NWIS
+#' WQP
 #'
-#' Depending on the size of the request, calls to NWIS may need to be
+#' Depending on the size of the request, calls to WQP may need to be
 #' partitioned based on record size. This gets the inventory of data available
-#' on NWIS that we need to fullfil our "needs" - which is a series of
+#' on WQP that we need to fullfil our "needs" - which is a series of
 #' site/variable combinations.
 #'
 #' @param needs_ind Indicator file for a table with columns site and variable
-#'   which describes what we going to pull from NWIS, which was calculated as
+#'   which describes what we going to pull from WQP, which was calculated as
 #'   the difference between our data "wants" and our data "haves".
-#' @param wqp_pull_params List of lists that contain parameters of interest (e.g.,
-#'   temperature) and all corresponding synonyms available in NWIS (e.g.,
+#' @param wqp_pull_params List of lists that contain parameters of interest
+#'   (e.g., temperature) and all corresponding synonyms available in WQP (e.g.,
 #'   "Temperature" and "Temperature, water"), plus other pull parameters.
-#'   @param wqp_partition_config configuration information for the data/inventory pulls
+#' @param wqp_partition_config configuration information for the data/inventory
+#'   pulls
 #' @return A dataframe returned by the function dataRetrieval::whatWQPdata, with
 #'   one row per site/variable combination and the 'resultCount' being the
 #'   variable from which we will make decisions about partitioning data pull
