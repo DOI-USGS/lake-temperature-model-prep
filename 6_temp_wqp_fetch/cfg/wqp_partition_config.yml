@@ -1,6 +1,6 @@
 # Maximum number of sites for which to request inventory data at one time.
 # Max URL size permitted by WAF is 8Kb these days
-target_inv_size: 500
+target_inv_size: 1000
 
 # Approximate maximum number of records to pull in each call to WQP.
 # Recommended number is 500000 unless that causes exceedance of max URL size allowed by the WAF
