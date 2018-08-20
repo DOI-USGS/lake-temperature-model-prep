@@ -8,6 +8,7 @@ packages:
   - yaml
 
 sources:
+  - 6_temp_wqp_fetch/src/choose_wqp_sites.R
   - 6_temp_wqp_fetch/src/wants_haves_needs.R
   - 6_temp_wqp_fetch/src/wqp_inventory.R
   - 6_temp_wqp_fetch/src/wqp_pull.R
@@ -25,12 +26,11 @@ targets:
   # Haves - the data elements we already have
   # Needs - the data elements we want and don't yet have, therefore need to acquire
 
-  # placeholder = random sites for now. this will be output of upstream workflow later
-  site_ids:
-    command: c(I(c('nhd_10847960', 'nhd_1102410', 'nhd_10596486', 'nhd_1097384', 'nhd_1099554', 'nhd_1099234')))
+  wqp_want_lakes:
+    command: choose_wqp_lakes(feature_crosswalk_ind='2_crosswalk_munge/out/feature_crosswalk.rds.ind')
 
   wqp_want_sites:
-    command: nhd_add_wqp_sites(site_ids, '2_crosswalk_munge/out/feature_crosswalk.rds.ind')
+    command: nhd_add_wqp_sites(wqp_want_lakes, '2_crosswalk_munge/out/feature_crosswalk.rds.ind')
 
   wqp_pull_params:
     command: yaml.load_file('6_temp_wqp_fetch/cfg/wqp_pull_params.yml')
