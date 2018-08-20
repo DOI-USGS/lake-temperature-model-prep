@@ -8,8 +8,7 @@ choose_wqp_lakes <- function(feature_crosswalk_ind) {
     as.character() %>%
     unique()
 
-  # temporarily restrict to a subset of site_ids for testing
-  return(site_ids[1:5000])
+  return(site_ids)
 }
 
 #' Use the crosswalk to go from raw (collaborator or NHD Perm ID) lake IDs to
