@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 6_temp_wqp_fetch/out/temperature_180820174058_005.feather.ind
+type: file
+hash: 2cf788c31b38452711a57a779e77864b
+time: 2018-08-20 18:36:48 UTC
+depends:
+  6_temp_wqp_fetch/tmp/temperature_180820174058_005.rds.tind: 6073c6138ec1d38abaaa51b0447a6f31
+fixed: e2383ee28617ae24b9e9a2658e3593f5
+code:
+  functions:
+    extract_post_wqp_data: 45a2579a6ee9621f0492622c0c1ca362
+
