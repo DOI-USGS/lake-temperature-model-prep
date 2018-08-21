@@ -1,24 +1,37 @@
-find_parser <- function(file_for_parsing) {
+find_parser <- function(coop_wants) {
 
-  if (grepl('manualentry', file_for_parsing)) {
-    parser <- 'manualentry_files'
-  } else {
-    parser <- file_for_parsing
+  parser_env <- new.env()
+  source_files <- list.files('7a_temp_coop_munge/src/data_parsers', full.names = TRUE)
+  sapply(source_files, source,  parser_env)
+
+  parser_fxns <- ls(envir = parser_env)
+
+  parsers <- c()
+
+  for (i in 1:length(coop_wants)) {
+
+    if (grepl('manualentry', coop_wants[i])) {
+      parsers[i] <- 'parse_manualentry_files'
+
+    } else if (grepl('winnie', coop_wants[i], ignore.case = TRUE)) {
+      parsers[i] <- 'parse_winnie_files'
+
+    }  else {
+      parsers[i] <- paste0('parse_', tools::file_path_sans_ext(coop_wants[i]))
+    }
+
+  parser_exists <- parsers %in% parser_fxns
+
   }
 
-  # list all functions in environment - not sure if this will work? e.g., does source
-  # in remake file load functions into environment?
-  all_functions <- lsf.str()
-
-  # stop build if there is no parser for a certain data file. May want to change this behavior?
-  if (!(parser %in% all_functions)) {
-    stop(paste("Cooperator data file", file_for_parsing, "does not have an associated parser. Please write a parser and save to '7a_temp_coop_munge/src'."))
+  if (!all(parser_exists)) {
+    stop(paste0('Cooperator data file(s) ', paste0(coop_wants[which(parser_exists == FALSE)], collapse = ', '), 'do not have parsers. Please write a parser and save to 7a_temp_coop_munge/src/data_parser'))
   }
 
-  return(parser)
+  return(parsers)
 }
 
-create_coop_taskplan <- function(wants) {
+create_coop_munge_taskplan <- function(wants) {
 
   # this step finds the appropriate parser, reads in data, parses data, then writes a .rds file and .rds.ind file
   coop_munge_step1 <- scipiper::create_task_step(
@@ -26,7 +39,12 @@ create_coop_taskplan <- function(wants) {
     target_name = function(task_name, ...) {
       file.path('7a_temp_coop_munge/out', paste0(tools::file_path_sans_ext(task_name), '.rds.ind'))
     },
-    command = paste0('parse_', find_parser(target_name), "(outind = '", target_name, "', inind = '6_temp_coop_fetch/in/", as_ind_file(task_name), "'")
+    command = paste0('parse_',
+                     find_parser(target_name),
+                     "(outind = '",
+                     target_name,
+                     "', inind = '6_temp_coop_fetch/in/",
+                     as_ind_file(task_name), "'")
   )
 
   # This should first check for the out/.ind file for the parsed data? or depend on the .ind file?
