@@ -1,4 +1,4 @@
-target_default: 1_crosswalk_fetch
+target_default: 2_crosswalk_munge
 
 packages:
   - dplyr

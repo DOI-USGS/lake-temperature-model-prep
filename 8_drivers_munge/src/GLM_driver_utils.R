@@ -59,7 +59,11 @@ create_driver_task_plan <- function(driver_files, feather_ind_files, data_dir, i
   create_task_plan(filenames, list(driver_task_step), final_steps='munge_drivers', ind_dir = ind_dir)
 }
 
-create_driver_task_makefile <- function(makefile, task_plan, include, packages, sources){
+create_driver_task_makefile <- function(makefile, task_plan){
+  include <- "8_drivers_munge.yml"
+  packages <- c('dplyr', 'feather', 'readr','lubridate')
+  sources <- '8_drivers_munge/src/GLM_driver_utils.R'
+
   create_task_makefile(
     task_plan, makefile = makefile, ind_complete = TRUE,
     include = include, sources = sources,
@@ -68,6 +72,13 @@ create_driver_task_makefile <- function(makefile, task_plan, include, packages, 
 }
 
 
+#' convert a bunch of variable-specific feather files into a single driver file
+#'
+#' @param filepath the output file to use
+#' @param ... feather indicator files
+#' @param dirname the directory for _data_ files corresponding to the feather .ind files
+#' @param feather_files a vector of feather file paths (data files).
+#'    If specified, `...` and `dirname` are ignored
 feathers_to_driver_file <- function(filepath, ..., dirname, feather_files = NULL){
   if (is.null(feather_files)){
     feather_inds <- c(...)
@@ -90,19 +101,25 @@ feathers_to_driver_file <- function(filepath, ..., dirname, feather_files = NULL
            RelHum = 100*spfh2m/qsat(AirTemp, pressfc*0.01),
            Rain = apcpsfc*24/1000) %>%
     mutate(Snow = ifelse(AirTemp < 0, Rain*10, 0), Rain = ifelse(AirTemp < 0, 0, Rain)) %>% #convert to m/day rate)
-    select(time, ShortWave, LongWave, AirTemp, RelHum, WindSpeed, Rain, Snow)
+    select(time, ShortWave, LongWave, AirTemp, RelHum, WindSpeed, Rain, Snow) %>% # now downsample?
+    mutate(date = lubridate::as_date(time)) %>% group_by(date) %>%
+    summarize(ShortWave = mean(ShortWave), LongWave = mean(LongWave),
+              AirTemp = mean(AirTemp), RelHum = mean(RelHum),
+              WindSpeed = mean(WindSpeed^3)^(1/3), Rain = mean(Rain), Snow = mean(Snow), n = length(time)) %>%
+    filter(n == 24) %>% rename(time = date) %>% select(-n)
 
-  # now downsample?
-  readr::write_csv()
+  stopifnot(length(unique(diff(drivers_out$time))) == 1)
+
+  readr::write_csv(x = drivers_out, path = filepath)
 }
 
 # from old MATLAB code:
-#    INPUT:   Ta - air temperature  [C]
-#             Pa - (optional) pressure [mb]
-#
-#    OUTPUT:  q  - saturation specific humidity  [kg/kg]
-qsat = function(Ta, Pa){
-  ew = 6.1121*(1.0007+3.46e-6*Pa)*exp((17.502*Ta)/(240.97+Ta)) # in mb
-  q  = 0.62197*(ew/(Pa-0.378*ew))                              # mb -> kg/kg
+#' @param Ta - air temperature  [C]
+#' @param Pa - pressure [mb]
+#'
+#' @return  q  - saturation specific humidity  [kg/kg]
+qsat <- function(Ta, Pa){
+  ew <- 6.1121*(1.0007+3.46e-6*Pa)*exp((17.502*Ta)/(240.97+Ta)) # in mb
+  q <- 0.62197*(ew/(Pa-0.378*ew))                              # mb -> kg/kg
   return(q)
 }

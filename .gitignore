@@ -40,6 +40,8 @@ rsconnect/
 **.nc.ind
 **_tasks.yml
 6_drivers/log/feather/*.feather.ind
+8_drivers_munge/out/*.csv
+8_drivers_munge/out/*.csv.ind
 build/status/MV9ubGRhc19jdWjlcy9sb2cvTkxEQVNfM*.yml
 
 # Data files
@@ -58,3 +60,6 @@ build/status/MV9ubGRhc19jdWjlcy9sb2cvTkxEQVNfM*.yml
 !/6_temp_coop_fetch/in/*.ind
 !/6_temp_coop_fetch/in/*.placeholder
 
+# tmp wqp indicators
+6_temp_wqp_fetch/tmp/*
+build/status/Nl90ZW1wX3dxcF9mZXRjaC90bX*
