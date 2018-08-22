@@ -115,6 +115,7 @@ targets:
 
   # run the data pulls
   6_temp_wqp_fetch/log/6_temp_wqp_fetch_tasks.ind:
-    command: loop_tasks(
+    command: loop_wqp_tasks(
+      ind_file=target_name,
       task_plan=wqp_pull_plan, task_makefile='6_temp_wqp_fetch_tasks.yml',
       num_tries=I(30), sleep_on_error=I(20))
