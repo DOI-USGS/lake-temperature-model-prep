@@ -86,7 +86,7 @@ create_wqp_pull_makefile <- function(makefile, task_plan) {
   # doesn't need to create anything much, so just write an empty file
   if(is.null(task_plan)) {
     message('WQP pull is up to date, so writing empty task remake file')
-    writeLines('', makefile)
+    readr::write_lines('', makefile)
     return()
   }
 
@@ -101,7 +101,7 @@ create_wqp_pull_makefile <- function(makefile, task_plan) {
 loop_wqp_tasks <- function(ind_file, task_plan, ...) {
   if(is.null(task_plan)) {
     message('WQP pull is up to date, so writing empty task .ind file')
-    writeLines('WQP pull is up to date', ind_file)
+    readr::write_lines('WQP pull is up to date', ind_file)
     return()
   }
   loop_tasks(task_plan=wqp_pull_plan, ...)
