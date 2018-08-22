@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 6_drivers/log/feather/cellgroup_time[0.346848]_var[dlwrfsfc].yml.ind
+type: file
+hash: e5df81c0679aabd85256a11257ff2f7e
+time: 2018-08-11 17:45:01 UTC
+depends:
+  6_drivers/log/feather/cellgroup_time[0.346848]_var[dlwrfsfc].yml: 1c5cb62d8dbf2543941223cc3ec43d8f
+fixed: 73f1b37ddd726a395f0bfc7b8ab0307e
+code:
+  functions: {}
+

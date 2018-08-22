@@ -42,8 +42,7 @@ targets:
     command: c(I("6_drivers/log/feather"))
 
   feature_centroids:
-    command: sf_file_centroids("1_crosswalk_fetch/out/lakes_sf.rds", site_id = I(c('nhd_120052238','nhd_4817675','nhd_4817675','nhd_4819397',
-      'nhd_120052195','nhd_2360642','nhd_120052233','nhd_13293262','nhd_120052889','nhd_7142570','nhd_7142570','nhd_7142570','nhd_120052896','nhd_167122137')))
+    command: sf_file_centroids("1_crosswalk_fetch/out/lakes_sf.rds")
 
   NLDAS_grid: # info from OPeNDAP: https://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FORA0125_H.002
     command: create_ldas_grid(x0 = I(-124.9375), y0 = I(25.0625), x_num = I(464), y_num = I(224), cell_res = I(0.125))
@@ -91,7 +90,7 @@ targets:
     command: loop_tasks(task_plan = nldas_append_cube_plan, task_makefile = "6_fetch_append_cubes_tasks.yml")
 
   new_cell_plan:
-    command: create_cell_task_plan(nldas_new_cells, replete_time_range, nldas_new_cube_files,
+    command: create_new_cell_task_plan(nldas_new_cells, replete_time_range, nldas_new_cube_files,
       cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir,
       cube_data_dir = cube_data_dir, cube_ind_dir = cube_ind_dir)
 
@@ -108,6 +107,9 @@ targets:
 
   "6_drivers/log/feather/6_fetch_new_cell_tasks.ind":
     command: loop_tasks(task_plan = new_cell_plan, task_makefile = "6_fetch_new_cell_tasks.yml")
+    depends:
+      - nldas_new_cells
 
   "6_drivers/log/feather/6_fetch_append_cell_tasks.ind":
     command: loop_tasks(task_plan = append_cell_plan, task_makefile = "6_fetch_append_cell_tasks.yml")
+    # depends: nldas_update_cells

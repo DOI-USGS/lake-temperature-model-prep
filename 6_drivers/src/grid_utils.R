@@ -41,11 +41,10 @@ cells_containing_points <- function(cell_grid, points){
 }
 
 
-sf_file_centroids <- function(filepath, ...){
+sf_file_centroids <- function(filepath){
 
   .obj <- readRDS(filepath)
-  use_values <- list(...)
-  st_centroid(.obj[.obj[[names(use_values)]] %in% use_values[[1]] ,])
+  st_centroid(.obj)
 }
 
 as_OPeNDAP_cells <- function(cell_indices_df, variables){

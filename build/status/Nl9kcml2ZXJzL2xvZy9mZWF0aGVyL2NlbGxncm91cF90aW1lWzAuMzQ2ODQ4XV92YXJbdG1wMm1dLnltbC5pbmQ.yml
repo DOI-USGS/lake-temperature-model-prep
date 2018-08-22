@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 6_drivers/log/feather/cellgroup_time[0.346848]_var[tmp2m].yml.ind
+type: file
+hash: 488cf2462e76b36b77001c9d9375901b
+time: 2018-08-11 18:19:15 UTC
+depends:
+  6_drivers/log/feather/cellgroup_time[0.346848]_var[tmp2m].yml: 8a5979692458de48107140f7078bfd8d
+fixed: 6a9b1ce99f908526479e7c6b8fb7e65f
+code:
+  functions: {}
+

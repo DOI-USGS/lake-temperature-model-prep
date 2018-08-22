@@ -40,9 +40,9 @@ rsconnect/
 **.nc.ind
 **_tasks.yml
 6_drivers/log/feather/*.feather.ind
-8_drivers_munge/out/*.csv
-8_drivers_munge/out/*.csv.ind
-build/status/MV9ubGRhc19jdWjlcy9sb2cvTkxEQVNfM*.yml
+7_drivers_munge/out/*.csv
+7_drivers_munge/out/*.csv.ind
+6_drivers/log/feather/cellgroup*.yml
 
 # Data files
 *.rds
