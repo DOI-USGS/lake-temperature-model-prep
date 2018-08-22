@@ -1,13 +1,13 @@
 version: 0.3.0
 name: 6_temp_wqp_fetch/inout/wqp_pull_partitions.feather.ind
 type: file
-hash: 15fc5aa7f7054886078fe1de1ed41097
-time: 2018-08-20 20:31:26 UTC
+hash: 809c8cbd7570ed3ab8b3049199bd207f
+time: 2018-08-22 15:08:38 UTC
 depends:
-  6_temp_wqp_fetch/inout/wqp_inventory.feather.ind: baa94faec08cca719d8655dd2f2bead5
+  6_temp_wqp_fetch/inout/wqp_inventory.feather.ind: e3952697907870a95865485b3ca3b608
   6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind: d7a5f97050665ce7b25983b2391c77d7
 fixed: d6a9a947a64ecd85c5ca73c7254dc095
 code:
   functions:
-    partition_wqp_inventory: bf2dae0d6f9ce463bdcfe9d19b51c412
+    partition_wqp_inventory: 1c2a5804005d98e6cbef455f147c011f
 
