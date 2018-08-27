@@ -14,6 +14,7 @@ targets:
       - 1_crosswalk_fetch/out/lakes_shapefile.xml.ind
       - 1_crosswalk_fetch/out/lakes_sf.rds.ind
       - 1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind
+      - 1_crosswalk_fetch/out/micorps_sites.xlsx.ind
 
   1_crosswalk_fetch/out/lakes_shapefile.xml.ind:
     command: fetch_crosswalk_shapefile(target_name)
@@ -51,3 +52,9 @@ targets:
     command: fetch_crosswalk_wqp_nhd(target_name)
   1_crosswalk_fetch/out/wqp_nhdLookup.rds:
     command: gd_get('1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind')
+
+  1_crosswalk_fetch/out/micorps_sites.xlsx.ind:
+    command: fetch_micorps_sites(target_name)
+  1_crosswalk_fetch/out/micorps_sites.xlsx:
+    command: gd_get('1_crosswalk_fetch/out/micorps_sites.xlsx.ind')
+

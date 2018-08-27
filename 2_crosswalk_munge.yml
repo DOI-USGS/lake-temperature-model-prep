@@ -3,14 +3,18 @@ target_default: 2_crosswalk_munge
 packages:
   - dplyr
   - scipiper
+  - readxl
+  - dplyr
 
 sources:
   - 2_crosswalk_munge/src/merge_id_crosswalks.R
+  - 2_crosswalk_munge/src/mi_storet_crosswalk.R
 
 targets:
   2_crosswalk_munge:
     depends:
       - 2_crosswalk_munge/out/feature_crosswalk.rds.ind
+      - 2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind
 
   2_crosswalk_munge/out/feature_crosswalk.rds.ind:
     command: merge_id_crosswalks(
@@ -19,3 +23,14 @@ targets:
       wqp_nhd_ind = '1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind')
   2_crosswalk_munge/out/feature_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/feature_crosswalk.rds.ind')
+
+  2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind:
+    command: munge_micorps_crosswalk(
+      out_ind = target_name,
+      site_ind = '1_crosswalk_fetch/out/micorps_sites.xlsx.ind',
+      wqp_nhd_ind = '1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind')
+
+  2_crosswalk_munge/out/microps_nhd_crosswalk.rds:
+    command: gd_get('2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind')
+
+

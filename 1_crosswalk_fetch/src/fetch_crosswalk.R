@@ -45,3 +45,16 @@ fetch_crosswalk_wqp_nhd <- function(ind_file) {
   # post to google drive and return an indicator file
   gd_put(ind_file, data_file)
 }
+
+fetch_micorps_sites <- function(ind_file) {
+
+  # where to put file
+  data_file <- scipiper::as_data_file(ind_file)
+
+  # go get micorp data from gd
+  googledrive::drive_download(as_id('1cWPwBnbdw7YsOHwXL9OSn8yNlmHFXKDd'), path = data_file)
+
+  # post to google drive and return an indicator file
+  gd_put(ind_file, data_file)
+
+}
