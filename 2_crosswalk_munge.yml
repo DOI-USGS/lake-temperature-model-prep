@@ -32,5 +32,3 @@ targets:
 
   2_crosswalk_munge/out/microps_nhd_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind')
-
-
