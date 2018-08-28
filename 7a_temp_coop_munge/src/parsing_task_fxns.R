@@ -1,8 +1,7 @@
-find_parser <- function(coop_wants) {
+find_parser <- function(coop_wants, parser_files) {
 
   parser_env <- new.env()
-  source_files <- list.files('7a_temp_coop_munge/src/data_parsers', full.names = TRUE)
-  sapply(source_files, source,  parser_env)
+  sapply(parser_files, source,  parser_env)
 
   parser_fxns <- ls(envir = parser_env)
 
@@ -15,6 +14,9 @@ find_parser <- function(coop_wants) {
 
     } else if (grepl('winnie', coop_wants[i], ignore.case = TRUE)) {
       parsers[i] <- 'parse_winnie_files'
+
+    }  else if (grepl('DNR data request_Secchi,', coop_wants[i])){
+      parsers[i] <- 'parse_mndnr_files'
 
     }  else {
       parsers[i] <- paste0('parse_', tools::file_path_sans_ext(coop_wants[i]))
