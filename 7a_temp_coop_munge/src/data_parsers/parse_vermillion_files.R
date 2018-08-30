@@ -5,12 +5,20 @@
 parse_Joes_Dock_2013 <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
-  raw_file <- data.table::fread(infile, skip = 1) %>% rename(temp = `Temp, °F (LGR S/N: 1109802, SEN S/N: 1109802)`)
-  clean <- raw_file %>% mutate(temp = fahrenheit_to_celsius(temp),
-                               DateTime = as.Date(`Date Time, GMT-05:00`, format = "%m/%d/%y"),
-                               Depth = 0, DOW = '69037801') %>% filter(!is.na(temp)) %>%
+
+  raw_file <- data.table::fread(infile, skip = 1) %>%
+    rename(temp = starts_with("Temp,"))
+
+  clean <- raw_file %>%
+    mutate(temp = fahrenheit_to_celsius(temp),
+           DateTime = as.Date(`Date Time, GMT-05:00`, format = "%m/%d/%y"),
+           Depth = 0, DOW = '69037801') %>% filter(!is.na(temp)) %>%
     select(DateTime, Depth, temp, DOW)
-  downsampled <- clean %>% group_by(DateTime) %>% slice(3)
+
+  downsampled <- clean %>%
+    group_by(DateTime) %>%
+    slice(3)
+
   saveRDS(object = downsampled, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -134,13 +142,16 @@ parse_Open_Water_Logger_2013 <- function(inind, outind) {
 parse_Temp_Logger_Data_2015 <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
-  raw <- readxl::read_excel(infile, skip = 1) %>% rename(time = "Time, GMT-06:00",
-                                                         temp = "Temp, °F",
-                                                         avg_temp = "Avg: Temp, °F")
-  clean <- raw %>% filter(!is.na(temp)) %>% mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
-                                                   time = substr(time, 12,20),
-                                                   temp = fahrenheit_to_celsius(temp),
-                                                   Depth = 8/3.28, DOW = '69037801') %>% group_by(DateTime) %>%
+  raw <- readxl::read_excel(infile, skip = 1) %>%
+    rename(time = "Time, GMT-06:00",
+           temp = starts_with("Temp,"),
+           avg_temp = starts_with("Avg: Temp"))
+  clean <- raw %>% filter(!is.na(temp)) %>%
+    mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
+           time = substr(time, 12,20),
+           temp = fahrenheit_to_celsius(temp),
+           Depth = 8/3.28, DOW = '69037801') %>%
+    group_by(DateTime) %>%
     filter(n() > 3 & time == "03:08:30") %>% select(DateTime, temp, Depth, DOW)
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
