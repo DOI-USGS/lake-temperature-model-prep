@@ -64,3 +64,6 @@ build/status/MV9ubGRhc19jdWjlcy9sb2cvTkxEQVNfM*.yml
 # tmp wqp indicators
 6_temp_wqp_fetch/tmp/*
 build/status/Nl90ZW1wX3dxcF9mZXRjaC90bX*
+
+# tmp coop munged files/indicators
+7a_temp_coop_munge/tmp/*
