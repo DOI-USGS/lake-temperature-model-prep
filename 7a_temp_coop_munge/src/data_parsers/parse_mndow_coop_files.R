@@ -19,9 +19,13 @@ fahrenheit_to_celsius <- function(x){ 5/9*(x - 32) }
 parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
-  tables <- Hmisc::mdb.get(infile)
+
+  infile_full_path <- file.path('D:/R Projects/lake-temperature-model-prep', infile)
+  file_connection <- odbcConnectAccess2007(infile_full_path)
+
+  df <- sqlFetch(file_connection, "State Waters - 11 feet")
+
   #3 tables in database
-  df <- tables[['State Waters - 11 feet']]
   #need to add DOW for Red lake, add depth in m, convert to deg C
   #time is stored in a separate column, but it seems to have a date
   #added starting from 12/30/99?
