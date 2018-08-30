@@ -3,7 +3,7 @@
 
 parse_manualentry_files <- function(inind, outind) {
 
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
 
   # read in data

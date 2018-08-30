@@ -1,5 +1,5 @@
 parse_mendota_daily_buoy <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw_file <- data.table::fread(infile)
   #flag code definitions are in the EML format on the UW limno data site
@@ -13,7 +13,7 @@ parse_mendota_daily_buoy <- function(inind, outind) {
 }
 
 parse_long_term_ntl <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw_file <- data.table::fread(infile, select = c("lakeid", "sampledate",
                                                    "depth", "wtemp"))
@@ -24,7 +24,7 @@ parse_long_term_ntl <- function(inind, outind) {
 }
 
 parse_mendota_temps_long <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw_file <- data.table::fread(infile, select = c("sampledate", "depth", "watertemp"))
   clean <- raw_file %>% mutate(UWID = "ME") %>% rename(DateTime = sampledate,

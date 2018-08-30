@@ -9,14 +9,14 @@ parse_winnie_files <- function(inind, outind) {
   #x 2015 similar to 2014, but tab "Winnie temp logger -2015"
   #x 2017 similar to 2014/2015, but tab "Winnie temp_-_2017"
 
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
 
   ###################
   # 2009, 2010, 2017 data
   ###################
 
-  if (grepl('2010'|'2009'|'2017', infile)) {
+  if (grepl('2010|2009|2017', infile)) {
     # read in data
 
     if (grepl('2010', infile)) {
@@ -76,13 +76,13 @@ parse_winnie_files <- function(inind, outind) {
   # 2014, 2015 data
   ###################
 
-  if (grepl('2014'|'2015', infile)) {
+  if (grepl('2014|2015', infile)) {
 
     if (grepl('2014', infile)) {
       raw_dat <- readxl::read_excel(infile, sheet = 'Data', skip = 1)
       rel_cols <- names(readxl::read_excel(infile, sheet = 'Data'))
-      depths <- gsub("(^.*\\s)(\\d{1,}\\s*ft)(.*)", "\\2", depths)
       depths <- grep('ft', rel_cols, value = TRUE)
+      depths <- gsub("(^.*\\s)(\\d{1,}\\s*ft)(.*)", "\\2", depths)
       depths <- gsub('ft', '', depths)
 
     } else if (grepl('2015', infile)) {
@@ -127,7 +127,7 @@ parse_winnie_files <- function(inind, outind) {
   # 2011, 2012 data
   ###################
 
-  if (grepl('2011'|'2012', infile)) {
+  if (grepl('2011|2012', infile)) {
     data_sheets <- readxl::excel_sheets(infile)
 
     if (length(grep('graph', data_sheets, ignore.case = T)) > 0) {

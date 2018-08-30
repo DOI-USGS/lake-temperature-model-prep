@@ -1,6 +1,6 @@
 parse_micorps_secchi_temp_DO_alltiers <- function(inind, outind) {
 
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
 
   # read in data
@@ -9,7 +9,7 @@ parse_micorps_secchi_temp_DO_alltiers <- function(inind, outind) {
   # clean data
 
   dat_clean <- raw_dat %>%
-    select(DateTime =`Date Sampled`, depth = `Depth (feet)`, temp = `Temp (°C)`, id = `STORETID`) %>%
+    select(DateTime =`Date Sampled`, depth = `Depth (feet)`, temp = starts_with('Temp'), id = `STORETID`) %>%
     mutate(DateTime = as.Date(DateTime),
            depth = as.numeric(depth)/3.28,
            temp = as.numeric(temp)) %>%

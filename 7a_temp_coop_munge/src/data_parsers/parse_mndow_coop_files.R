@@ -1,6 +1,6 @@
 #parse various minnesota state agency data files
 parse_MPCA_temp_data_all <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw_file <- data.table::fread(infile, colClasses = c(DOW="character"),
                                 select = c("SAMPLE_DATE", "START_DEPTH", "DEPTH_UNIT",
@@ -17,7 +17,7 @@ parse_MPCA_temp_data_all <- function(inind, outind) {
 fahrenheit_to_celsius <- function(x){ 5/9*(x - 32) }
 
 parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   tables <- Hmisc::mdb.get(infile)
   #3 tables in database
@@ -38,7 +38,7 @@ parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
 }
 
 parse_MN_fisheries_all_temp_data_Jan2018 <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile, colClasses = c(DOW="character"))
   #convert to meters depth and deg C temp
@@ -55,26 +55,36 @@ parse_MN_fisheries_all_temp_data_Jan2018 <- function(inind, outind) {
 #these take hourly measurements - keeping the noon measurements to
 #downsample to daily
 parse_Cass_lake_emperature_Logger_Database_2008_to_present <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
-  tables <- Hmisc::mdb.get(infile)
+
+  infile_full_path <- file.path('D:/R Projects/lake-temperature-model-prep', infile)
+  file_connection <- odbcConnectAccess2007(infile_full_path)
+
+  cedar <- sqlFetch(file_connection, "Cedar Island_South (11 ft)") %>%
+    mutate(Depth = 11/3.28)
   #two different instruments
-  cedar <- tables$`Cedar Island_South (11 ft)` %>% mutate(Depth = 11/3.28)
-  knutron <- tables$`Cass Logger near Knutron (27 ft)` %>%
-    mutate(Depth = 27/3.28) %>% rename(WaterTemp=WaterTempF)
+
+  knutron <- sqlFetch(file_connection, "Cass Logger near Knutron (27 ft)") %>%
+    mutate(Depth = 27/3.28) %>%
+    rename(WaterTemp=WaterTempF)
+
   raw <- bind_rows(cedar, knutron)
-  clean <- raw %>% mutate(temp = fahrenheit_to_celsius(WaterTemp),
+  clean <- raw %>%
+    mutate(temp = fahrenheit_to_celsius(WaterTemp),
                           Time = substr(Time, 10,18),
                           DateTime = as.Date(Date, format = "%m/%d/%y"),
                           DOW = "04003000") %>%
-    filter(Time == "12:00:00") %>% select(DateTime, Depth, temp, DOW)
+    filter(Time == "12:00:00") %>%
+    select(DateTime, Depth, temp, DOW)
+
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
 #Lake of the Woods
 parse_LotW_WQ_Gretchen_H <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- readxl::read_excel(infile)
   clean <- raw %>% filter(!grepl(pattern = "Dates in Red", x = notes) & !is.na(temp.units) & !is.na(temperature)) %>%
@@ -89,7 +99,7 @@ parse_LotW_WQ_Gretchen_H <- function(inind, outind) {
 
 #mille lacs
 parse_ML_observed_temperatures <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile)
   clean <- raw %>% mutate(temp = fahrenheit_to_celsius(temp.f),
@@ -102,7 +112,7 @@ parse_ML_observed_temperatures <- function(inind, outind) {
 
 #rainy lake sand bay files
 parse_Sand_Bay_all_2013 <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   all_data <- tibble()
   nums <- 0:9
@@ -125,9 +135,9 @@ parse_Sand_Bay_all_2013 <- function(inind, outind) {
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
- parse_Sand_Bay_All_2016 <- parse_Sand_Bay_all_2015 <- parse_Sand_Bay_all_2014 <- function(inind, outind) {
-  infile <- as_data_file(inind)
-  outfile <- as_data_file(outind)
+parse_Sand_Bay_All_2016 <- parse_Sand_Bay_all_2015 <- parse_Sand_Bay_all_2014 <- function(inind, outind) {
+   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+   outfile <- as_data_file(outind)
   sheet = "All"
   if(grepl(pattern = "2016", x = infile)){
     sheet = "Sand_Bay_All"

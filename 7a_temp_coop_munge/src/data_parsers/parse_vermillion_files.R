@@ -3,7 +3,7 @@
 #Not sure what Vermillion DOW basin this comes from, but they all correspond
 #to the same NHD lake, so just picking one
 parse_Joes_Dock_2013 <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw_file <- data.table::fread(infile, skip = 1) %>% rename(temp = `Temp, °F (LGR S/N: 1109802, SEN S/N: 1109802)`)
   clean <- raw_file %>% mutate(temp = fahrenheit_to_celsius(temp),

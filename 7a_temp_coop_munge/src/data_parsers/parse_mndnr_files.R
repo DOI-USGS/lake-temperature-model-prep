@@ -1,6 +1,6 @@
 parse_mndnr_files <- function(inind, outind) {
 
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
 
 
@@ -8,21 +8,21 @@ parse_mndnr_files <- function(inind, outind) {
   temp_sheets <- grep('Temp', dat_sheets, value = TRUE)
 
   all_dat <- data.frame()
-  for (i in 1:length(do_sheets)) {
+  for (i in 1:length(temp_sheets)) {
 
     dat_raw <- read_excel(infile, sheet = temp_sheets[i])
 
     dat_cleaned <- dat_raw %>%
-      mutate(DateTime = as.Date(Date)) %>%
-      select(DateTime,
+      dplyr::mutate(DateTime = as.Date(Date)) %>%
+      dplyr::select(DateTime,
              depth = `Depth (m)`,
-             temp = `Temp(°C)`,
+             temp = dplyr::starts_with('Temp'),
              site = Site) %>%
-      mutate(sheet = temp_sheets[i]) %>%
-      arrange(site, DateTime, depth) %>%
-      filter(!is.na(depth), !is.na(temp))
+      dplyr::mutate(sheet = temp_sheets[i]) %>%
+      dplyr::arrange(site, DateTime, depth) %>%
+      dplyr::filter(!is.na(depth), !is.na(temp))
 
-    all_dat <- bind_rows(all_dat, dat_cleaned)
+    all_dat <- dplyr::bind_rows(all_dat, dat_cleaned)
   }
 
   # manually found DOW numbers from here: https://maps2.dnr.state.mn.us/ewr/fom/mapper.html?layers=lakes%20streams%20wshd_lev01py3%20occurrences
@@ -35,7 +35,7 @@ parse_mndnr_files <- function(inind, outind) {
     grepl('Sand', sheet) ~ '69061700'
   ))
 
-  all_dat <- select(DateTime, depth, temp, dow)
+  all_dat <- select(all_dat, DateTime, depth, temp, dow)
 
   saveRDS(object = all_dat, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
