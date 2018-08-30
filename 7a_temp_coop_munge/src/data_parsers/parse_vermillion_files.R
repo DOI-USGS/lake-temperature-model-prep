@@ -17,7 +17,7 @@ parse_Joes_Dock_2013 <- function(inind, outind) {
 
 #same with picking an arbitrary Vermillion DOW
 parse_Joes_Dock_Logger_2012 <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- readxl::read_excel(infile)
   clean <- raw %>% mutate(temp = fahrenheit_to_celsius(Temp),
@@ -32,7 +32,7 @@ parse_Joes_Dock_Logger_2012 <- function(inind, outind) {
 #from 2/9/18 email
 #keeping the afternoon measurement for downsampling (every 6 measurments)
 parse_Lake_Vermilion_2016 <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile, skip = 1) %>% rename(DateTime = `Date Time, GMT-06:00`,
                                                         temp = "Temp, \xb0F (LGR S/N: 1161695, SEN S/N: 1161695)")
@@ -47,7 +47,7 @@ parse_Lake_Vermilion_2016 <- function(inind, outind) {
 
 #again keeping the afternoon measurements, assigning arbitrary Vermillion DOW
 parse_Logger_Temps_2009_Joes_Dock <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile, skip = 1, col.names = c("num", "time",
                                                            "temp", "temp_avg"))
@@ -62,7 +62,7 @@ parse_Logger_Temps_2009_Joes_Dock <- function(inind, outind) {
 
 #again keeping the afternoon measurements, assigning arbitrary Vermillion DOW
 parse_Logger_Temps_2009_Open_Water <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile, skip = 1, col.names = c("num", "time",
                                                            "temp", "temp_avg",
@@ -78,7 +78,7 @@ parse_Logger_Temps_2009_Open_Water <- function(inind, outind) {
 
 #same assumptions as above
 parse_Logger_Temps_2010_Open_Water <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile, skip = 1, col.names = c("num", "time",
                                                            "temp", "temp_avg"))
@@ -95,23 +95,29 @@ parse_Logger_Temps_2010_Open_Water <- function(inind, outind) {
 
 #same assumptions as above
 parse_Logger_Temps_2011_Open_Water <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
-  raw <- readxl::read_excel(infile, skip = 1) %>% rename(time = "Time, GMT-06:00",
-                                                         temp = "Temp, °F",
-                                                         avg_temp = "Avg: Temp, °F")
-  clean <- raw %>% filter(!is.na(temp)) %>% mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
-                                                   time = substr(time, 12,20),
-                                                   temp = fahrenheit_to_celsius(temp),
-                                                   Depth = 8/3.28, DOW = '69037801') %>% group_by(DateTime) %>%
+
+  raw <- readxl::read_excel(infile, skip = 1) %>%
+    rename(time = "Time, GMT-06:00",
+           temp = starts_with("Temp,"),
+           avg_temp = starts_with("Avg: Temp"))
+
+  clean <- raw %>%
+    filter(!is.na(temp)) %>%
+    mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
+           time = substr(time, 12,20),
+           temp = fahrenheit_to_celsius(temp),
+           Depth = 8/3.28, DOW = '69037801') %>% group_by(DateTime) %>%
     filter(n() > 3 & time == "15:21:27") %>% select(DateTime, temp, Depth, DOW)
+
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
 #again keeping the afternoon measurements, assigning arbitrary Vermillion DOW
 parse_Open_Water_Logger_2013 <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile, skip = 1, col.names = c("num", "time",
                                                            "temp", "temp_avg",
@@ -126,7 +132,7 @@ parse_Open_Water_Logger_2013 <- function(inind, outind) {
 }
 
 parse_Temp_Logger_Data_2015 <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- readxl::read_excel(infile, skip = 1) %>% rename(time = "Time, GMT-06:00",
                                                          temp = "Temp, °F",
@@ -142,7 +148,7 @@ parse_Temp_Logger_Data_2015 <- function(inind, outind) {
 
 #again keeping the afternoon measurements, assigning arbitrary Vermillion DOW
 parse_Vermilion_Logger_2014 <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile, skip = 1, col.names = c("num", "time",
                                                            "temp", "temp_avg",
@@ -158,7 +164,7 @@ parse_Vermilion_Logger_2014 <- function(inind, outind) {
 }
 
 parse_Verm_annual_tempDO_longformat <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- readxl::read_excel(infile)
   #multiple profiles/day — keeping WQ1 since it is deepest
@@ -170,7 +176,7 @@ parse_Verm_annual_tempDO_longformat <- function(inind, outind) {
 }
 #similar format as above
 parse_vermillion_repeated_tempDO_longformat <- function(inind, outind) {
-  infile <- as_data_file(inind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw <- readxl::read_excel(infile)
   #multiple profiles/day — keeping WQ1 since it is deepest
