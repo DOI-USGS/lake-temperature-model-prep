@@ -35,25 +35,22 @@ find_parser <- function(coop_wants, parser_files) {
   return(parsers_list)
 }
 
+call_parser <- function(outind, inind, parsers, task_name) {
+  parser <- parsers[[task_name]]
+  do.call(parser, list(inind, outind))
+}
+
 create_coop_munge_taskplan <- function(wants, parsers) {
 
-  coop_munge_step0 <- scipiper::create_task_step(
-    step_name = 'identify_parser',
-    target_name = function(task_name, ...) {
-      sprintf('parser_%s', tools::file_path_sans_ext(task_name)) # or write to file
-    },
-    command = function(task_name, ...) {
-      sprintf("coop_parsers[['%s']]", task_name) # if parsers list is named by tasks
-    }
-  )
+
   # this step finds the appropriate parser, reads in data, parses data, then writes a .rds file and .rds.ind file
   coop_munge_step1 <- scipiper::create_task_step(
     step_name = 'parse_and_write',
     target_name = function(task_name, ...) {
-      file.path('7a_temp_coop_munge/out', paste0(tools::file_path_sans_ext(task_name), '.rds.ind'))
+      file.path('7a_temp_coop_munge/tmp', paste0(tools::file_path_sans_ext(task_name), '.rds.ind'))
     },
-    command = function(task_name, steps, ...) {
-      sprintf("do.call(%s, outind = target_name, inind = '6_temp_coop_fetch/in/%s')", steps$identify_parser$target_name, as_ind_file(task_name))
+    command = function(task_name, ...) {
+      sprintf("call_parser(outind = target_name, inind = '6_temp_coop_fetch/in/%s', parsers = coop_parsers, task_name=I('%s'))", as_ind_file(task_name), task_name)
     }
   )
 
@@ -61,7 +58,7 @@ create_coop_munge_taskplan <- function(wants, parsers) {
 
   task_plan <- scipiper::create_task_plan(
     task_names = wants,
-    task_steps = list(coop_munge_step0, coop_munge_step1),
+    task_steps = list(coop_munge_step1),
     add_complete = FALSE,
     final_steps = 'parse_and_write'
   )
@@ -73,16 +70,19 @@ create_coop_munge_makefile <- function(target_name, taskplan) {
   create_task_makefile(
     makefile = target_name,
     task_plan = taskplan,
-    packages = c('scipiper', 'dplyr', 'readxl'),
+    packages = c('scipiper', 'dplyr', 'readxl', 'assertthat', 'RODBC'),
     file_extensions = c("ind"),
+    include = c('6_temp_coop_fetch.yml', '7a_temp_coop_munge.yml'),
     sources = c('7a_temp_coop_munge/src/data_parsers/parse_wilter_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_vermillion_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_mndow_coop_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_manualentry_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_micorps_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_mndnr_files.R'),
+                '7a_temp_coop_munge/src/data_parsers/parse_mndnr_files.R',
+                '7a_temp_coop_munge/src/data_parsers/parse_winnie_files.R',
+                '7a_temp_coop_munge/src/data_parsers/parse_wi_wbic_files.R',
+                '7a_temp_coop_munge/src/parsing_task_fxns.R'),
     ind_dir = '7a_temp_coop_munge/log',
-    ind_complete = TRUE,
-    include = '7a_temp_coop_munge.yml'
-  )
+    ind_complete = TRUE
+    )
 }
