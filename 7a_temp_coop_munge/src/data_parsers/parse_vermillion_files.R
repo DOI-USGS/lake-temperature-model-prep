@@ -12,8 +12,8 @@ parse_Joes_Dock_2013 <- function(inind, outind) {
   clean <- raw_file %>%
     mutate(temp = fahrenheit_to_celsius(temp),
            DateTime = as.Date(`Date Time, GMT-05:00`, format = "%m/%d/%y"),
-           Depth = 0, DOW = '69037801') %>% filter(!is.na(temp)) %>%
-    select(DateTime, Depth, temp, DOW)
+           depth = 0, DOW = '69037801') %>% filter(!is.na(temp)) %>%
+    select(DateTime, depth, temp, DOW)
 
   downsampled <- clean %>%
     group_by(DateTime) %>%
@@ -29,7 +29,7 @@ parse_Joes_Dock_Logger_2012 <- function(inind, outind) {
   outfile <- as_data_file(outind)
   raw <- readxl::read_excel(infile)
   clean <- raw %>% mutate(temp = fahrenheit_to_celsius(Temp),
-                          Depth = 0, DOW = '69037801') %>%
+                          depth = 0, DOW = '69037801') %>%
     rename(DateTime = Date) %>% select(-Temp) %>%
     mutate(DateTime = as.Date(DateTime))
   saveRDS(object = clean, file = outfile)
@@ -42,13 +42,17 @@ parse_Joes_Dock_Logger_2012 <- function(inind, outind) {
 parse_Lake_Vermilion_2016 <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
-  raw <- data.table::fread(infile, skip = 1) %>% rename(DateTime = `Date Time, GMT-06:00`,
-                                                        temp = "Temp, \xb0F (LGR S/N: 1161695, SEN S/N: 1161695)")
-  clean <- raw %>% mutate(time = stringr::str_sub(as.character(DateTime), -4, -1),
-                          temp = fahrenheit_to_celsius(temp),
-                          DateTime = as.Date(DateTime, format = "%m/%d/%Y"),
-                          Depth = 8/3.28, DOW = '69037801') %>%
-    filter(time == "14:00") %>% select(DateTime, temp, Depth, DOW)
+  raw <- data.table::fread(infile, skip = 1) %>%
+    rename(DateTime = `Date Time, GMT-06:00`,
+           temp = "Temp, \xb0F (LGR S/N: 1161695, SEN S/N: 1161695)")
+
+  clean <- raw %>%
+    mutate(time = strftime(as.POSIXct(DateTime, format = "%m/%d/%Y %H:%M"), '%H:%M'),
+           temp = fahrenheit_to_celsius(temp),
+           DateTime = as.Date(DateTime, format = "%m/%d/%Y"),
+           depth = 8/3.28, DOW = '69037801') %>%
+    filter(time == "14:00") %>% select(DateTime, temp, depth, DOW)
+
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -62,8 +66,8 @@ parse_Logger_Temps_2009_Joes_Dock <- function(inind, outind) {
   clean <- raw %>% mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
                           time = substr(time, 10,20),
                           temp = fahrenheit_to_celsius(temp),
-                          Depth = 0, DOW = '69037801') %>%
-    filter(time == "02:34:47 PM") %>% select(DateTime, temp, Depth, DOW)
+                          depth = 0, DOW = '69037801') %>%
+    filter(time == "02:34:47 PM") %>% select(DateTime, temp, depth, DOW)
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -78,8 +82,8 @@ parse_Logger_Temps_2009_Open_Water <- function(inind, outind) {
   clean <- raw %>% mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
                           time = substr(time, 10,20),
                           temp = fahrenheit_to_celsius(temp),
-                          Depth = 8/3.28, DOW = '69037801') %>%
-    filter(time == "03:52:33 PM") %>% select(DateTime, temp, Depth, DOW)
+                          depth = 8/3.28, DOW = '69037801') %>%
+    filter(time == "03:52:33 PM") %>% select(DateTime, temp, depth, DOW)
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -93,10 +97,10 @@ parse_Logger_Temps_2010_Open_Water <- function(inind, outind) {
   clean <- raw %>% mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
                           time = substr(time, 10,20),
                           temp = fahrenheit_to_celsius(temp),
-                          Depth = 8/3.28, DOW = '69037801') %>%
+                          depth = 8/3.28, DOW = '69037801') %>%
     #samping interval isn't quite even, so afternoon measurement isn't at the same time
     filter(!is.na(temp)) %>% group_by(DateTime) %>% filter(n() > 3) %>% slice(3) %>%
-    select(DateTime, temp, Depth, DOW)
+    select(DateTime, temp, depth, DOW)
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -116,8 +120,8 @@ parse_Logger_Temps_2011_Open_Water <- function(inind, outind) {
     mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
            time = substr(time, 12,20),
            temp = fahrenheit_to_celsius(temp),
-           Depth = 8/3.28, DOW = '69037801') %>% group_by(DateTime) %>%
-    filter(n() > 3 & time == "15:21:27") %>% select(DateTime, temp, Depth, DOW)
+           depth = 8/3.28, DOW = '69037801') %>% group_by(DateTime) %>%
+    filter(n() > 3 & time == "15:21:27") %>% select(DateTime, temp, depth, DOW)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -133,8 +137,8 @@ parse_Open_Water_Logger_2013 <- function(inind, outind) {
   clean <- raw %>% mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
                           time = substr(time, 10,20),
                           temp = fahrenheit_to_celsius(temp),
-                          Depth = 8/3.28, DOW = '69037801') %>%
-    filter(time == "02:36:01 PM") %>% select(DateTime, temp, Depth, DOW)
+                          depth = 8/3.28, DOW = '69037801') %>%
+    filter(time == "02:36:01 PM") %>% select(DateTime, temp, depth, DOW)
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -150,9 +154,9 @@ parse_Temp_Logger_Data_2015 <- function(inind, outind) {
     mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
            time = substr(time, 12,20),
            temp = fahrenheit_to_celsius(temp),
-           Depth = 8/3.28, DOW = '69037801') %>%
+           depth = 8/3.28, DOW = '69037801') %>%
     group_by(DateTime) %>%
-    filter(n() > 3 & time == "03:08:30") %>% select(DateTime, temp, Depth, DOW)
+    filter(n() > 3 & time == "03:08:30") %>% select(DateTime, temp, depth, DOW)
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -167,9 +171,9 @@ parse_Vermilion_Logger_2014 <- function(inind, outind) {
   clean <- raw %>% mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
                           time = substr(time, 10,20),
                           temp = fahrenheit_to_celsius(temp),
-                          Depth = 8/3.28, DOW = '69037801') %>% filter(!is.na(temp)) %>%
+                          depth = 8/3.28, DOW = '69037801') %>% filter(!is.na(temp)) %>%
     group_by(DateTime) %>% filter(n() > 3) %>%
-    filter(time == "01:42:21 PM") %>% select(DateTime, temp, Depth, DOW)
+    filter(time == "01:42:21 PM") %>% select(DateTime, temp, depth, DOW)
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -180,8 +184,8 @@ parse_Verm_annual_tempDO_longformat <- function(inind, outind) {
   raw <- readxl::read_excel(infile)
   #multiple profiles/day — keeping WQ1 since it is deepest
   clean <- raw %>% mutate(DOW = '69037801') %>% filter(station == "WQ1") %>%
-    rename(Depth = depth_m, DateTime = date) %>%
-    select(DateTime, temp, Depth, DOW) %>% mutate(DateTime = as.Date(DateTime))
+    rename(depth = depth_m, DateTime = date) %>%
+    select(DateTime, temp, depth, DOW) %>% mutate(DateTime = as.Date(DateTime))
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -192,7 +196,7 @@ parse_vermillion_repeated_tempDO_longformat <- function(inind, outind) {
   raw <- readxl::read_excel(infile)
   #multiple profiles/day — keeping WQ1 since it is deepest
   clean <- raw %>% mutate(DOW = '69037801') %>% filter(site == "wq1") %>%
-    rename(Depth = depth, DateTime = datetext) %>% select(DateTime, temp, Depth, DOW) %>%
+    rename(DateTime = datetext) %>% select(DateTime, temp, depth, DOW) %>%
     mutate(DateTime = as.Date(DateTime))
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)

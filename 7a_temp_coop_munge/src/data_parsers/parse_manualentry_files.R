@@ -4,6 +4,7 @@
 parse_manualentry_files <- function(inind, outind) {
 
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+
   outfile <- as_data_file(outind)
 
   # read in data
@@ -24,7 +25,8 @@ parse_manualentry_files <- function(inind, outind) {
   dat_clean <- raw_dat %>%
     mutate(depth = ifelse(depth.units %in% 'f', depth/3.28, depth),
            temp = ifelse(temp.units %in% "F", fahrenheit_to_celsius(temperature), temperature)) %>%
-    select(DateTime = Date, depth, temp, DOW)
+    mutate(DateTime = as.Date(Date), DOW = as.character(DOW)) %>%
+    select(DateTime, depth, temp, DOW)
 
   saveRDS(object = dat_clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
