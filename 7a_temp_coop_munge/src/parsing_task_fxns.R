@@ -50,7 +50,17 @@ create_coop_munge_taskplan <- function(wants, parsers) {
       file.path('7a_temp_coop_munge/tmp', paste0(tools::file_path_sans_ext(task_name), '.rds.ind'))
     },
     command = function(task_name, ...) {
-      sprintf("call_parser(outind = target_name, inind = '6_temp_coop_fetch/in/%s', parsers = coop_parsers, task_name=I('%s'))", as_ind_file(task_name), task_name)
+      sprintf("%s(outind = target_name, inind = '6_temp_coop_fetch/in/%s')", parsers[[task_name]], as_ind_file(task_name))
+    }
+  )
+
+  coop_munge_step2 <- scipiper::create_task_step(
+    step_name = 'require_local',
+    target_name = function(task_name, ...) {
+      sprintf("7a_temp_coop_munge/tmp/%s", paste0(tools::file_path_sans_ext(task_name), '.rds'))
+    },
+    command = function(target_name, ...) {
+      sprintf("require_local(ind_file = '%s')", as_ind_file(target_name))
     }
   )
 
@@ -58,7 +68,7 @@ create_coop_munge_taskplan <- function(wants, parsers) {
 
   task_plan <- scipiper::create_task_plan(
     task_names = wants,
-    task_steps = list(coop_munge_step1),
+    task_steps = list(coop_munge_step1, coop_munge_step2),
     add_complete = FALSE,
     final_steps = 'parse_and_write'
   )
@@ -81,7 +91,8 @@ create_coop_munge_makefile <- function(target_name, taskplan) {
                 '7a_temp_coop_munge/src/data_parsers/parse_mndnr_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_winnie_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_wi_wbic_files.R',
-                '7a_temp_coop_munge/src/parsing_task_fxns.R'),
+                '7a_temp_coop_munge/src/parsing_task_fxns.R',
+                'lib/src/require_local.R'),
     ind_dir = '7a_temp_coop_munge/log',
     ind_complete = TRUE
     )
