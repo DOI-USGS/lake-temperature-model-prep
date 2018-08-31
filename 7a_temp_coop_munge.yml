@@ -8,13 +8,15 @@ packages:
 
 sources:
   - 7a_temp_coop_munge/src/parsing_task_fxns.R
-  - lib/src/require_local.R
+  - 7a_temp_coop_munge/src/data_merge_fxns.R
 
 targets:
 
   7a_temp_coop_munge:
     depends:
-     - 7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind
+     - 7a_temp_coop_munge/tmp/all_coop_dat.rds.ind
+     - parser_files
+     - coop_parsers
 
   parser_files:
     command: list.files('7a_temp_coop_munge/src/data_parsers', full.names = TRUE)
@@ -25,7 +27,6 @@ targets:
   coop_munge_taskplan:
     command: create_coop_munge_taskplan(wants = coop_wants, parsers = coop_parsers)
 
-
   # -- create makefile with targets to parse each file pulled from gd -- #
 
   7a_temp_coop_munge_tasks.yml:
@@ -33,3 +34,8 @@ targets:
 
   7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind:
     command: loop_tasks(task_plan = coop_munge_taskplan, task_makefile = '7a_temp_coop_munge_tasks.yml')
+
+  # -- bind together all data using final indicator file of 7a_temp_coop_munge_tasks.yml -- #
+
+  7a_temp_coop_munge/tmp/all_coop_dat.rds.ind:
+    command: merge_coop_dat(outind = target_name, inind = '7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind')
