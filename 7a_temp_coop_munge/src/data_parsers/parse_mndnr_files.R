@@ -26,7 +26,7 @@ parse_mndnr_files <- function(inind, outind) {
   }
 
   # manually found DOW numbers from here: https://maps2.dnr.state.mn.us/ewr/fom/mapper.html?layers=lakes%20streams%20wshd_lev01py3%20occurrences
-  all_dat <- mutate(all_dat, dow = case_when(
+  all_dat <- mutate(all_dat, DOW = case_when(
     grepl('Rainy', sheet) ~ '69069400',
     grepl('Crane', sheet) ~ '69061600',
     grepl('Kab', sheet) ~ '69084500',
@@ -35,7 +35,7 @@ parse_mndnr_files <- function(inind, outind) {
     grepl('Sand', sheet) ~ '69061700'
   ))
 
-  all_dat <- select(all_dat, DateTime, depth, temp, dow)
+  all_dat <- select(all_dat, DateTime, depth, temp, DOW)
 
   saveRDS(object = all_dat, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)

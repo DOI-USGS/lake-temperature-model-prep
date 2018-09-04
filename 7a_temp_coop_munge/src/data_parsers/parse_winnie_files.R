@@ -85,19 +85,26 @@ parse_winnie_files <- function(inind, outind) {
       depths <- gsub("(^.*\\s)(\\d{1,}\\s*ft)(.*)", "\\2", depths)
       depths <- gsub('ft', '', depths)
 
+      # find index of temperature columns
+      temp_cols <- grep('^.{1}F', names(raw_dat))
+
     } else if (grepl('2015', infile)) {
       raw_dat <- readxl::read_excel(infile, sheet = 'Winnie temp logger -2015', skip = 1)
       rel_cols <- names(readxl::read_excel(infile, sheet = 'Winnie temp logger -2015'))
 
       depths <- grep('ft|feet', rel_cols, value = TRUE)
-      depths <- gsub("(^.*Winnie\\s)(\\d{1,})(\\sf.*)", "\\2", depths)
+      depths <- gsub("(^.*Winnie\\s)(\\d{1,})(\\s*f.*)", "\\2", depths)
+
+      # find index of temperature columns
+      temp_cols <- grep('Temp,', names(raw_dat))
+
 
     }
 
   # find columns of interest
   time_cols <- grep('GMT|Time', names(raw_dat))
   date_cols <- grep('Date', names(raw_dat))
-  temp_cols <- grep('°F', names(raw_dat))
+
 
   cleaned_dat <- as.data.frame(matrix(ncol = 4, nrow = 0))
   names(cleaned_dat) <- c('DateTime', 'Time', 'temp', 'depth')
