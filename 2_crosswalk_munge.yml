@@ -30,5 +30,5 @@ targets:
       site_ind = '1_crosswalk_fetch/out/micorps_sites.xlsx.ind',
       wqp_nhd_ind = '1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind')
 
-  2_crosswalk_munge/out/microps_nhd_crosswalk.rds:
+  2_crosswalk_munge/out/micorps_nhd_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind')
