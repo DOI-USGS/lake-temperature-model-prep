@@ -58,3 +58,29 @@ fetch_micorps_sites <- function(ind_file) {
   gd_put(ind_file, data_file)
 
 }
+
+fetch_crosswalk_wbic_nhd <- function(ind_file) {
+
+  # figure out where we will be putting the file
+  data_file <- scipiper::as_data_file(ind_file)
+
+  # download from a github URL that points to necsc-lake-modeling repo
+  url <- 'https://github.com/USGS-R/necsc-lake-modeling/raw/master/data/NHD_state_crosswalk/nhd2wbic.RData'
+  download.file(url=url, destfile=data_file, mode='wb')
+
+  # post to google drive and return an indicator file
+  gd_put(ind_file, data_file)
+}
+
+fetch_crosswalk_dow_nhd <- function(ind_file) {
+
+  # figure out where we will be putting the file
+  data_file <- scipiper::as_data_file(ind_file)
+
+  # download from a github URL that points to necsc-lake-modeling repo
+  url <- 'https://github.com/USGS-R/necsc-lake-modeling/blob/master/data/NHD_state_crosswalk/nhd2dowlknum.RData'
+  download.file(url=url, destfile=data_file, mode='wb')
+
+  # post to google drive and return an indicator file
+  gd_put(ind_file, data_file)
+}
