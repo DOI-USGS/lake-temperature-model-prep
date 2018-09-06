@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind
+type: file
+hash: 392c282b929d9b733e4b22259bae23c6
+time: 2018-08-27 20:37:49 UTC
+depends:
+  1_crosswalk_fetch/out/micorps_sites.xlsx.ind: e644243ed949ed12504a3bfe6a1fccff
+  1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind: 95bd31d9644d23dce53fa6c4d8353ef6
+fixed: 0bd213a1db18e17838632b1f45d11c3a
+code:
+  functions:
+    munge_micorps_crosswalk: 4cfc97458a0ba84baff2887896f8961b
+
