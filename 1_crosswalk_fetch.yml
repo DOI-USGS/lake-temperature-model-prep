@@ -15,8 +15,8 @@ targets:
       - 1_crosswalk_fetch/out/lakes_sf.rds.ind
       - 1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind
       - 1_crosswalk_fetch/out/micorps_sites.xlsx.ind
-      - 1_crosswalk_fetch/out/wibc_nhd_crosswalk.rds.ind
-      - 1_crosswalk_fetch/out/dow_nhd_crosswalk.rds.ind
+      - 1_crosswalk_fetch/out/nhd2wbic.RData.ind
+      - 1_crosswalk_fetch/out/nhd2dowlknum.RData.ind
 
   1_crosswalk_fetch/out/lakes_shapefile.xml.ind:
     command: fetch_crosswalk_shapefile(target_name)
@@ -60,12 +60,12 @@ targets:
   1_crosswalk_fetch/out/micorps_sites.xlsx:
     command: gd_get('1_crosswalk_fetch/out/micorps_sites.xlsx.ind')
 
-  1_crosswalk_fetch/out/wibc_nhd_crosswalk.rds.ind:
+  1_crosswalk_fetch/out/nhd2wbic.RData.ind:
     command: fetch_crosswalk_wbic_nhd(target_name)
-  1_crosswalk_fetch/out/wibc_nhdLookup.rds:
-    command: gd_get('1_crosswalk_fetch/out/wibc_nhd_crosswalk.rds.ind')
+  1_crosswalk_fetch/out/nhd2wbic.RData:
+    command: gd_get('1_crosswalk_fetch/out/nhd2wbic.RData.ind')
 
-  1_crosswalk_fetch/out/dow_nhd_crosswalk.rds.ind:
+  1_crosswalk_fetch/out/nhd2dowlknum.RData.ind:
     command: fetch_crosswalk_dow_nhd(target_name)
-  1_crosswalk_fetch/out/dow_nhdLookup.rds:
-    command: gd_get('1_crosswalk_fetch/out/dow_nhd_crosswalk.rds.ind')
+  1_crosswalk_fetch/out/nhd2dowlknum.RData:
+    command: gd_get('1_crosswalk_fetch/out/nhd2dowlknum.RData.ind')
