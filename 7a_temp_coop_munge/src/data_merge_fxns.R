@@ -11,9 +11,7 @@ merge_coop_dat <- function(outind, inind) {
   all_dat <- data.frame()
 
   for (tmp_file in parsed_files) {
-    if (!file.exists(as_data_file(tmp_file))) {
-      stop(paste0(as_data_file(tmp_file), ' does not exist.'))
-    } else {
+
       temp_filename <- sc_retrieve(tmp_file, remake_file = '7a_temp_coop_munge_tasks.yml')
       temp_dat <- readRDS(temp_filename)
       temp_dat$source <- as_data_file(tmp_file)
@@ -24,10 +22,18 @@ merge_coop_dat <- function(outind, inind) {
       if ('DOW' %in% names(temp_dat)) {
         temp_dat$DOW <- as.character(temp_dat$DOW)
       }
+
+      if ('WBIC' %in% names(temp_dat)) {
+        temp_dat$WBIC <- as.character(temp_dat$WBIC)
+      }
+
       message(paste0('Now binding ', temp_filename))
       all_dat <- bind_rows(all_dat, temp_dat)
-    }
   }
+
+  all_dat <- filter(all_dat, !is.na(depth), !is.na(temp)) %>%
+    distinct() # get rid of duplicated values
+
   saveRDS(object = all_dat, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
