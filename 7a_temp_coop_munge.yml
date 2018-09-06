@@ -5,18 +5,18 @@ packages:
   - tools
   - dplyr
   - readxl
+  - feather
 
 sources:
   - 7a_temp_coop_munge/src/parsing_task_fxns.R
   - 7a_temp_coop_munge/src/data_merge_fxns.R
+  - 7a_temp_coop_munge/src/crosswalk_fxns.R
 
 targets:
 
   7a_temp_coop_munge:
     depends:
-     - 7a_temp_coop_munge/tmp/all_coop_dat.rds.ind
-     - parser_files
-     - coop_parsers
+     - 7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind
 
   parser_files:
     command: list.files('7a_temp_coop_munge/src/data_parsers', full.names = TRUE)
@@ -39,3 +39,14 @@ targets:
 
   7a_temp_coop_munge/tmp/all_coop_dat.rds.ind:
     command: merge_coop_dat(outind = target_name, inind = '7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind')
+
+  7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind:
+    command: crosswalk_coop_dat(
+      outind = target_name,
+      inind = '7a_temp_coop_munge/tmp/all_coop_dat.rds.ind',
+      id_crosswalk = '2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind',
+      wbic_crosswalk = '1_crosswalk_fetch/out/nhd2wbic.RData.ind',
+      dow_crosswalk = '1_crosswalk_fetch/out/nhd2dowlknum.RData.ind')
+
+  7a_temp_coop_munge/out/all_coop_dat_linked.feather:
+    command: gd_get('7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind')
