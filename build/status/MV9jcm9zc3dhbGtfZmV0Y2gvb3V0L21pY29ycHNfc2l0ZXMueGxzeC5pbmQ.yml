@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/micorps_sites.xlsx.ind
+type: file
+hash: e644243ed949ed12504a3bfe6a1fccff
+time: 2018-08-27 20:31:13 UTC
+depends: {}
+fixed: 29027c46de59ec50898370807e0adcca
+code:
+  functions:
+    fetch_micorps_sites: 3e5ffe7a81116c6a0e7ccc7329cc56de
+

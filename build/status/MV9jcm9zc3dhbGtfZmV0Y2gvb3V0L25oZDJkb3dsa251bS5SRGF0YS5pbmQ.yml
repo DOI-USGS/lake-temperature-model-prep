@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/nhd2dowlknum.RData.ind
+type: file
+hash: ce80e67e873d6f641dafb2d7936089f9
+time: 2018-09-06 13:29:55 UTC
+depends: {}
+fixed: 045d7f7bbf1ba559c4a51b62c77ecc0e
+code:
+  functions:
+    fetch_crosswalk_dow_nhd: e50b97d5eb4ca723e0727fe7df137d7c
+

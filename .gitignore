@@ -54,6 +54,7 @@ rsconnect/
 *.dbf
 *.prj
 *.xml
+*.xlsx
 
 # "in" cooperator data
 /6_temp_coop_fetch/in/*
@@ -63,3 +64,7 @@ rsconnect/
 # tmp wqp indicators
 6_temp_wqp_fetch/tmp/*
 build/status/Nl90ZW1wX3dxcF9mZXRjaC90bX*
+
+# tmp coop munged files/indicators
+7a_temp_coop_munge/tmp/*
+build/status/N2FfdGVtcF9jb29wX211bmdlL3RtcC9*

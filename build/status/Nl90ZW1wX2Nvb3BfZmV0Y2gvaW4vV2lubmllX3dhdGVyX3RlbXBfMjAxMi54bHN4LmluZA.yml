@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Winnie_water_temp_2012.xlsx.ind
+type: file
+hash: 9116b7df6d69d55519e843e9f5336a18
+time: 2018-08-28 19:27:12 UTC
+depends: {}
+fixed: 7c24cf88baeb5096b6844edca3930d11
+code:
+  functions: {}
+

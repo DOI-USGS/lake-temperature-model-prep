@@ -1,11 +1,11 @@
 version: 0.3.0
 name: 6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind
 type: file
-hash: 45d3b6cd07b79781542aea7bca1c072b
-time: 2018-08-10 14:39:36 UTC
+hash: 189aa996d508337682e2538af420f3fe
+time: 2018-09-04 15:46:31 UTC
 depends:
-  coop_wants_fetch_plan: 55ddb7c5cae83d723d8773f170dc2643
-  6_temp_coop_fetch_tasks.yml: 21aae4e6c2a75cc8505c94c87e077967
+  coop_wants_fetch_plan: f8c9a7f1992d9ba894786fafdcf23138
+  6_temp_coop_fetch_tasks.yml: 60e9b85681689a5c8bf1fccb3d738fd5
 fixed: ~
 code:
   functions: {}

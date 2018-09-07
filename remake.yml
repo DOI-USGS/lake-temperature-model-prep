@@ -6,6 +6,7 @@ include:
   - 6_drivers_fetch.yml
   - 6_temp_wqp_fetch.yml
   - 6_temp_coop_fetch.yml
+  - 7a_temp_coop_munge.yml
 
 targets:
   everything:
@@ -15,3 +16,4 @@ targets:
       - 6_drivers_fetch
       - 6_temp_wqp_fetch
       - 6_temp_coop_fetch
+      - 7a_temp_coop_munge

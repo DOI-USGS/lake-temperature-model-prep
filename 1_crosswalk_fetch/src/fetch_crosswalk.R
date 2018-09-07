@@ -45,3 +45,42 @@ fetch_crosswalk_wqp_nhd <- function(ind_file) {
   # post to google drive and return an indicator file
   gd_put(ind_file, data_file)
 }
+
+fetch_micorps_sites <- function(ind_file) {
+
+  # where to put file
+  data_file <- scipiper::as_data_file(ind_file)
+
+  # go get micorp data from gd
+  googledrive::drive_download(as_id('1cWPwBnbdw7YsOHwXL9OSn8yNlmHFXKDd'), path = data_file)
+
+  # post to google drive and return an indicator file
+  gd_put(ind_file, data_file)
+
+}
+
+fetch_crosswalk_wbic_nhd <- function(ind_file) {
+
+  # figure out where we will be putting the file
+  data_file <- scipiper::as_data_file(ind_file)
+
+  # download from a github URL that points to necsc-lake-modeling repo
+  url <- 'https://github.com/USGS-R/necsc-lake-modeling/blob/master/data/NHD_state_crosswalk/nhd2wbic.RData?raw=true'
+  download.file(url=url, destfile=data_file, mode = 'wb')
+
+  # post to google drive and return an indicator file
+  gd_put(ind_file, data_file)
+}
+
+fetch_crosswalk_dow_nhd <- function(ind_file) {
+
+  # figure out where we will be putting the file
+  data_file <- scipiper::as_data_file(ind_file)
+
+  # download from a github URL that points to necsc-lake-modeling repo
+  url <- 'https://github.com/USGS-R/necsc-lake-modeling/blob/master/data/NHD_state_crosswalk/nhd2dowlknum.RData?raw=true'
+  download.file(url=url, destfile=data_file, mode = 'wb')
+
+  # post to google drive and return an indicator file
+  gd_put(ind_file, data_file)
+}
