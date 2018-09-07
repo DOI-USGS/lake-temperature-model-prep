@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/jackson_kanabec_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 5751b16712a8df187b0eeba921bb2bed
+time: 2018-08-28 19:27:42 UTC
+depends: {}
+fixed: 5ca32fefbff2a05af232b2205e87adca
+code:
+  functions: {}
+

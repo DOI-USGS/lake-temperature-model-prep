@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Winnie_temp_logger_2017.xlsx.ind
+type: file
+hash: 3c93b9db2f6fae33db885a32f38302f5
+time: 2018-08-28 19:26:58 UTC
+depends: {}
+fixed: 931169b718444cc83258e1b3d53acae8
+code:
+  functions: {}
+

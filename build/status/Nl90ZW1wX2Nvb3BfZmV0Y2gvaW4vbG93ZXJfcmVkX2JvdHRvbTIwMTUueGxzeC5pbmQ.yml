@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/lower_red_bottom2015.xlsx.ind
+type: file
+hash: 357dda20e4decf22562152bad4d3b447
+time: 2018-09-04 15:46:11 UTC
+depends: {}
+fixed: a79977e617bad3e62236c1c9ed8b26f6
+code:
+  functions: {}
+

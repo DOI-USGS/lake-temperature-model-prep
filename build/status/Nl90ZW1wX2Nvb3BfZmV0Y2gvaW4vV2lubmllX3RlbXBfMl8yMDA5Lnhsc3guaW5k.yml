@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Winnie_temp_2_2009.xlsx.ind
+type: file
+hash: c19ce966b9c5a6072c0cf1d1516dd2f2
+time: 2018-08-28 19:27:03 UTC
+depends: {}
+fixed: 86d6171a9d2a0644f363ede37c33ee9c
+code:
+  functions: {}
+
