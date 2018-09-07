@@ -18,6 +18,13 @@ plan_wqp_pull <- function(partitions_ind) {
     log='6_temp_wqp_fetch/log')
   partitions <- feather::read_feather(scipiper::sc_retrieve(partitions_ind))
 
+  # after all wanted data have been pulled, this function will be called but
+  # doesn't need to create anything much, so just return NULL
+  if(nrow(partitions) == 0) {
+    message('WQP pull is up to date, so setting task plan to NULL')
+    return(NULL)
+  }
+
   # isolate the partition info for just one task
   partition <- scipiper::create_task_step(
     step_name = 'partition',
@@ -74,12 +81,30 @@ plan_wqp_pull <- function(partitions_ind) {
 }
 
 create_wqp_pull_makefile <- function(makefile, task_plan) {
+
+  # after all wanted data have been pulled, this function will be called but
+  # doesn't need to create anything much, so just write an empty file
+  if(is.null(task_plan)) {
+    message('WQP pull is up to date, so writing empty task remake file')
+    readr::write_lines('', makefile)
+    return()
+  }
+
   create_task_makefile(
     makefile=makefile, task_plan=task_plan,
     include='6_temp_wqp_fetch.yml',
     packages=c('dplyr', 'dataRetrieval', 'feather', 'scipiper', 'yaml'),
     file_extensions=c('ind','tind','feather'),
     ind_complete=TRUE, ind_dir='6_temp_wqp_fetch/log')
+}
+
+loop_wqp_tasks <- function(ind_file, task_plan, ...) {
+  if(is.null(task_plan)) {
+    message('WQP pull is up to date, so writing empty task .ind file')
+    readr::write_lines('WQP pull is up to date', ind_file)
+    return()
+  }
+  loop_tasks(task_plan=wqp_pull_plan, ...)
 }
 
 # --- functions used in task table ---

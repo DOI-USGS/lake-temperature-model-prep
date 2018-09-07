@@ -30,41 +30,46 @@ inventory_wqp <- function(inv_ind, needs_ind, wqp_pull_params, wqp_partition_cfg
 
   # loop over the constituents and groups of sites, getting rows for each
   total_time <- system.time({
-    samples <- bind_rows(lapply(constituents, function(constituent) {
-      wqp_args <- wqp_pull_params
-      wqp_args$characteristicName <- wqp_pull_params$characteristicName[[constituent]]
-      constit_sites <- needs %>%
-        filter(ParamGroup %in% constituent) %>%
-        pull(MonitoringLocationIdentifier)
-      n_chunks <- ceiling(length(constit_sites)/max_inv_chunk)
-      bind_rows(lapply(seq_len(n_chunks), function(chunk) {
-        chunk_sites <- (1 + (chunk-1)*max_inv_chunk) : min(length(constit_sites), chunk*max_inv_chunk)
-        message(sprintf(
-          '%s: getting inventory for %s, sites %d-%d of %d...',
-          Sys.time(), constituent, head(chunk_sites, 1), tail(chunk_sites, 1), length(constit_sites)),
-          appendLF=FALSE)
-        wqp_args <- c(wqp_args, list(siteid = constit_sites[chunk_sites]))
-        call_time <- system.time({
-          wqp_wdat <- tryCatch({
-            do.call(whatWQPdata, wqp_args) %>%
-              select(MonitoringLocationIdentifier, MonitoringLocationName, resultCount)
-          }, error=function(e) {
-            # keep going IFF the only error was that there weren't any matching sites
-            if(grepl('arguments imply differing number of rows', e$message)) {
-              data_frame(MonitoringLocationIdentifier='', MonitoringLocationName='', resultCount=0) %>%
-                filter(FALSE)
-            } else {
-              stop(e)
-            }
+    samples <- if(length(constituents) > 0) {
+      bind_rows(lapply(constituents, function(constituent) {
+        wqp_args <- wqp_pull_params
+        wqp_args$characteristicName <- wqp_pull_params$characteristicName[[constituent]]
+        constit_sites <- needs %>%
+          filter(ParamGroup %in% constituent) %>%
+          pull(MonitoringLocationIdentifier)
+        n_chunks <- ceiling(length(constit_sites)/max_inv_chunk)
+        bind_rows(lapply(seq_len(n_chunks), function(chunk) {
+          chunk_sites <- (1 + (chunk-1)*max_inv_chunk) : min(length(constit_sites), chunk*max_inv_chunk)
+          message(sprintf(
+            '%s: getting inventory for %s, sites %d-%d of %d...',
+            Sys.time(), constituent, head(chunk_sites, 1), tail(chunk_sites, 1), length(constit_sites)),
+            appendLF=FALSE)
+          wqp_args <- c(wqp_args, list(siteid = constit_sites[chunk_sites]))
+          call_time <- system.time({
+            wqp_wdat <- tryCatch({
+              do.call(whatWQPdata, wqp_args) %>%
+                select(MonitoringLocationIdentifier, MonitoringLocationName, resultCount)
+            }, error=function(e) {
+              # keep going IFF the only error was that there weren't any matching sites
+              if(grepl('arguments imply differing number of rows', e$message)) {
+                data_frame(MonitoringLocationIdentifier='', MonitoringLocationName='', resultCount=0) %>%
+                  filter(FALSE)
+              } else {
+                stop(e)
+              }
+            })
           })
-        })
-        message(sprintf('retrieved %d rows in %0.0f seconds', nrow(wqp_wdat), call_time[['elapsed']]))
-        return(wqp_wdat)
+          message(sprintf('retrieved %d rows in %0.0f seconds', nrow(wqp_wdat), call_time[['elapsed']]))
+          return(wqp_wdat)
+        })) %>%
+          mutate(ParamGroup = constituent)
       })) %>%
-        mutate(ParamGroup = constituent)
-    })) %>%
-      right_join(needs, by=c('ParamGroup', 'MonitoringLocationIdentifier')) %>%
-      mutate(resultCount=as.integer(case_when(is.na(resultCount) ~ 0, TRUE ~ resultCount)))
+        right_join(needs, by=c('ParamGroup', 'MonitoringLocationIdentifier')) %>%
+        mutate(resultCount=as.integer(case_when(is.na(resultCount) ~ 0, TRUE ~ resultCount)))
+    } else {
+      data_frame(MonitoringLocationIdentifier='', MonitoringLocationName='', resultCount=1L, ParamGroup='', site_id='') %>%
+        filter(FALSE)
+    }
   })
   message(sprintf('sample inventory complete, required %0.0f seconds', total_time[['elapsed']]))
 
@@ -94,7 +99,6 @@ inventory_wqp <- function(inv_ind, needs_ind, wqp_pull_params, wqp_partition_cfg
 partition_wqp_inventory <- function(partitions_ind, inventory_ind, wqp_partition_cfg, archive_ind) {
   # Read in the inventory, crosswalk & config
   wqp_inventory <- feather::read_feather(sc_retrieve(inventory_ind))
-  feature_crosswalk <- readRDS(sc_retrieve(feature_crosswalk_ind))
   wqp_partition_config <- yaml::yaml.load_file(wqp_partition_cfg)
 
   partitions <- bind_rows(lapply(unique(wqp_inventory$ParamGroup), function(constituent) {

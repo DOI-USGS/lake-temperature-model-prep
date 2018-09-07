@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 6_temp_wqp_fetch/inout/wqp_wants.feather.ind
+type: file
+hash: f78309aeeff6e9529dbab3c10d05566c
+time: 2018-08-20 18:55:41 UTC
+depends:
+  wqp_want_sites: a2514e51e4a54da20abe72fe230760b1
+  wqp_want_variables: e38d29cc47df8a42761b26e2a1dd5930
+fixed: 40ff0e6ed66556df4436e0e60aa63c67
+code:
+  functions:
+    wqp_calc_wants: fc3433849208bf4e9024faeeeee202ba
+
