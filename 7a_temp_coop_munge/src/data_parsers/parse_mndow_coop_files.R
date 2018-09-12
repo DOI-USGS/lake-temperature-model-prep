@@ -3,13 +3,17 @@ parse_MPCA_temp_data_all <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw_file <- data.table::fread(infile, colClasses = c(DOW="character"),
-                                select = c("SAMPLE_DATE", "START_DEPTH", "DEPTH_UNIT",
+                                select = c("SAMPLE_DATE", "START_DEPTH", "SAMPLETIME", "DEPTH_UNIT",
                                            "RESULT_NUMERIC", "RESULT_UNIT", "DOW"))
+
+
   assert_that(unique(raw_file$RESULT_UNIT) == "deg C")
   #some measurements missing depth unit
-  clean <- raw_file %>% filter(DEPTH_UNIT == "m") %>% select(-RESULT_UNIT, -DEPTH_UNIT) %>%
+  clean <- raw_file %>%
+    filter(DEPTH_UNIT == "m") %>%
+    select(-RESULT_UNIT, -DEPTH_UNIT) %>%
     mutate(SAMPLE_DATE = as.Date(SAMPLE_DATE, format = "%m/%d/%Y")) %>%
-    rename(DateTime = SAMPLE_DATE, depth = START_DEPTH, temp = RESULT_NUMERIC)
+    rename(DateTime = SAMPLE_DATE, time = SAMPLETIME, timezone = 'CST/CDT', depth = START_DEPTH, temp = RESULT_NUMERIC)
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -29,15 +33,14 @@ parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
   #need to add DOW for Red lake, add depth in m, convert to deg C
   #time is stored in a separate column, but it seems to have a date
   #added starting from 12/30/99?
-  #keep noon measurements to downsample
   df_clean <- df %>%
     mutate(DOW = "04003501",
            temp = fahrenheit_to_celsius(WaterTempF),
            depth = 11/3.28,
            DateTime = as.Date(Date, format = "%m/%d/%y"),
-           Time = strftime(Time, format = '%H:%M:%S')) %>%
-    filter(Time == "12:00:00") %>%
-    select(DateTime, depth, temp, DOW) %>%
+           time = strftime(Time, format = '%H:%M:%S'),
+           timezone = 'CST/CDT') %>%
+    select(DateTime, time, timezone, depth, temp, DOW) %>%
     arrange(DateTime)
 
   saveRDS(object = df_clean, file = outfile)
@@ -49,6 +52,7 @@ parse_MN_fisheries_all_temp_data_Jan2018 <- function(inind, outind) {
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile, colClasses = c(DOW="character"))
   #convert to meters depth and deg C temp
+  # no time data
   clean <- raw %>% mutate(temp = 5/9*(TEMP_F - 32),
                           depth = DEPTH_FT/3.28,
                           DateTime = as.Date(SAMPLING_DATE,
@@ -79,17 +83,18 @@ parse_Cass_lake_emperature_Logger_Database_2008_to_present <- function(inind, ou
   raw <- bind_rows(cedar, knutron)
   clean <- raw %>%
     mutate(temp = fahrenheit_to_celsius(WaterTemp),
-                          Time = strftime(Time, format="%H:%M:%S"),
+                          time = strftime(Time, format="%H:%M:%S"),
                           DateTime = as.Date(Date, format = "%m/%d/%y"),
-                          DOW = "04003000") %>%
-    filter(Time == "12:00:00") %>%
-    select(DateTime, depth, temp, DOW)
+                          DOW = "04003000",
+           timezone = 'CST/CDT') %>%
+    select(DateTime, time, timezone, depth, temp, DOW)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
 #Lake of the Woods
+# no time data
 parse_LotW_WQ_Gretchen_H <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
@@ -105,6 +110,7 @@ parse_LotW_WQ_Gretchen_H <- function(inind, outind) {
 }
 
 #mille lacs
+# no time data
 parse_ML_observed_temperatures <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
@@ -137,11 +143,12 @@ parse_Sand_Bay_all_2013 <- function(inind, outind) {
   }
   all_data_clean <- all_data %>%
     mutate(DateTime = as.Date(time),
-           hrmin = substr(time, 12,16),
+           time = substr(time, 12,16),
            temp = fahrenheit_to_celsius(temp),
-           DOW = "69069400") %>%
-    filter(grepl(pattern = "12:0", x = hrmin)) %>%
-    select(DateTime, depth, temp, DOW) %>%
+           DOW = "69069400",
+           timezone = 'CST/CDT') %>%
+    #filter(grepl(pattern = "12:0", x = hrmin)) %>%
+    select(DateTime, time, timezone, depth, temp, DOW) %>%
     arrange(DOW, DateTime)
 
   saveRDS(object = all_data_clean, file = outfile)
@@ -149,21 +156,27 @@ parse_Sand_Bay_all_2013 <- function(inind, outind) {
 }
 
 parse_Sand_Bay_All_2016 <- parse_Sand_Bay_all_2015 <- parse_Sand_Bay_all_2014 <- function(inind, outind) {
-   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
-   outfile <- as_data_file(outind)
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+  outfile <- as_data_file(outind)
   sheet = "All"
   if(grepl(pattern = "2016", x = infile)){
     sheet = "Sand_Bay_All"
   }
   raw_sheet <- readxl::read_excel(infile, sheet = sheet)
   names(raw_sheet)[1] <- "DateTime"
-  clean_sheet <- raw_sheet %>% select(contains("Sand Bay"), contains("Date")) %>%
+  clean_sheet <- raw_sheet %>%
+    select(contains("Sand Bay"), contains("Date")) %>%
     tidyr::gather(key = depth, value = "temp", -DateTime) %>%
     #0 sensor is at the bottom, 10 at top
     mutate(depth = 10 - as.numeric(stringr::str_sub(depth, -1,-1))) %>%
-    filter(lubridate::hour(DateTime) == 15) %>%
-    mutate(DateTime = as.Date(DateTime), temp = fahrenheit_to_celsius(temp),
-           DOW = "69069400")
+    #filter(lubridate::hour(DateTime) == 15) %>%
+    mutate(time = substr(DateTime, 12,16),
+           timezone = 'GMT-5') %>%
+    mutate(DateTime = as.Date(DateTime),
+           temp = fahrenheit_to_celsius(temp),
+           DOW = "69069400") %>%
+    select(DateTime, time, timezone, depth, temp)
+
   saveRDS(object = clean_sheet, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }

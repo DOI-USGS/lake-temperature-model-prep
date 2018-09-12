@@ -13,8 +13,9 @@ parse_mndnr_files <- function(inind, outind) {
     dat_raw <- read_excel(infile, sheet = temp_sheets[i])
 
     dat_cleaned <- dat_raw %>%
-      dplyr::mutate(DateTime = as.Date(Date)) %>%
-      dplyr::select(DateTime,
+      dplyr::mutate(DateTime = as.Date(Date),
+                    time = Time) %>%
+      dplyr::select(DateTime, time,
              depth = `Depth (m)`,
              temp = dplyr::starts_with('Temp'),
              site = Site) %>%
@@ -35,7 +36,7 @@ parse_mndnr_files <- function(inind, outind) {
     grepl('Sand', sheet) ~ '69061700'
   ))
 
-  all_dat <- select(all_dat, DateTime, depth, temp, DOW)
+  all_dat <- select(all_dat, DateTime, time, depth, temp, DOW)
 
   saveRDS(object = all_dat, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)

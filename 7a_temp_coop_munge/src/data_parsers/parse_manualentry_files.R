@@ -1,6 +1,6 @@
 # parse "manual entry" files on gd that are being submitted by
 # madeline - these have standard formatting so can use a single parser
-
+# no time data, no multiple sites/lake data.
 parse_manualentry_files <- function(inind, outind) {
 
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')

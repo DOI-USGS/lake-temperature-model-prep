@@ -9,10 +9,11 @@ parse_micorps_secchi_temp_DO_alltiers <- function(inind, outind) {
   # clean data
 
   dat_clean <- raw_dat %>%
-    select(DateTime =`Date Sampled`, depth = `Depth (feet)`, temp = starts_with('Temp'), id = `STORETID`) %>%
+    select(DateTime =`Date Sampled`, depth = `Depth (feet)`, temp = starts_with('Temp'), id = `STORETID`, time = `Time Sampled`) %>%
     mutate(DateTime = as.Date(DateTime),
            depth = as.numeric(depth)/3.28,
-           temp = as.numeric(temp)) %>%
+           temp = as.numeric(temp),
+           timezone = 'EST') %>%
     arrange(id, DateTime) %>%
     filter(!is.na(depth),
            !is.na(temp))
