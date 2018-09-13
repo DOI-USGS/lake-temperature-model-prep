@@ -22,13 +22,18 @@ munge_temperature <- function(data.in){
   left_join(data.in, activity.sites, by='OrganizationIdentifier') %>%
     mutate(raw.depth = as.numeric(ifelse(use.depth.code == 'act', ActivityDepthHeightMeasure.MeasureValue, ResultDepthHeightMeasure.MeasureValue)),
            depth.units = ifelse(use.depth.code == 'act', ActivityDepthHeightMeasure.MeasureUnitCode, ResultDepthHeightMeasure.MeasureUnitCode)) %>%
-    rename(Date=ActivityStartDate, raw.value=ResultMeasureValue, units=ResultMeasure.MeasureUnitCode, wqx.id=MonitoringLocationIdentifier) %>%
-    select(Date, raw.value, units, raw.depth, depth.units, wqx.id) %>%
+    rename(Date=ActivityStartDate,
+           raw.value=ResultMeasureValue,
+           units=ResultMeasure.MeasureUnitCode,
+           wqx.id=MonitoringLocationIdentifier,
+           timezone = ActivityStartTime.TimeZoneCode) %>%
+    mutate(time = substr(ActivityStartTime.Time, 0, 5)) %>%
+    select(Date, time, timezone, raw.value, units, raw.depth, depth.units, wqx.id) %>%
     left_join(unit.map, by='units') %>%
     left_join(depth.unit.map, by='depth.units') %>%
     mutate(wtemp=convert*(raw.value+offset), depth=raw.depth*depth.convert) %>%
     filter(!is.na(wtemp), !is.na(depth), wtemp <= max.temp, wtemp >= min.temp, depth <= max.depth) %>%
-    select(Date, wqx.id, depth, wtemp)
+    select(Date, time, timezone, wqx.id, depth, wtemp)
 }
 
 link_wqp_sites <- function() {
