@@ -12,8 +12,10 @@ parse_MPCA_temp_data_all <- function(inind, outind) {
   clean <- raw_file %>%
     filter(DEPTH_UNIT == "m") %>%
     select(-RESULT_UNIT, -DEPTH_UNIT) %>%
-    mutate(SAMPLE_DATE = as.Date(SAMPLE_DATE, format = "%m/%d/%Y")) %>%
-    rename(DateTime = SAMPLE_DATE, time = SAMPLETIME, timezone = 'CST/CDT', depth = START_DEPTH, temp = RESULT_NUMERIC)
+    mutate(SAMPLE_DATE = as.Date(SAMPLE_DATE, format = "%m/%d/%Y"),
+           timezone = 'CST/CDT') %>%
+    rename(DateTime = SAMPLE_DATE, time = SAMPLETIME, depth = START_DEPTH, temp = RESULT_NUMERIC)
+
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
