@@ -83,7 +83,7 @@ create_coop_munge_makefile <- function(target_name, taskplan) {
   create_task_makefile(
     makefile = target_name,
     task_plan = taskplan,
-    packages = c('scipiper', 'dplyr', 'readxl', 'assertthat', 'RODBC'),
+    packages = c('scipiper', 'dplyr', 'readxl', 'assertthat', 'RODBC', 'tidyselect'),
     file_extensions = c("ind"),
     include = c('6_temp_coop_fetch.yml', '7a_temp_coop_munge.yml'),
     sources = c('7a_temp_coop_munge/src/data_parsers/parse_wilter_files.R',
