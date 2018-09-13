@@ -64,10 +64,11 @@ parse_winnie_files <- function(inind, outind) {
     mutate(depth = depth/3.28,
            temp = fahrenheit_to_celsius(temp),
            DOW = '11014700',
-           time = strftime(DateTime, format="%H:%M:%S"),
-           DateTime = as.Date(DateTime)) %>%
-    filter(time == '12:00:00') %>% # subsample hourly measures to noon samples
-    select(DateTime, depth, temp, DOW) %>%
+           time = strftime(DateTime, format="%H:%M"),
+           DateTime = as.Date(DateTime),
+           timezone = 'GMT-6') %>%
+    #filter(time == '12:00:00') %>% # subsample hourly measures to noon samples
+    select(DateTime, time, timezone, depth, temp, DOW) %>%
     arrange(DateTime)
 
   }
@@ -122,10 +123,11 @@ parse_winnie_files <- function(inind, outind) {
     mutate(depth = depth/3.28,
            temp = fahrenheit_to_celsius(temp),
            DOW = '11014700',
-           Time = strftime(Time, format="%H:%M:%S"),
-           DateTime = as.Date(DateTime)) %>%
-    filter(Time %in% '12:00:00') %>% # subsample hourly measures to noon samples
-    select(DateTime, depth, temp, DOW) %>%
+           time = strftime(Time, format="%H:%M"),
+           DateTime = as.Date(DateTime),
+           timezone = 'GMT-6') %>%
+    #filter(Time %in% '12:00:00') %>% # subsample hourly measures to noon samples
+    select(DateTime, time, timezone, depth, temp, DOW) %>%
     arrange(DateTime)
 
   }
@@ -157,7 +159,8 @@ parse_winnie_files <- function(inind, outind) {
 
       temp_dat <- select(raw_dat, DateTime = time_cols, temp = temp_cols) %>%
         mutate(depth = as.numeric(depths[i]),
-               time = strftime(DateTime, format="%H", tz = 'UTC'))
+               time = strftime(DateTime, format="%H:%M", tz = 'UTC'),
+               timezone = 'GMT-6')
 
       cleaned_dat <- bind_rows(cleaned_dat, temp_dat)
     }
@@ -168,8 +171,8 @@ parse_winnie_files <- function(inind, outind) {
              temp = fahrenheit_to_celsius(temp),
              DOW = '11014700',
              DateTime = as.Date(DateTime)) %>%
-      filter(time == '13') %>% # subsample hourly measures to noon samples
-      select(DateTime, depth, temp, DOW) %>%
+      #filter(time == '13') %>% # subsample hourly measures to noon samples
+      select(DateTime, time, timezone, depth, temp, DOW) %>%
       arrange(DateTime)
 
 
@@ -200,7 +203,11 @@ parse_winnie_files <- function(inind, outind) {
 
     temp_dat <- select(raw_dat, DateTime = 2, time = 3, am_pm = 4, temp = 5) %>%
       mutate(depth = as.numeric(depths[i]),
-             time = strftime(time, format="%H:%M:%S", tz = 'UTC'))
+             hour = strftime(time, format="%H", tz = 'UTC'),
+             minute = strftime(time, format="%M", tz = 'UTC'),
+             timezone = 'GMT-6') %>%
+      mutate(hour = ifelse(am_pm == 'PM'&as.numeric(hour) != 12, as.character(as.numeric(hour) + 12), hour)) %>%
+      mutate(time2 = paste0(hour, ':', minute))
 
     cleaned_dat <- bind_rows(cleaned_dat, temp_dat)
   }
@@ -210,9 +217,10 @@ parse_winnie_files <- function(inind, outind) {
     mutate(depth = depth/3.28,
            temp = fahrenheit_to_celsius(temp),
            DOW = '11014700',
-           DateTime = as.Date(DateTime)) %>%
-    filter(time == '12:00:00' & am_pm == 'PM') %>% # subsample hourly measures to noon samples
-    select(DateTime, depth, temp, DOW) %>%
+           DateTime = as.Date(DateTime),
+           timezone = 'GMT-6') %>%
+    #filter(time == '12:00:00' & am_pm == 'PM') %>% # subsample hourly measures to noon samples
+    select(DateTime, time, timezone, depth, temp, DOW) %>%
     arrange(DateTime)
 
   }
