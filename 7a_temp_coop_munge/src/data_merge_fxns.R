@@ -24,6 +24,11 @@ merge_coop_dat <- function(outind, inind) {
       # this is a hack, should fix parsers/dependencies on parsers
       temp_dat$DateTime <- as.Date(temp_dat$DateTime)
 
+      if ('time' %in% names(temp_dat)) {
+        temp_dat$time <- as.character(temp_dat$time)
+
+      }
+
       if ('DOW' %in% names(temp_dat)) {
         temp_dat$DOW <- as.character(temp_dat$DOW)
       }
