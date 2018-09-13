@@ -40,7 +40,7 @@ parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
            temp = fahrenheit_to_celsius(WaterTempF),
            depth = 11/3.28,
            DateTime = as.Date(Date, format = "%m/%d/%y"),
-           time = strftime(Time, format = '%H:%M:%S'),
+           time = strftime(Time, format = '%H:%M'),
            timezone = 'CST/CDT') %>%
     select(DateTime, time, timezone, depth, temp, DOW) %>%
     arrange(DateTime)
@@ -85,7 +85,7 @@ parse_Cass_lake_emperature_Logger_Database_2008_to_present <- function(inind, ou
   raw <- bind_rows(cedar, knutron)
   clean <- raw %>%
     mutate(temp = fahrenheit_to_celsius(WaterTemp),
-                          time = strftime(Time, format="%H:%M:%S"),
+                          time = strftime(Time, format="%H:%M"),
                           DateTime = as.Date(Date, format = "%m/%d/%y"),
                           DOW = "04003000",
            timezone = 'CST/CDT') %>%

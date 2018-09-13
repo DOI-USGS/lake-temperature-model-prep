@@ -207,7 +207,7 @@ parse_winnie_files <- function(inind, outind) {
              minute = strftime(time, format="%M", tz = 'UTC'),
              timezone = 'GMT-6') %>%
       mutate(hour = ifelse(am_pm == 'PM'&as.numeric(hour) != 12, as.character(as.numeric(hour) + 12), hour)) %>%
-      mutate(time2 = paste0(hour, ':', minute))
+      mutate(time = paste0(hour, ':', minute))
 
     cleaned_dat <- bind_rows(cleaned_dat, temp_dat)
   }

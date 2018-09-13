@@ -14,8 +14,9 @@ parse_mndnr_files <- function(inind, outind) {
 
     dat_cleaned <- dat_raw %>%
       dplyr::mutate(DateTime = as.Date(Date),
-                    time = Time) %>%
-      dplyr::select(DateTime, time,
+                    time = ifelse(is.na(Time), NA, format(Time, '%H:%M')),
+                    timezone = ifelse(is.na(Time), NA, 'CST/CDT')) %>%
+      dplyr::select(DateTime, time, timezone,
              depth = `Depth (m)`,
              temp = dplyr::starts_with('Temp'),
              site = Site) %>%
