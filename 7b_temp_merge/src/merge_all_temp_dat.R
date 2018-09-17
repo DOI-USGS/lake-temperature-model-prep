@@ -27,7 +27,7 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
 
   # note - could still have lake/date/depth duplicates here
   # the risk of removing time from the above distinct() is that if you have
-  # multiple observations per day, you could inadverdently lose obs that are distinct
+  # multiple observations per day, you could inadvertently lose obs that are distinct
   # in time but happen to have the same values (e.g., noon and 1pm surface samples that measure
   # the same temperature). The risk of not removing them is that you have multiple data sources
   # repeating the same data - but may not have a time stamp, for example. Will keep for now, sort out
@@ -49,8 +49,6 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
 
 reduce_temp_data <- function(outind, inind) {
 
-  # for lake/station/date/depth that have multiple observations per day,
-  # filter to time closest to noon
   outfile <- as_data_file(outind)
 
   all_in <- sc_retrieve(inind)
