@@ -54,7 +54,7 @@ parse_MN_fisheries_all_temp_data_Jan2018 <- function(inind, outind) {
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile, colClasses = c(DOW="character"))
   #convert to meters depth and deg C temp
-  # no time data
+  # no time data, not clear if repeated values are from multiple sites or multiple times
   clean <- raw %>% mutate(temp = 5/9*(TEMP_F - 32),
                           depth = DEPTH_FT/3.28,
                           DateTime = as.Date(SAMPLING_DATE,
