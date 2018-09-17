@@ -10,10 +10,10 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
 
   total_obs <- nrow(wqp_dat) + nrow(coop_dat)
 
-  # merge and remove duplicate observations
-  all_dat <- select(wqp_dat, date = Date, time, timezone, depth, temp = wtemp, nhd_id = id, source_id = wqx.id) %>%
+  # merge and remove duplicate observations - defined by rounding to 1 decimal point for depth and temp
+  all_dat <- select(wqp_dat, date = Date, time, timezone, depth, temp = wtemp, nhd_id = id, source_id = wqx.id, source_site_id = wqx.id) %>%
     mutate(source = 'wqp') %>%
-    bind_rows(select(coop_dat, date = DateTime, time, timezone, depth, temp, nhd_id = site_id, source_id = state_id, source)) %>%
+    bind_rows(select(coop_dat, date = DateTime, time, timezone, depth, temp, nhd_id = site_id, source_id = state_id, source_site_id = site, source)) %>%
     mutate(depth = round(depth, 2),
            depth1 = round(depth, 1),
            temp = round(temp, 2),
@@ -35,12 +35,19 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
 
   cat(total_obs - nrow(all_dat_distinct), 'temperature observations were duplicated across WQP and cooperator data files and removed.')
 
-  feather::write_feather(all_dat_distinct, outfile)
+  # get rid of egregious values before posting data or choosing time stamps
+  all_dat_distinct_noout <- mutate(all_dat_distinct, month = lubridate::month(date)) %>%
+    filter(!(month %in% c(1, 2) & temp > 10)) %>%
+    filter(!(month %in% c(7, 8) & depth < 0.5 & temp < 10))
+
+  cat(nrow(all_dat_distinct) - nrow(all_dat_distinct_noout), 'temperature observations were flagged as egregious (>10 deg C in Jan/Feb or <10 deg C at surface in July/Aug) and removed.')
+
+  feather::write_feather(all_dat_distinct_noout, outfile)
   gd_put(outind, outfile)
 
 }
 
-reduce_temp_data <- function() {
+reduce_temp_data <- function(outind, inind) {
 
   # for lake/station/date/depth that have multiple observations per day,
   # filter to time closest to noon
@@ -55,19 +62,22 @@ reduce_temp_data <- function() {
   dat_notimes <- filter(all_dat, is.na(time)) %>%
     distinct(nhd_id, date, depth, temp, .keep_all = TRUE)
 
-  # for lakes from same source that have multiple site IDs
-  test_notimes <- group_by(dat_notimes, nhd_id, source_id, date, depth) %>%
+  # if we have multiple observations per nhd_id/site/date/depth with no time stamp,
+  # we assume these were
+  # taken at different times and choose a single time
+  # take the middle value -- e.g., if there are 3 obs, take 2nd - best chance to capture mid-day
+  dat_notimes_timeresolved <- filter(dat_notimes, !is.na(source_site_id)) %>%
+    group_by(nhd_id, date, depth, source_site_id) %>%
     mutate(n = n()) %>%
-    filter(n >1) %>%
-    arrange(nhd_id, source_id, date, depth)
+    summarize(temp = temp[floor(mean(n)/2) + 1]) %>%
+    bind_rows(filter(dat_notimes, is.na(source_site_id))) #bind back together with data with no siteids
 
-  dat_no
+  # the reasons for the rest of the repeated observations are unknown
+
+  #######################
   # get data with time
   # create a variable that represents difference from noon in hours
   # assume all UTC timezones are GMT-5
-
-
-
 
   # find local times closest to noon
   # adjust UTC to be central time by subtracting 7 hours instead of 12
@@ -78,7 +88,7 @@ reduce_temp_data <- function() {
 
   # group by lake, siteid, date, depth and take the time closest to noon
   dat_singletimes <- dat_times %>%
-    group_by(nhd_id, source, source_id,  date, depth) %>%
+    group_by(nhd_id, source_site_id,  date, depth) %>%
     summarize(temp = temp[which.min(hours_diff_noon)],
               time = time[which.min(hours_diff_noon)],
               ntimeobs = n()) %>%
@@ -86,26 +96,20 @@ reduce_temp_data <- function() {
     ungroup() %>%
     arrange(nhd_id, date, depth)
 
+  cat('There were', length(which(dat_singletimes$ntimeobs > 1)),
+      "unique lake-site-date-depths with repeated observations where the observation with the timestamp closest to noon was retained.")
 
-  all_dat_singletimes <- bind_rows(select(dat_notimes, -time, -timezone),
+
+  # now we bring data back together and handle sites that may not have had timestamps
+  # this first distinct has the potential to drop observations from multiple sites that have
+  # the same depth/temp/day -- however, I think the risk of having duplicate data is higher than
+  # dropping values that are the same which would be averaged later
+  all_dat_singletimes <- bind_rows(select(dat_notimes_timeresolved, -time, -timezone),
                                    select(dat_singletimes, -time, -ntimeobs)) %>%
-    distinct(nhd_id, date, depth, temp, .keep_all = TRUE)
+    distinct(nhd_id, date, depth, temp, .keep_all = TRUE) %>%
+    group_by(nhd_id, date, depth) %>%
+    summarize(temp = mean(temp))
 
-  # average across sites
-  # still have multiple times/day because we grouped by source (no way to know if same site)
-  # but should not have more than 1 obs/time/data source
-  # now average across "sites" since data are distinct.
-  # if this assumption is wrong, the very worst we're doing is average across small rounding errors
-
-  all_dat_singletimes_singlesites <- group_by(all_dat_singletimes, nhd_id, date, depth) %>%
-    summarize(temp = mean(temp),
-              n = n())
-
-  # how many observations had to be averaged?
-  nrow(filter(all_dat_singletimes))
-
-  # lake that has 24 observations on day
-  View(filter(all_dat, nhd_id == 'nhd_2360642' & date == as.Date('1992-10-30')))
 
   feather::write_feather(all_dat_singletimes, outfile)
   gd_put(outind, outfile)
@@ -113,11 +117,3 @@ reduce_temp_data <- function() {
 }
 
 
-check_temp_data <- function() {
-  # this function should apply some rules to the merged temp data
-  # data between 0-40 degrees
-  # no duplicate observations, see David's message about near-duplicates and rounding
-  # taking the average if we have same day measurements from a lake/depth combo that are clearly different?
-  # summer/winter checks? flag as unlikely data?
-  # push data to gd as (single?) file
-}
