@@ -36,11 +36,6 @@ munge_temperature <- function(data.in){
     select(Date, time, timezone, wqx.id, depth, wtemp)
 }
 
-link_wqp_sites <- function() {
-
-}
-
-
 munge_wqp_dat <- function(outind, wqp_ind) {
 
   outfile <- as_data_file(outind)
