@@ -43,9 +43,9 @@ merge_coop_dat <- function(outind, inind) {
 
   all_dat <- filter(all_dat, !is.na(depth), !is.na(temp)) %>%
     distinct() %>% # get rid of duplicated values
-    filter(depth < max.depth,
-           temp > min.temp,
-           temp < max.temp)
+    filter(depth <= max.depth,
+           temp >= min.temp,
+           temp <= max.temp)
 
   saveRDS(object = all_dat, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
