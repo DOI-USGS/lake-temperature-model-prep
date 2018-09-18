@@ -1,0 +1,39 @@
+target_default: 7a_temp_coop_munge
+
+packages:
+  - scipiper
+  - dplyr
+  - feather
+
+sources:
+  - 7b_temp_merge/src/merge_all_temp_dat.R
+
+targets:
+
+  7b_temp_merge:
+    depends:
+     - 7b_temp_merge/out/merged_temp_data_daily.feather.ind
+
+  # -- get WQP, coop data and merge -- #
+  # -- removes (coarsely defined) duplicates -- #
+  # -- removes egregious outliers in Jan/Feb (>10 deg C) and July/Aug (surface, <10 deg C)
+  # -- returns all times -- ##
+
+  7b_temp_merge/out/merged_temp_data_alltimes.feather.ind:
+    command: merge_temp_data(
+      outind = target_name,
+      wqp_ind = '7a_temp_wqp_munge/out/all_wqp_dat_linked.feather.ind',
+      coop_ind = '7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind')
+
+  7b_temp_merge/out/merged_temp_data_alltimes.feather:
+    command: gd_get('7b_temp_merge/out/merged_temp_data_alltimes.feather.ind')
+
+
+  # -- resolve multiple unique obs per lake/date/depth -- ##
+  7b_temp_merge/out/merged_temp_data_daily.feather.ind:
+    command: reduce_temp_data(
+      outind = target_name,
+      inind = '7b_temp_merge/out/merged_temp_data_alltimes.feather.ind')
+
+  7b_temp_merge/out/merged_temp_data_daily.feather:
+    command: gd_get('7b_temp_merge/out/merged_temp_data_daily.feather.ind')

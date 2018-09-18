@@ -7,6 +7,8 @@ include:
   - 6_temp_wqp_fetch.yml
   - 6_temp_coop_fetch.yml
   - 7a_temp_coop_munge.yml
+  - 7a_temp_wqp_munge.yml
+  - 7b_temp_merge.yml
 
 targets:
   everything:
@@ -17,3 +19,5 @@ targets:
       - 6_temp_wqp_fetch
       - 6_temp_coop_fetch
       - 7a_temp_coop_munge
+      - 7a_temp_wqp_munge
+      - 7b_temp_merge

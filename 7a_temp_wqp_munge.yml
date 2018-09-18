@@ -1,0 +1,35 @@
+target_default: 7a_temp_wqp_munge
+
+packages:
+  - scipiper
+  - dplyr
+  - feather
+
+sources:
+  - 7a_temp_wqp_munge/src/munge_wqp_dat.R
+  - lib/src/require_local.R
+
+targets:
+
+  7a_temp_wqp_munge:
+    depends:
+     - 7a_temp_wqp_munge/out/all_wqp_dat_linked.feather.ind
+
+  # -- download, munge, and bind individual wqp pulls/files -- #
+  7a_temp_wqp_munge/tmp/all_wqp_dat.rds.ind:
+    command: munge_wqp_dat(
+      outind = target_name,
+      wqp_ind = '6_temp_wqp_fetch/inout/wqp_haves.feather.ind')
+
+  7a_temp_wqp_munge/tmp/all_wqp_dat.rds:
+    command: require_local('7a_temp_wqp_munge/tmp/all_wqp_dat.rds.ind')
+
+  # -- crosswalk between wqp sites and NHD lake IDs. Push to GD. -- #
+  7a_temp_wqp_munge/out/all_wqp_dat_linked.feather.ind:
+    command: crosswalk_wqp_dat(
+      outind = target_name,
+      wqp_munged = '7a_temp_wqp_munge/tmp/all_wqp_dat.rds.ind',
+      wqp_crosswalk = '1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind')
+
+  7a_temp_wqp_munge/out/all_wqp_dat_linked.feather:
+    command: gd_get('7a_temp_wqp_munge/out/all_wqp_dat_linked.feather.ind')

@@ -10,12 +10,15 @@ parse_WI_Profile_Data_1995to2015 <- function(inind, outind) {
 
   # group by date and depth and see if there are duplicate values
   # there are, but time stamp is not helping. Take first value of each lake/date/depth combination
-  dat_clean <- mutate(raw_dat, DateTime = as.Date(date),
-                     depth = ifelse(depth.units %in% 'f', depth/3.28, depth),
-                     temp = ifelse(temp.units %in% "F", fahrenheit_to_celsius(temperature), temperature)) %>%
-    group_by(DateTime, WBIC, depth) %>%
-    summarize(temp = first(temp)) %>%
-    select(DateTime, depth, temp, WBIC) %>%
+  dat_clean <- raw_dat %>%
+    mutate(DateTime = as.Date(date),
+           depth = ifelse(depth.units %in% 'f', feet_to_meters(depth), depth),
+           temp = ifelse(temp.units %in% "F", fahrenheit_to_celsius(temperature), temperature),
+           time = format(date, format = '%H:%M'),
+           timezone = 'CST/CDT') %>%
+    #group_by(DateTime, WBIC, depth) %>%
+    #summarize(temp = first(temp)) %>%
+    select(DateTime, time, timezone, depth, temp, WBIC) %>%
     filter(!is.na(depth), !is.na(temp)) %>%
     arrange(WBIC, DateTime)
 
