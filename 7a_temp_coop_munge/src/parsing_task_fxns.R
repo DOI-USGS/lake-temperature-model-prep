@@ -96,7 +96,8 @@ create_coop_munge_makefile <- function(target_name, taskplan) {
                 '7a_temp_coop_munge/src/data_parsers/parse_wi_wbic_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_redlake_files.R',
                 '7a_temp_coop_munge/src/parsing_task_fxns.R',
-                'lib/src/require_local.R'),
+                'lib/src/require_local.R',
+                '7a_temp_coop_munge/src/data_parsers/parse_unit_functions.R'),
     ind_dir = '7a_temp_coop_munge/log',
     ind_complete = TRUE
     )

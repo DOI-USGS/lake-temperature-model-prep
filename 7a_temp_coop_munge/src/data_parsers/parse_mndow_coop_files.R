@@ -20,7 +20,6 @@ parse_MPCA_temp_data_all <- function(inind, outind) {
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
-fahrenheit_to_celsius <- function(x){ 5/9*(x - 32) }
 
 parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
@@ -38,7 +37,7 @@ parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
   df_clean <- df %>%
     mutate(DOW = "04003501",
            temp = fahrenheit_to_celsius(WaterTempF),
-           depth = 11/3.28,
+           depth = feet_to_meters(11),
            DateTime = as.Date(Date, format = "%m/%d/%y"),
            time = strftime(Time, format = '%H:%M'),
            timezone = 'CST/CDT') %>%
@@ -55,8 +54,8 @@ parse_MN_fisheries_all_temp_data_Jan2018 <- function(inind, outind) {
   raw <- data.table::fread(infile, colClasses = c(DOW="character"))
   #convert to meters depth and deg C temp
   # no time data, not clear if repeated values are from multiple sites or multiple times
-  clean <- raw %>% mutate(temp = 5/9*(TEMP_F - 32),
-                          depth = DEPTH_FT/3.28,
+  clean <- raw %>% mutate(temp = fahrenheit_to_celsius(TEMP_F),
+                          depth = feet_to_meters(DEPTH_FT),
                           DateTime = as.Date(SAMPLING_DATE,
                                              format = "%m/%d/%Y")) %>%
     select(DateTime, depth, temp, DOW)
@@ -75,11 +74,11 @@ parse_Cass_lake_emperature_Logger_Database_2008_to_present <- function(inind, ou
   file_connection <- odbcConnectAccess2007(infile_full_path)
 
   cedar <- sqlFetch(file_connection, "Cedar Island_South (11 ft)") %>%
-    mutate(depth = 11/3.28)
+    mutate(depth = feet_to_meters(11))
   #two different instruments
 
   knutron <- sqlFetch(file_connection, "Cass Logger near Knutron (27 ft)") %>%
-    mutate(depth = 27/3.28) %>%
+    mutate(depth = feet_to_meters(27)) %>%
     rename(WaterTemp=WaterTempF)
 
   raw <- bind_rows(cedar, knutron)
@@ -103,7 +102,7 @@ parse_LotW_WQ_Gretchen_H <- function(inind, outind) {
   raw <- readxl::read_excel(infile)
   clean <- raw %>% filter(!grepl(pattern = "Dates in Red", x = notes) & !is.na(temp.units) & !is.na(temperature)) %>%
     mutate(DOW = gsub(pattern = "-", replacement = "", x = DOW),
-           depth = depth/3.28,
+           depth = feet_to_meters(depth),
            temp = ifelse(temp.units == "F", yes = fahrenheit_to_celsius(temperature),
                          no = temperature)) %>% rename(DateTime = Date) %>%
     select(DateTime, temp, depth, DOW) %>% mutate(DateTime = as.Date(DateTime))
@@ -118,7 +117,7 @@ parse_ML_observed_temperatures <- function(inind, outind) {
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile)
   clean <- raw %>% mutate(temp = fahrenheit_to_celsius(temp.f),
-                          depth = depth.ft/3.28,
+                          depth = feet_to_meters(depth.ft),
                           DateTime = as.Date(Date, format = "%m/%d/%Y"),
                           DOW = "48000200") %>% select(DateTime, temp, depth, DOW)
   saveRDS(object = clean, file = outfile)

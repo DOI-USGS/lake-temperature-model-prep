@@ -12,7 +12,7 @@ parse_micorps_secchi_temp_DO_alltiers <- function(inind, outind) {
     select(DateTime =`Date Sampled`, depth = `Depth (feet)`,
            temp = starts_with('Temp'), id = `STORETID`, time = `Time Sampled`) %>%
     mutate(DateTime = as.Date(DateTime),
-           depth = as.numeric(depth)/3.28,
+           depth = feet_to_meters(as.numeric(depth)),
            temp = as.numeric(temp),
            time = substr(time, 0, 5),
            timezone = 'EST/EDT') %>%
