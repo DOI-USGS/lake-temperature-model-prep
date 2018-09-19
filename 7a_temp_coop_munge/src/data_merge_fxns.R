@@ -5,6 +5,11 @@ merge_coop_dat <- function(outind, inind) {
 
   parsed_files <- gsub(': .+', '', in_dat[[1]])
 
+  # filter criteria
+  max.temp <- 40 # threshold!
+  min.temp <- 0
+  max.depth <- 260
+
   # check if file exists
   # If not, stop and throw error
   # If so, read in and bind
@@ -19,6 +24,11 @@ merge_coop_dat <- function(outind, inind) {
       # this is a hack, should fix parsers/dependencies on parsers
       temp_dat$DateTime <- as.Date(temp_dat$DateTime)
 
+      if ('time' %in% names(temp_dat)) {
+        temp_dat$time <- as.character(temp_dat$time)
+
+      }
+
       if ('DOW' %in% names(temp_dat)) {
         temp_dat$DOW <- as.character(temp_dat$DOW)
       }
@@ -32,7 +42,10 @@ merge_coop_dat <- function(outind, inind) {
   }
 
   all_dat <- filter(all_dat, !is.na(depth), !is.na(temp)) %>%
-    distinct() # get rid of duplicated values
+    distinct() %>% # get rid of duplicated values
+    filter(depth <= max.depth,
+           temp >= min.temp,
+           temp <= max.temp)
 
   saveRDS(object = all_dat, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)

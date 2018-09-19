@@ -2,7 +2,7 @@ crosswalk_coop_dat <- function(outind = target_name,
                                inind = '7a_temp_coop_munge/tmp/all_coop_dat.rds.ind',
                                id_crosswalk, wbic_crosswalk, dow_crosswalk) {
 
-  infile <- as_data_file(inind)
+  infile <- scipiper::sc_retrieve(inind)
   outfile <- as_data_file(outind)
   dat <- readRDS(infile)
 
@@ -43,7 +43,7 @@ crosswalk_coop_dat <- function(outind = target_name,
     distinct() %>%
     select(-dowlknum) %>%
     group_by(DOW) %>%
-    summarize(site_id = first(site_id))
+    summarize(site_id = first(site_id)) # this is a bandaid for multiple site matches
 
   # dupes <- which(duplicated(dows_in_dat$DOW))
 
@@ -57,11 +57,13 @@ crosswalk_coop_dat <- function(outind = target_name,
   # all together now
   # print out warning about what data you're dropping
   dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id) %>%
-    select(DateTime, depth, temp, site_id, source)
+    tidyr::gather(key = state_id_type, value = state_id, DOW, id, WBIC) %>%
+    filter(!is.na(state_id))
 
   warning(paste0('Dropping ', sum(is.na(dat_all_linked$site_id)), ' temperature observations due to missing NHD ids.'))
 
-  dat_all_linked <- filter(dat_all_linked, !is.na(site_id))
+  dat_all_linked <- filter(dat_all_linked, !is.na(site_id)) %>%
+    distinct()
 
   feather::write_feather(dat_all_linked, outfile)
   gd_put(outind, outfile)

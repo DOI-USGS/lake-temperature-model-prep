@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 7a_temp_wqp_munge/out/all_wqp_dat_linked.feather.ind
+type: file
+hash: 44c361adcbd49a109d91c66cf1c6f8a6
+time: 2018-09-13 19:18:23 UTC
+depends:
+  7a_temp_wqp_munge/tmp/all_wqp_dat.rds.ind: 3bd0021828ee01a0ce1404c388320c2b
+  1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind: 95bd31d9644d23dce53fa6c4d8353ef6
+fixed: c7f6f3896e9009b5c92be2397b72b8c1
+code:
+  functions:
+    crosswalk_wqp_dat: 29641f464a986dbd28bde25b9536991b
+

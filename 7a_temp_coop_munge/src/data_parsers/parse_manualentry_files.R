@@ -1,6 +1,6 @@
 # parse "manual entry" files on gd that are being submitted by
 # madeline - these have standard formatting so can use a single parser
-
+# no time data, no multiple sites/lake data.
 parse_manualentry_files <- function(inind, outind) {
 
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
@@ -23,7 +23,7 @@ parse_manualentry_files <- function(inind, outind) {
 
   # reformat/munge data
   dat_clean <- raw_dat %>%
-    mutate(depth = ifelse(depth.units %in% 'f', depth/3.28, depth),
+    mutate(depth = ifelse(depth.units %in% 'f', feet_to_meters(depth), depth),
            temp = ifelse(temp.units %in% "F", fahrenheit_to_celsius(temperature), temperature)) %>%
     mutate(DateTime = as.Date(Date), DOW = as.character(DOW)) %>%
     select(DateTime, depth, temp, DOW)
