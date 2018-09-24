@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/ML_observed_temperatures.txt.ind
+type: file
+hash: afe60027e238db125022afa6f15a2d30
+time: 2018-09-24 15:21:23 UTC
+depends: {}
+fixed: 40997c3c5a1cc627b68c02b8b568eb1f
+code:
+  functions: {}
+

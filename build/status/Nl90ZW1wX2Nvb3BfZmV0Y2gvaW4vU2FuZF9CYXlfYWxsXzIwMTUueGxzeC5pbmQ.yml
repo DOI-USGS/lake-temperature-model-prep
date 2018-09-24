@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Sand_Bay_all_2015.xlsx.ind
+type: file
+hash: 3ca077b4e0575946a1a9d66370629a9e
+time: 2018-09-24 15:20:56 UTC
+depends: {}
+fixed: 6b8e3caa5e481688c5ed0e1c3dd4b73f
+code:
+  functions: {}
+
