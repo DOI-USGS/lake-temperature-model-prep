@@ -40,7 +40,7 @@ munge_wqp_dat <- function(outind, wqp_ind) {
 
   outfile <- as_data_file(outind)
 
-  wqp_in <- scipiper::as_data_file(wqp_ind)
+  wqp_in <- scipiper::sc_retrieve(wqp_ind)
   wqp_files <- feather::read_feather(wqp_in) %>%
     select(PullFile) %>%
     distinct() %>%
