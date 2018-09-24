@@ -28,7 +28,13 @@ parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
   infile_full_path <- file.path('D:/R Projects/lake-temperature-model-prep', infile)
   file_connection <- odbcConnectAccess2007(infile_full_path)
 
-  df <- sqlFetch(file_connection, "State Waters - 11 feet")
+  if (file_connection != -1){
+    df <- sqlFetch(file_connection, "State Waters - 11 feet")
+  } else {
+    con <- connect_to_access_dbi(infile)
+
+    df <- DBI::dbReadTable(con, "State Waters - 11 feet")
+  }
 
   #3 tables in database
   #need to add DOW for Red lake, add depth in m, convert to deg C
@@ -63,6 +69,23 @@ parse_MN_fisheries_all_temp_data_Jan2018 <- function(inind, outind) {
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
+# this uses package dbi to connect and comes from here: https://stackoverflow.com/questions/46458092/connection-from-access-to-r-via-dbi
+# use this if first attempt to connect to access fails
+connect_to_access_dbi <- function(db_file_path)  {
+  require(DBI)
+  # make sure that the file exists before attempting to connect
+  if (!file.exists(db_file_path)) {
+    stop("DB file does not exist at ", db_file_path)
+  }
+  # Assemble connection strings
+  dbq_string <- paste0("DBQ=", db_file_path)
+  driver_string <- "Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
+  db_connect_string <- paste0(driver_string, dbq_string)
+
+  myconn <- DBI::dbConnect(odbc::odbc(),
+                           .connection_string = db_connect_string)
+  return(myconn)
+}
 
 #these take hourly measurements - keeping the noon measurements to
 #downsample to daily
@@ -73,6 +96,9 @@ parse_Cass_lake_emperature_Logger_Database_2008_to_present <- function(inind, ou
   infile_full_path <- file.path('D:/R Projects/lake-temperature-model-prep', infile)
   file_connection <- odbcConnectAccess2007(infile_full_path)
 
+  if (file_connection != -1) {
+
+
   cedar <- sqlFetch(file_connection, "Cedar Island_South (11 ft)") %>%
     mutate(depth = feet_to_meters(11))
   #two different instruments
@@ -80,6 +106,25 @@ parse_Cass_lake_emperature_Logger_Database_2008_to_present <- function(inind, ou
   knutron <- sqlFetch(file_connection, "Cass Logger near Knutron (27 ft)") %>%
     mutate(depth = feet_to_meters(27)) %>%
     rename(WaterTemp=WaterTempF)
+
+  }
+
+  # having trouble connecting to .accbd files across different comps
+  # check if cedar exists, if not, try a different approach
+  if (!('cedar' %in% objects())) {
+    # if the above didn't work to read in the access db, try a different approach
+
+
+    con <- connect_to_access_dbi(infile)
+
+    cedar <- DBI::dbReadTable(con, "Cedar Island_South (11 ft)")  %>%
+      mutate(depth = feet_to_meters(11))
+
+    knutron <- DBI::dbReadTable(con, "Cass Logger near Knutron (27 ft)") %>%
+      mutate(depth = feet_to_meters(27)) %>%
+      rename(WaterTemp=WaterTempF)
+
+  }
 
   raw <- bind_rows(cedar, knutron)
   clean <- raw %>%
