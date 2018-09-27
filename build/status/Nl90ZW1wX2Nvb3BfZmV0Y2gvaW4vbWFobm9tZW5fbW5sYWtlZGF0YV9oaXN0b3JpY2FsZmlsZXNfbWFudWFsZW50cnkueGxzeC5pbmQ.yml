@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/mahnomen_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 00de1d8998f271d5f2a6c2713354aab8
+time: 2018-09-27 18:13:27 UTC
+depends: {}
+fixed: c980ff5068e89b6108dbc7432b1bbd36
+code:
+  functions: {}
+
