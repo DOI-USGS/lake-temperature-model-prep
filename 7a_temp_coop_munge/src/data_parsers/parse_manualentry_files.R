@@ -21,6 +21,9 @@ parse_manualentry_files <- function(inind, outind) {
   expected_temp_units <- c("C", "F")
   expected_depth_units <- c('f', 'm')
 
+  # convert temp to numeric if it is character
+  raw_dat$temperature <- as.numeric(raw_dat$temperature)
+
   # reformat/munge data
   dat_clean <- raw_dat %>%
     mutate(depth = ifelse(depth.units %in% 'f', feet_to_meters(depth), depth),

@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/LeSueur_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 4af783361fbf4fced464bc393edb0dc4
+time: 2018-09-24 14:55:52 UTC
+depends: {}
+fixed: 70d7502baed96ab6aefc361cb68ae062
+code:
+  functions: {}
+

@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/mcleod_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: c6e9eada13333871854c094b9581238f
+time: 2018-09-24 14:55:20 UTC
+depends: {}
+fixed: d2d168cb86a3f9bbf53f218d9b0ddf42
+code:
+  functions: {}
+
