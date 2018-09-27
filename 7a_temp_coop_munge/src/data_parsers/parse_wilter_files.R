@@ -6,10 +6,10 @@ parse_mendota_daily_buoy <- function(inind, outind) {
   #https://lter.limnology.wisc.edu/data
   clean <- raw_file %>%
     filter(!flag_wtemp %in% c("A11N", "D", "H")) %>%
-    rename(DateTime = sampledate, Depth = depth, temp = wtemp) %>%
+    rename(DateTime = sampledate, temp = wtemp) %>%
     mutate(DateTime = as.Date(DateTime), UWID = "ME") %>%
     mutate(WBIC = '805400') %>%
-    select(DateTime, Depth, temp, WBIC)
+    select(DateTime, depth, temp, WBIC)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -22,7 +22,7 @@ parse_long_term_ntl <- function(inind, outind) {
                                                    "depth", "wtemp"))
   clean <- raw_file %>%
     rename(UWID = lakeid, DateTime = sampledate,
-           Depth = depth, temp = wtemp) %>%
+           temp = wtemp) %>%
     mutate(DateTime = as.Date(DateTime)) %>%
     mutate(WBIC = case_when(
       UWID == 'AL' ~ '2332400',
@@ -36,7 +36,7 @@ parse_long_term_ntl <- function(inind, outind) {
       UWID == 'TB' ~ '2014700',
       UWID == 'TR' ~ '2331600',
       UWID == 'WI' ~ '805000')) %>%
-    select(DateTime, Depth, temp, WBIC)
+    select(DateTime, depth, temp, WBIC)
 
   saveRDS(object = clean, file = outfile)
   scipiper::sc_indicate(outind, data_file = outfile)
@@ -49,10 +49,10 @@ parse_mendota_temps_long <- function(inind, outind) {
 
   clean <- raw_file %>%
     mutate(WBIC = "805400") %>%
-    rename(DateTime = sampledate, Depth = depth, temp = watertemp) %>%
-    filter(Depth != "MUD") %>%
-    mutate(DateTime = as.Date(DateTime), Depth = as.numeric(Depth)) %>%
-    select(DateTime, Depth, temp, WBIC)
+    rename(DateTime = sampledate, temp = watertemp) %>%
+    filter(depth != "MUD") %>%
+    mutate(DateTime = as.Date(DateTime), depth = as.numeric(depth)) %>%
+    select(DateTime, depth, temp, WBIC)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(outind, data_file = outfile)
