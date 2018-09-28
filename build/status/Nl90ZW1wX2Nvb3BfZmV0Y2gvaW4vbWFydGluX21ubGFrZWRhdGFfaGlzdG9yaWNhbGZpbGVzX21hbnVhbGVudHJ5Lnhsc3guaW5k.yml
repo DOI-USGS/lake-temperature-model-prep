@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/martin_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: d54737b702943757532c9097ce489b51
+time: 2018-09-27 18:13:16 UTC
+depends: {}
+fixed: a39462573a1e3bb323b249245c4d6dbf
+code:
+  functions: {}
+

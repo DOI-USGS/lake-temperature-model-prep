@@ -108,8 +108,12 @@ reduce_temp_data <- function(outind, inind) {
     group_by(nhd_id, date, depth) %>%
     summarize(temp = mean(temp))
 
+  all_dat_singletimes_recent <- filter(all_dat_singletimes, date >= as.Date('1979-01-01'))
 
-  feather::write_feather(all_dat_singletimes, outfile)
+  cat('There were', nrow(all_dat_singletimes) - nrow(all_dat_singletimes_recent),
+      "historical (prior to 1979) observations that were dropped.")
+
+  feather::write_feather(all_dat_singletimes_recent, outfile)
   gd_put(outind, outfile)
 
 }
