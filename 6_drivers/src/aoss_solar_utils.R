@@ -72,6 +72,18 @@ for (feather_filepath in ready_files){
   drivers_in <- rbind(drivers_in, data)
 }
 
+# from old MATLAB code:
+#' @param Ta - air temperature  [C]
+#' @param Pa - pressure [mb]
+#'
+#' @return  q  - saturation specific humidity  [kg/kg]
+qsat <- function(Ta, Pa){
+  ew <- 6.1121*(1.0007+3.46e-6*Pa)*exp((17.502*Ta)/(240.97+Ta)) # in mb
+  q <- 0.62197*(ew/(Pa-0.378*ew))                              # mb -> kg/kg
+  return(q)
+}
+
+
 # simple QAQC:
 
 aoss_qaqc <- filter(drivers_in, lw_qc == 0, sw_qc == 0)
@@ -81,6 +93,8 @@ nldas_lw_filepath <- '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_v
 nldas_u10_filepath <- '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[ugrd10m].feather'
 nldas_v10_filepath <- '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[vgrd10m].feather'
 nldas_air_filepath <- '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[tmp2m].feather'
+nldas_prs_filepath <- '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[pressfc].feather'
+nldas_sphm_filepath <- '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[spfh2m].feather'
 
 
 NLDAS_start <- as.POSIXct('1979-01-01 13:00', tz = "UTC")
@@ -93,8 +107,11 @@ drivers_nldas$me_lw <- feather::read_feather(nldas_lw_filepath) %>% pull(dlwrfsf
 drivers_nldas$me_u10 <- feather::read_feather(nldas_u10_filepath) %>% pull(ugrd10m)
 drivers_nldas$me_v10 <- feather::read_feather(nldas_v10_filepath) %>% pull(vgrd10m)
 drivers_nldas$me_air <- feather::read_feather(nldas_air_filepath) %>% pull(tmp2m)
+drivers_nldas$spfh2m <- feather::read_feather(nldas_sphm_filepath) %>% pull(spfh2m)
+drivers_nldas$pressfc <- feather::read_feather(nldas_prs_filepath) %>% pull(pressfc)
 hourly_nldas <- mutate(drivers_nldas, date = lubridate::as_date(time)) %>%
-  mutate(wnd = sqrt(me_u10^2 + me_v10^2), air = me_air - 273.15)
+  mutate(wnd = sqrt(me_u10^2 + me_v10^2), air = me_air - 273.15,
+         RelHum = 100*spfh2m/qsat(air, pressfc*0.01))
 
 daily_drivers <- mutate(aoss_qaqc, date = lubridate::as_date(datetime)) %>%
   group_by(date) %>%
@@ -129,8 +146,13 @@ points(mendota_buoy$time, mendota_buoy$avg_air_temp, col = 'red')
 
 combined_buoy <- inner_join(hourly_nldas, mendota_buoy, by = 'time') %>% mutate(date = lubridate::as_date(time)) %>%
   group_by(date) %>%
-  summarize(wnd_nldas = mean(wnd^3)^(1/3), wnd_buoy = mean(avg_wind_speed^3)^(1/3), air_nldas = mean(air), air_buoy = mean(avg_air_temp))
+  summarize(wnd_nldas = mean(wnd^3)^(1/3), wnd_buoy = mean(avg_wind_speed^3)^(1/3),
+            air_nldas = mean(air), air_buoy = mean(avg_air_temp),
+            rh_nldas = mean(RelHum), rh_buoy = mean(avg_rel_hum))
 
 plot(combined_buoy$wnd_buoy, combined_buoy$wnd_nldas, xlim = c(0, 12), ylim = c(0,12), asp = 1, ylab = 'NLDAS windspeed (m/s)', xlab = 'buoy windspeed (m/s)');abline(0,1)
 
 plot(combined_buoy$air_buoy, combined_buoy$air_nldas, xlim = c(-20, 30), ylim = c(-20,30), asp = 1, ylab = 'NLDAS air temp (°C)', xlab = 'buoy air temp (°C)');abline(0,1)
+
+plot(combined_buoy$rh_buoy, combined_buoy$rh_nldas, xlim = c(0, 100), asp = 1, ylab = 'NLDAS RH (%)', xlab = 'buoy RH (%)');abline(0,1)
+
