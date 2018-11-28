@@ -1,0 +1,44 @@
+target_default: 6_fetch_local_meteo
+
+
+packages:
+  - dplyr
+  - tidyr
+  - scipiper
+
+file_extensions:
+  - feather
+  - ind
+
+sources:
+  - 6_drivers/src/local_meteo_utils.R
+
+targets:
+  6_fetch_local_meteo:
+    depends:
+      - 6_visualize/log/6_aos_solar_tasks.ind
+
+
+  aoss_meteo_dates:
+    command: c(I('2009-01-01'),I('2018-11-15'))
+
+  aoss_skip_solar:
+    command: c(I('2010-06-11','2017-06-23')) # 10162 and 17174
+
+  aoss_skip_rig:
+    command: c() # unknown
+
+  aoss_solar_tasks:
+    command: create_aoss_meteo_tasks(aoss_meteo_dates, aoss_skip_solar, aoss_skip_rig)
+
+  6_aoss_solar_tasks.yml:
+    command: create_aoss_meteo_makefile(
+      makefile = target_name,
+      task_plan = aoss_solar_tasks,
+      remake_file = I('6_fetch_local_meteo.yml'))
+
+  6_visualize/log/6_aoss_solar_tasks.ind:
+    command: loop_tasks(
+      task_plan=aoss_solar_tasks, task_makefile='6_aoss_solar_tasks.yml',
+      task_names=NULL,
+      num_tries=I(1), sleep_on_error=I(0))
