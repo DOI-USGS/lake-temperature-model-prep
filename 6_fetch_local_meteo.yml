@@ -5,6 +5,7 @@ packages:
   - dplyr
   - tidyr
   - scipiper
+  - feather
 
 file_extensions:
   - feather
@@ -12,11 +13,12 @@ file_extensions:
 
 sources:
   - 6_drivers/src/local_meteo_utils.R
+  - 7_drivers_munge/src/GLM_driver_utils.R
 
 targets:
   6_fetch_local_meteo:
     depends:
-      - 6_visualize/log/6_aos_solar_tasks.ind
+      - 7_drivers_munge/mendota_out/mendota_local_meteo.csv
 
 
   aoss_meteo_dates:
@@ -42,3 +44,28 @@ targets:
       task_plan=aoss_solar_tasks, task_makefile='6_aoss_solar_tasks.yml',
       task_names=NULL,
       num_tries=I(1), sleep_on_error=I(0))
+
+  7_drivers_munge/mendota_out/rig_meteo.feather:
+    command: combine_rig_files(target_name)
+
+  7_drivers_munge/mendota_out/solrad_meteo.feather:
+    command: combine_solrad_files(target_name)
+
+  7_drivers_munge/mendota_out/nldas_meteo.feather:
+    command: combine_nldas_files(target_name,
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[dlwrfsfc].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[dswrfsfc].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[apcpsfc].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[pressfc].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[spfh2m].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[tmp2m].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[ugrd10m].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[vgrd10m].feather'
+      )
+
+  7_drivers_munge/mendota_out/mendota_local_meteo.csv:
+    command: merge_aoss_nldas_meteo(target_name,
+      '7_drivers_munge/mendota_out/nldas_meteo.feather',
+      '7_drivers_munge/mendota_out/solrad_meteo.feather',
+      '7_drivers_munge/mendota_out/rig_meteo.feather')
+
