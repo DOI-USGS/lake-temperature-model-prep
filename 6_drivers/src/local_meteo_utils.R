@@ -164,6 +164,11 @@ buoy_data <- function(){
            sampledate < as.Date('2012-08-31') | sampledate > as.Date('2012-09-04')) %>%
     select(DateTime = sampledate, Depth = depth, temp = wtemp)
 
+  manual_temp <- readr::read_csv("~/Downloads/chemphys.csv", skip = 1) %>%
+    filter(!is.na(flagwtemp)) %>%
+    select(DateTime = sampledate, Depth = depth, temp = wtemp)
+
+
   readr::write_csv(buoy_temp, '../lake_modeling/data_imports/in/mendota_buoy.csv')
 }
 
