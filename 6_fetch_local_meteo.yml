@@ -69,3 +69,7 @@ targets:
       '7_drivers_munge/mendota_out/solrad_meteo.feather',
       '7_drivers_munge/mendota_out/rig_meteo.feather')
 
+
+  '../lake_modeling/data_imports/training_data_mendota_2009_2013/mendota_2009_2013_meteo.feather':
+    command: subset_training_meteo(target_name, '7_drivers_munge/mendota_out/mendota_local_meteo.csv', I('2009-04-01'), I('2013-12-17'))
+

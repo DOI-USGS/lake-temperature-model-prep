@@ -154,6 +154,11 @@ merge_aoss_nldas_meteo <- function(filepath, nldas_filepath, radiation_filepath,
   readr::write_csv(x = meteo_data, path = filepath)
 }
 
+subset_training_meteo <- function(filepath, filepath_in, start, stop){
+  readr::read_csv(filepath_in) %>%
+    filter(time <= as.Date(stop), time >= as.Date(start)) %>%
+    feather::write_feather(path = filepath)
+}
 
 buoy_data <- function(){
   buoy_temp <- readr::read_csv("~/Downloads/ntl130_1_v5 (1).csv", skip = 1) %>%
@@ -161,15 +166,44 @@ buoy_data <- function(){
            sampledate < as.Date('2009-07-03') | sampledate > as.Date('2009-07-06'),
            sampledate < as.Date('2014-06-17') | sampledate > as.Date('2014-07-10'),
            sampledate < as.Date('2008-11-11') | sampledate > as.Date('2008-12-12'),
+           sampledate < as.Date('2011-08-07') | sampledate > as.Date('2011-08-19'),
            sampledate < as.Date('2012-08-31') | sampledate > as.Date('2012-09-04')) %>%
     select(DateTime = sampledate, Depth = depth, temp = wtemp)
 
   manual_temp <- readr::read_csv("~/Downloads/chemphys.csv", skip = 1) %>%
-    filter(!is.na(flagwtemp)) %>%
+    filter(is.na(flagwtemp), !is.na(wtemp)) %>%
+    group_by(sampledate, depth) %>% filter(row_number(wtemp) == 1) %>%
     select(DateTime = sampledate, Depth = depth, temp = wtemp)
 
+  combined <- full_join(buoy_temp, manual_temp, by = c("DateTime", "Depth")) %>%
+    mutate(temp = ifelse(is.na(temp.x), temp.y, temp.x)) %>% select(-temp.x, -temp.y) %>%
+    arrange(DateTime, Depth)
 
   readr::write_csv(buoy_temp, '../lake_modeling/data_imports/in/mendota_buoy.csv')
+  readr::write_csv(combined, '../lake_modeling/data_imports/in/mendota_combined.csv')
+  return(combined)
+}
+
+build_training_datasets <- function(n_experiments = 5, samples = c(800, 100, 50, 20, 10, 5, 2), training_range = as.Date(c('2009-04-01', '2013-12-17'))){
+
+  training <- buoy_data() %>%
+    filter(DateTime >= training_range[1], DateTime <= training_range[2])
+
+  un_dates <- training %>% pull(DateTime) %>% unique
+
+  for (samp in samples){
+    for (n in 1:n_experiments){
+      n_exp <- stringr::str_pad(n, 2, pad = '0')
+      feather_filepath <- sprintf('../lake_modeling/data_imports/training_data_mendota_2009_2013/Mendota_training_2009_2013_%sprofiles_experiment_%s.feather', samp, n_exp)
+      figure_filepath <- sprintf('../lake_modeling/data_imports/figures/Mendota_training_2009_2013_%sprofiles_experiment_%s.png', samp, n_exp)
+      set.seed(n)
+      profile_dates <- sample(un_dates, samp, replace = FALSE)
+      profiles <- training %>% filter(DateTime %in% profile_dates)
+      subset_plots(figure_filepath, profiles)
+      feather::write_feather(profiles, feather_filepath)
+    }
+  }
+
 }
 
 diagnostics <- function(){
@@ -188,4 +222,28 @@ diagnostics <- function(){
   plot(combined_buoy$wnd_buoy[!combined_buoy$wnd_qc], combined_buoy$wnd_rig[!combined_buoy$wnd_qc], asp = 1, ylab = 'AOSS windspeed (m/s)', xlab = 'Buoy windspeed (m/s)'); abline(0,1)
   plot(combined_buoy$rh_buoy[!combined_buoy$rh_qc], combined_buoy$rh_rig[!combined_buoy$rh_qc], asp = 1, ylab = 'AOSS RH (%)', xlab = 'Buoy RH (%)'); abline(0,1)
   plot(combined_buoy$air_buoy[!combined_buoy$air_qc], combined_buoy$air_rig[!combined_buoy$air_qc], asp = 1, ylab = 'AOSS air temperature (°C)', xlab = 'Buoy air temperature (°C)'); abline(0,1)
+}
+
+
+subset_plots <- function(filepath, profiles){
+
+  temp_data <- profiles
+  xlim <- as.Date(c('2009-04-01', '2013-12-17'))
+  un_dates <- profiles %>% pull(DateTime) %>% unique
+
+  png(filename = filepath, width = 8, height = 3, units = 'in', res = 200)
+  par(omi = c(0.4,0,0.05,0.05), mai = c(0,1,0,0))
+  plot(xlim, c(NA,NA), xlim = xlim,
+       ylim = c(24,0), xaxs = 'i', yaxs = 'i', ylab = 'Depth (m)', xlab = "")
+
+  for (date in un_dates){
+    data <- filter(temp_data, DateTime == date) %>% arrange()
+    col = colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
+                       "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))(30)
+    .filled.contour(x = c(date-0.5, date+0.5), y = data$Depth, z = rbind(data$temp,data$temp), levels = seq(0,to = 30), col = col)
+
+  }
+  box()
+  dev.off()
+  #plot(buoy_temp$DateTime, buoy_temp$temp, xlim = as.Date(c('2009-04-10', '2013-11-01')), pch = 15, cex = 0.25)
 }
