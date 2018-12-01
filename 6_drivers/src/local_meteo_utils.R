@@ -265,15 +265,19 @@ subset_plots <- function(filepath, profiles, xlim = as.Date(c('2009-04-01', '201
   #plot(buoy_temp$DateTime, buoy_temp$temp, xlim = as.Date(c('2009-04-10', '2013-11-01')), pch = 15, cex = 0.25)
 }
 
-train_test_overview_plots <- function(filepath, profiles, xlim = as.Date(c('2009-04-01', '2017-12-17'))){
+train_test_overview_plots <- function(profiles = buoy_data(), xlim = as.Date(c('2009-04-01', '2017-12-17')), experiment_n){
 
-  filepath <- '~/Downloads/test_train_mendota_option2.png'
+  n_exp <- stringr::str_pad(experiment_n, 2, pad = '0')
+
+  exp_dir <- sprintf('../lake_modeling/data_imports/mendota_sparse_experiments/experiment_%s/', n_exp)
+  filepath <- file.path(exp_dir, sprintf('experiment_%s_overview.png', n_exp))
 
   chunk_size <- 60
   temp_data <- profiles
 
   un_dates <- temp_data %>% pull(DateTime) %>% unique
 
+  year_ticks <- seq(as.Date(c("2009-01-1")), length.out = 20, by = 'year')
   png(filename = filepath, width = 14, height = 4, units = 'in', res = 200)
   par(omi = c(0.25,0,0.05,0.05), mai = c(0.05,0.5,0,0), las = 1, mgp = c(2,.5,0))
   layout(matrix(1:5))
@@ -281,12 +285,12 @@ train_test_overview_plots <- function(filepath, profiles, xlim = as.Date(c('2009
   plot(xlim, c(NA,NA), xlim = xlim,
        ylim = c(24,0), xaxs = 'i', yaxs = 'i', ylab = 'Depth (m)', xlab = "", axes = FALSE)
 
-  axis(1, at = as.Date(c("2009-01-1","2010-01-01","2011-01-01","2012-01-01","2013-01-01","2014-01-01","2015-01-01","2016-01-01","2017-01-01")), labels = FALSE, tick = TRUE, tck = -0.02)
+  axis(1, at = year_ticks, labels = FALSE, tick = TRUE, tck = -0.02)
   axis(2, at = seq(0,25,10), tck = -0.02)
 
   un_dt_resample <- data.frame(date = un_dates, train = FALSE)
-  set.seed(42)
-  for (i in 1:10){
+  set.seed(42 + experiment_n)
+  for (i in 1:9){
     good_sample <- FALSE
     while (!good_sample){
       start_i <- sample(1:nrow(un_dt_resample), 1)
@@ -311,13 +315,19 @@ train_test_overview_plots <- function(filepath, profiles, xlim = as.Date(c('2009
     }
 
   }
+  feather_file <- sprintf('mendota_test_experiment_%s.feather', n_exp)
+  text(as.Date("2009-04-10"), y = 21, feather_file, pos = 4)
   text(as.Date("2009-04-10"), y = 4, "entire dataset", pos = 4)
   box()
+  test_out <- temp_data %>% filter(DateTime %in% un_dt_resample$date[un_dt_resample$train])
+  feather_filepath <- file.path(exp_dir, feather_file)
+  feather::write_feather(test_out, feather_filepath)
+
 
   build_subset <- function(n){
     plot(xlim, c(NA,NA), xlim = xlim,
          ylim = c(24,0), xaxs = 'i', yaxs = 'i', ylab = 'Depth (m)', xlab = "", axes = FALSE)
-    axis(1, at = as.Date(c("2009-01-1","2010-01-01","2011-01-01","2012-01-01","2013-01-01","2014-01-01","2015-01-01","2016-01-01","2017-01-01")), labels = FALSE, tick = TRUE, tck = -0.02)
+    axis(1, at = year_ticks, labels = FALSE, tick = TRUE, tck = -0.02)
     axis(2, at = seq(0,25,10), tck = -0.02)
 
     profile_dates <- sample(un_dt_resample$date[!un_dt_resample$train], n, replace = FALSE)
@@ -331,16 +341,25 @@ train_test_overview_plots <- function(filepath, profiles, xlim = as.Date(c('2009
       }
 
     }
+
+    feather_file <- sprintf('mendota_training_%sprofiles_experiment_%s.feather', stringr::str_pad(n, 3, pad = '0'), n_exp)
     text(as.Date("2009-04-10"), y = 4, sprintf("training n=%s", n), pos = 4)
+    text(as.Date("2009-04-10"), y = 21, feather_file, pos = 4)
     box()
+
+    training_out <- filter(temp_data, DateTime %in% profile_dates) %>% arrange(DateTime)
+
+    feather_filepath <- file.path(exp_dir, feather_file)
+    feather::write_feather(training_out, feather_filepath)
+
   }
 
-  build_subset(920)
+  build_subset(nrow(un_dt_resample) - sum(un_dt_resample$train)) # all of the remaining data
   build_subset(100)
   build_subset(50)
   build_subset(10)
 
-  axis(1, at = as.Date(c("2009-01-1","2010-01-01","2011-01-01","2012-01-01","2013-01-01","2014-01-01","2015-01-01","2016-01-01","2017-01-01")), labels = 2009:2017, tick = TRUE, tck = -0.02)
+  axis(1, at = year_ticks[2:10], labels = 2010:2018, tick = TRUE, tck = -0.02)
 
   dev.off()
 
