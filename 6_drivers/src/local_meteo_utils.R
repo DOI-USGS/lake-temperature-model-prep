@@ -278,9 +278,9 @@ train_test_overview_plots <- function(profiles = buoy_data(), xlim = as.Date(c('
   un_dates <- temp_data %>% pull(DateTime) %>% unique
 
   year_ticks <- seq(as.Date(c("2009-01-1")), length.out = 20, by = 'year')
-  png(filename = filepath, width = 14, height = 4, units = 'in', res = 200)
+  png(filename = filepath, width = 14, height = 4.5, units = 'in', res = 200)
   par(omi = c(0.25,0,0.05,0.05), mai = c(0.05,0.5,0,0), las = 1, mgp = c(2,.5,0))
-  layout(matrix(1:5))
+  layout(matrix(1:6))
 
   plot(xlim, c(NA,NA), xlim = xlim,
        ylim = c(24,0), xaxs = 'i', yaxs = 'i', ylab = 'Depth (m)', xlab = "", axes = FALSE)
@@ -358,6 +358,7 @@ train_test_overview_plots <- function(profiles = buoy_data(), xlim = as.Date(c('
   build_subset(100)
   build_subset(50)
   build_subset(10)
+  build_subset(2)
 
   axis(1, at = year_ticks[2:10], labels = 2010:2018, tick = TRUE, tck = -0.02)
 
