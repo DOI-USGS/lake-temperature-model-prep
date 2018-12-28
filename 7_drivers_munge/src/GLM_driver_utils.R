@@ -141,7 +141,7 @@ feathers_to_driver_file <- function(filepath, cell_group_table){
            Rain = apcpsfc*24/1000) %>%
     mutate(Snow = ifelse(AirTemp < 0, Rain*10, 0), Rain = ifelse(AirTemp < 0, 0, Rain)) %>% #convert to m/day rate)
     select(time, ShortWave, LongWave, AirTemp, RelHum, WindSpeed, Rain, Snow) %>% # now downsample?
-    mutate(date = lubridate::as_date(time)) %>% group_by(date) %>%
+    mutate(date = lubridate::as_date(time, tz = "Etc/GMT+6")) %>% group_by(date) %>%
     summarize(ShortWave = mean(ShortWave), LongWave = mean(LongWave),
               AirTemp = mean(AirTemp), RelHum = mean(RelHum),
               WindSpeed = mean(WindSpeed^3)^(1/3), Rain = mean(Rain), Snow = mean(Snow), n = length(time)) %>%
