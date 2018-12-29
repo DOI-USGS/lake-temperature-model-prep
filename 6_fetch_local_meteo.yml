@@ -6,6 +6,7 @@ packages:
   - tidyr
   - scipiper
   - feather
+  - readr
 
 file_extensions:
   - feather
@@ -23,6 +24,9 @@ targets:
 
   aoss_meteo_dates:
     command: c(I('2009-01-01'),I('2018-11-15'))
+
+  airport_meteo_dates:
+    command: c(I('2007-01-01'),I('2018-01-01'))
 
   aoss_skip_solar:
     command: c(I('2010-06-11','2017-06-23')) # 10162 and 17174
@@ -63,13 +67,35 @@ targets:
       '6_drivers/out/feather/NLDAS_time[0.346848]_x[284]_y[144]_var[vgrd10m].feather'
       )
 
+  7_drivers_munge/sparkling_out/airport_meteo.feather:
+    command: build_airport_meteo(target_name,
+      "6_drivers/in/ntl17_2_v6_AIRPORT_Hourly.csv",
+      airport_meteo_dates)
+
+  7_drivers_munge/sparkling_out/nldas_meteo.feather:
+    command: combine_nldas_files(target_name,
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[282]_y[168]_var[dlwrfsfc].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[282]_y[168]_var[dswrfsfc].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[282]_y[168]_var[apcpsfc].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[282]_y[168]_var[pressfc].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[282]_y[168]_var[spfh2m].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[282]_y[168]_var[tmp2m].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[282]_y[168]_var[ugrd10m].feather',
+      '6_drivers/out/feather/NLDAS_time[0.346848]_x[282]_y[168]_var[vgrd10m].feather'
+      )
+
   7_drivers_munge/mendota_out/mendota_local_meteo.csv:
     command: merge_aoss_nldas_meteo(target_name,
       '7_drivers_munge/mendota_out/nldas_meteo.feather',
       '7_drivers_munge/mendota_out/solrad_meteo.feather',
       '7_drivers_munge/mendota_out/rig_meteo.feather')
 
+  7_drivers_munge/sparkling_out/sparkling_local_meteo.csv:
+    command: merge_airport_nldas_meteo(target_name,
+      '7_drivers_munge/sparkling_out/nldas_meteo.feather',
+      '7_drivers_munge/sparkling_out/airport_meteo.feather')
 
-  '../lake_modeling/data_imports/training_data_mendota_2009_2013/mendota_2009_2013_meteo.feather':
-    command: subset_training_meteo(target_name, '7_drivers_munge/mendota_out/mendota_local_meteo.csv', I('2009-04-01'), I('2013-12-17'))
+  '../lake_modeling/data_imports/training_data_mendota/mendota_meteo.feather':
+    command: subset_training_meteo(target_name, '7_drivers_munge/mendota_out/mendota_local_meteo.csv', I('2009-04-01'), I('2017-12-20'))
+
 
