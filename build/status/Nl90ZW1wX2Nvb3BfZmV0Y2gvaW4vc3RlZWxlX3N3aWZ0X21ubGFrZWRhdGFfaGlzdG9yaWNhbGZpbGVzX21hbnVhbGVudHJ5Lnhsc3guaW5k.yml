@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/steele_swift_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: a7f59f44169e053d721ea8d561225196
+time: 2019-02-06 15:44:20 UTC
+depends: {}
+fixed: 5fa94284131ab340183d40b8d32fb7a1
+code:
+  functions: {}
+

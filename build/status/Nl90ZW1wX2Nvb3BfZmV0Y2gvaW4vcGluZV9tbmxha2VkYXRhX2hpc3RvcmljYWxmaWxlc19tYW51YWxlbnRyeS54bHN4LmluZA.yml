@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/pine_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 08984ed66980b721738b140eba2bd91c
+time: 2019-02-06 15:49:58 UTC
+depends: {}
+fixed: f6826118afe7f3eb77131a277dd90d48
+code:
+  functions: {}
+

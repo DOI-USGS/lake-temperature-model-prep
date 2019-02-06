@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/scott_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 7e19017fc2dd9bb045247b116b277d9b
+time: 2019-02-06 15:44:50 UTC
+depends: {}
+fixed: 9d84114f911f8215093ef0ce18074051
+code:
+  functions: {}
+

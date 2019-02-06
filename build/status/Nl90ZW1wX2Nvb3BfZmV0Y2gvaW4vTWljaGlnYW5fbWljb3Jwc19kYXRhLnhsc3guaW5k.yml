@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Michigan_micorps_data.xlsx.ind
+type: file
+hash: 686452a3f7f7839273ad79a35ffb0d35
+time: 2019-02-06 15:50:59 UTC
+depends: {}
+fixed: e6996a37bdd20d539395609c86a97fe8
+code:
+  functions: {}
+
