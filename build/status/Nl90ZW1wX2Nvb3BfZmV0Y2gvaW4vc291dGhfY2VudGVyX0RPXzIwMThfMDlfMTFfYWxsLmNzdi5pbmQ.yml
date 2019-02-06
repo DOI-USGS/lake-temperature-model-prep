@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/south_center_DO_2018_09_11_all.csv.ind
+type: file
+hash: f89b0902a8e5b60c7c63bc47917fb070
+time: 2019-02-06 15:47:01 UTC
+depends: {}
+fixed: b3d5a56f39d01c93e4cae5ef86c1d728
+code:
+  functions: {}
+

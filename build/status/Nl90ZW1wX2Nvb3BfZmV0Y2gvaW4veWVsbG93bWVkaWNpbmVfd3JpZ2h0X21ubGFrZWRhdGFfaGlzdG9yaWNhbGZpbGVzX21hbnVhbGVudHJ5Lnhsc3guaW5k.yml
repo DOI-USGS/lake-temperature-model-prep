@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/yellowmedicine_wright_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 7e19b3c65341c83bebec7e9d67ae881b
+time: 2019-02-06 15:42:12 UTC
+depends: {}
+fixed: 46849404e94f03fbaf90f4ad2c2ff030
+code:
+  functions: {}
+

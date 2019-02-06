@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/stlouis_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: bb55c84374031d83f489f9bba698ffab
+time: 2019-02-06 15:45:53 UTC
+depends: {}
+fixed: 49d6d1c0fc4432de9faa550438f92aa4
+code:
+  functions: {}
+

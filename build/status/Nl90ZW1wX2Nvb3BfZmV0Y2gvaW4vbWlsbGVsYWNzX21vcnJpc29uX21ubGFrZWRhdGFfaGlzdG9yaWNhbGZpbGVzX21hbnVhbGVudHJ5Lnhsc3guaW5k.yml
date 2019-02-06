@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/millelacs_morrison_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 85539934df2783d35717ba1e71670c6f
+time: 2019-02-06 15:52:56 UTC
+depends: {}
+fixed: ec5ef0c5d76bbdf43e0d97fd88b48a32
+code:
+  functions: {}
+

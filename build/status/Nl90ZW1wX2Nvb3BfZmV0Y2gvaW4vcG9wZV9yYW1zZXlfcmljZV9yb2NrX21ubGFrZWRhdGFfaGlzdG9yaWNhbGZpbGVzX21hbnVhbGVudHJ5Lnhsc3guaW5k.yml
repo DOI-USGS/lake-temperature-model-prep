@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/pope_ramsey_rice_rock_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 36ae295d1379b8a9a7177ad85bc78dc8
+time: 2019-02-06 15:48:52 UTC
+depends: {}
+fixed: 16eb8a223b88c1955e2e1bbe3a0213d3
+code:
+  functions: {}
+

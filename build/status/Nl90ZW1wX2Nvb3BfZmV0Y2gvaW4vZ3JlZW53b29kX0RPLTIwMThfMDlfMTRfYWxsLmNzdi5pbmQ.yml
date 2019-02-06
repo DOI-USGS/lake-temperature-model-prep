@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/greenwood_DO-2018_09_14_all.csv.ind
+type: file
+hash: e08f08f59bc19e331d5dc6abcff50f3a
+time: 2019-02-06 15:47:48 UTC
+depends: {}
+fixed: d1dafe753f86814b56bcfaf3e1b8c47e
+code:
+  functions: {}
+
