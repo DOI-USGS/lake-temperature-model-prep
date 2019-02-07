@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/bigstone_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: bf74669bea344707ba652a5083f55626
+time: 2019-02-06 22:50:14 UTC
+depends: {}
+fixed: 3a851d45cad4da8fcbab0ab728f6c567
+code:
+  functions: {}
+

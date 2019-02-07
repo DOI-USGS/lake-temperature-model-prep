@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Cass_lake_emperature_Logger_Database_2008_to_present.accdb.ind
+type: file
+hash: 98510be3d17ef8ec24673eccf43a1689
+time: 2019-02-06 22:51:10 UTC
+depends: {}
+fixed: 0a82ac878ebc0f2ccbe49907808c59e8
+code:
+  functions: {}
+

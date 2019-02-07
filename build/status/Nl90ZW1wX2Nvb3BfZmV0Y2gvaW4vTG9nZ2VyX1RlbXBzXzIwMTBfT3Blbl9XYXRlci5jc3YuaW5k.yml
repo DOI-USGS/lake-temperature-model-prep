@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Logger_Temps_2010_Open_Water.csv.ind
+type: file
+hash: 83b1150192cf460ff32aaf3cfc896962
+time: 2019-02-06 22:53:16 UTC
+depends: {}
+fixed: 2e7e508e33143552700a32740cf884f2
+code:
+  functions: {}
+

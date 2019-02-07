@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Vermilion_Logger_2014.csv.ind
+type: file
+hash: e1e1bea12b7402fe2de734d683782114
+time: 2019-02-06 22:55:08 UTC
+depends: {}
+fixed: d83a8b2f6e64b160ae6c1aad822e8922
+code:
+  functions: {}
+

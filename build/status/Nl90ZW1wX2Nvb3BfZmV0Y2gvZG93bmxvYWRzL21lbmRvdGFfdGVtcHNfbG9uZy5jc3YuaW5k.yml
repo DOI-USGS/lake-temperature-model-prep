@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/downloads/mendota_temps_long.csv.ind
+type: file
+hash: 8a8043e3d3a43cfb1910835bb4053c0b
+time: 2019-02-06 22:39:54 UTC
+depends:
+  coop_file_upload_location: 2c1265c14fda5fa0d792caa9b0ad5d3b
+fixed: 5fc933fe5ee2f267376a790831928f91
+code:
+  functions:
+    download_and_indicate: 7aafcc3a53ed1a6e6d7b987a66a595b7
+

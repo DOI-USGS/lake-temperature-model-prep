@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Verm_annual_tempDO_longformat.xlsx.ind
+type: file
+hash: 1975fda4ec69b440b24f12ee6399fde1
+time: 2019-02-06 22:56:31 UTC
+depends: {}
+fixed: 87319b60c389abed4050c3d582473a53
+code:
+  functions: {}
+

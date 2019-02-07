@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/douglas_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 8f9f6e9724430bdb9f3ce9d6685dadbf
+time: 2019-02-06 22:44:04 UTC
+depends: {}
+fixed: 691ee01a504f25dcf7dd287b812b2f91
+code:
+  functions: {}
+

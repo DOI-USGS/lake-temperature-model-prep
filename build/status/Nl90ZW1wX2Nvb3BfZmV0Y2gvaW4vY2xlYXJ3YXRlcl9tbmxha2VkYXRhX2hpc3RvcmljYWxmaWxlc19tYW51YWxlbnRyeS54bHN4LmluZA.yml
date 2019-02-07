@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/clearwater_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: e0a697e0be9c244f93c8dfb2d874c497
+time: 2019-02-06 22:46:26 UTC
+depends: {}
+fixed: b3c984fcfeb561a553637afae8ee436a
+code:
+  functions: {}
+

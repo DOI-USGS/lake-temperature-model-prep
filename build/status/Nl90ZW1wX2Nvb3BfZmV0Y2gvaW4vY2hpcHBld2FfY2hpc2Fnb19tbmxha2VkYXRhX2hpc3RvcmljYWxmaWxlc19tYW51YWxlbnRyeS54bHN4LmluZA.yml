@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/chippewa_chisago_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: fa9fb91b5b234d3bdbc1f2534f886491
+time: 2019-02-06 22:47:23 UTC
+depends: {}
+fixed: 75398f00cf0a77d090ab971a131ff765
+code:
+  functions: {}
+
