@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/brown_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 257b4394331dc260c4a4c50f5cf23402
+time: 2019-02-06 22:49:18 UTC
+depends: {}
+fixed: 648e319355094b74839486ed350190f6
+code:
+  functions: {}
+

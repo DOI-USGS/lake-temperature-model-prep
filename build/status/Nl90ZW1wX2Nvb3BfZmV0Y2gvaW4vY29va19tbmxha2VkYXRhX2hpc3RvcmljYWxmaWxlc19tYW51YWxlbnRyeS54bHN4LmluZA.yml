@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/cook_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: 5de0af7f371d7a82c034dea1c82915d0
+time: 2019-02-06 22:46:00 UTC
+depends: {}
+fixed: e00cc441af07c8a4c78d9075022865bb
+code:
+  functions: {}
+

@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/LotW_WQ_Gretchen_H.xlsx.ind
+type: file
+hash: f01ee3987f4c88d3e31a29d8cac95b7c
+time: 2019-02-06 22:55:36 UTC
+depends: {}
+fixed: 7c97163de895456e0950762fcebde723
+code:
+  functions: {}
+

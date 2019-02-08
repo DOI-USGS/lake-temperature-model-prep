@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/MN_fisheries_all_temp_data_Jan2018.txt.ind
+type: file
+hash: 9ebc8995aca5d8392faa6f214e568406
+time: 2019-02-06 22:58:25 UTC
+depends: {}
+fixed: ed7d16209adc4c9c064436942bcaef7d
+code:
+  functions: {}
+

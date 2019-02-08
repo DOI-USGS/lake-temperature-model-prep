@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/downloads/mendota_daily_buoy.csv.ind
+type: file
+hash: 20c7a7553cef73c6bcdf5504729c37c9
+time: 2019-02-06 22:39:37 UTC
+depends:
+  coop_file_upload_location: 2c1265c14fda5fa0d792caa9b0ad5d3b
+fixed: f5d55cc61b9a3573d8eb159df4d7f28c
+code:
+  functions:
+    download_and_indicate: 7aafcc3a53ed1a6e6d7b987a66a595b7
+

@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/aitkin_anoka_becker_cook_mnlakedata_historicalfiles_manualentry.xlsx.ind
+type: file
+hash: bc2062cb09748b7a40d90436a151a376
+time: 2019-02-06 22:50:41 UTC
+depends: {}
+fixed: d239762db26e3175e6de47be35b39f28
+code:
+  functions: {}
+

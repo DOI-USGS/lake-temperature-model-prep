@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/vermillion_repeated_tempDO_longformat.xlsx.ind
+type: file
+hash: 33ff1471ea05ebc1c4b4819b31186846
+time: 2019-02-06 22:56:03 UTC
+depends: {}
+fixed: 1e02f26c7e6d30ba2ddfcb322bad576d
+code:
+  functions: {}
+
