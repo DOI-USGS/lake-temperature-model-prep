@@ -23,3 +23,8 @@ parse_micorps_secchi_temp_DO_alltiers <- function(inind, outind) {
   saveRDS(object = dat_clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
+
+parse_Michigan_micorps_data <- function(inind, outind) {
+
+  parse_micorps_secchi_temp_DO_alltiers(inind, outind)
+}

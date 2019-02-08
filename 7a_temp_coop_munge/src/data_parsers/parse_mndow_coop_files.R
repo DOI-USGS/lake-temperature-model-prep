@@ -20,6 +20,27 @@ parse_MPCA_temp_data_all <- function(inind, outind) {
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
+parse_Water_Temp <- function(inind, outind){
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+  outfile <- as_data_file(outind)
+  tables <- Hmisc::mdb.get(infile)
+  lakes <- names(tables)
+  data_out <- data.frame(DateTime = c(), time = c(), depth = c(), temp = c(), DOW = c())
+
+  for (lake in lakes){
+    data <- tables[[lake]] %>% as.data.frame %>%
+      filter(FlagV == "P", FlagG == "P", FlagS == 'P', FlagR == 'P', FlagF == 'P') %>%
+      mutate(POSIXct = as.POSIXct(Date.Time, "%m/%d/%y %H:%M:%S", tz = "UTC"),
+             time = strftime(POSIXct, format = '%H:%M'),
+             DateTime = as.Date(POSIXct),
+             DOW = DOWLKNUM, depth = Depth.m, temp = Water.Temp.C, timezone = "UTC") %>%
+      select(DateTime, time, timezone, depth, temp, DOW) %>%
+      arrange(DateTime)
+    rbind(data_out, data)
+  }
+  saveRDS(object = data_out, file = outfile)
+  sc_indicate(ind_file = outind, data_file =  outfile)
+}
 
 parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
@@ -93,8 +114,9 @@ parse_Cass_lake_emperature_Logger_Database_2008_to_present <- function(inind, ou
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
 
-  infile_full_path <- file.path('D:/R Projects/lake-temperature-model-prep', infile)
-  file_connection <- odbcConnectAccess2007(infile_full_path)
+  infile_full_path <- file.path(getwd(), infile)
+  file_connection <- odbcConnect(infile_full_path)
+
 
   if (file_connection != -1) {
 
