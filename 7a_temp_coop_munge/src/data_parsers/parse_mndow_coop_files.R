@@ -23,21 +23,54 @@ parse_MPCA_temp_data_all <- function(inind, outind) {
 parse_Water_Temp <- function(inind, outind){
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
-  tables <- Hmisc::mdb.get(infile)
-  lakes <- names(tables)
-  data_out <- data.frame(DateTime = c(), time = c(), depth = c(), temp = c(), DOW = c())
 
-  for (lake in lakes){
-    data <- tables[[lake]] %>% as.data.frame %>%
-      filter(FlagV == "P", FlagG == "P", FlagS == 'P', FlagR == 'P', FlagF == 'P') %>%
-      mutate(POSIXct = as.POSIXct(Date.Time, "%m/%d/%y %H:%M:%S", tz = "UTC"),
-             time = strftime(POSIXct, format = '%H:%M'),
-             DateTime = as.Date(POSIXct),
-             DOW = DOWLKNUM, depth = Depth.m, temp = Water.Temp.C, timezone = "UTC") %>%
-      select(DateTime, time, timezone, depth, temp, DOW) %>%
-      arrange(DateTime)
-    rbind(data_out, data)
+
+
+  if (testit::has_error(Hmisc::mdb.get(infile), silent = T)) {
+
+    infile_full_path <- file.path(getwd(), infile)
+    file_connection <- odbcConnectAccess2007(infile_full_path)
+    lakes <- sqlTables(file_connection) %>%
+      filter(TABLE_TYPE == 'TABLE')
+    lakes <- lakes$TABLE_NAME
+    tables <- lapply(lakes, FUN = sqlFetch, channel = file_connection)
+    names(tables) <- lakes
+
+    data_out <- data.frame(DateTime = c(), time = c(), depth = c(), temp = c(), DOW = c())
+
+    for (lake in lakes){
+      data <- tables[[lake]] %>% as.data.frame %>%
+        filter(FlagV == "P", FlagG == "P", FlagS == 'P', FlagR == 'P', FlagF == 'P') %>%
+        mutate(POSIXct = as.POSIXct(Date_Time, "%m/%d/%y %H:%M:%S", tz = "UTC"),
+               time = strftime(POSIXct, format = '%H:%M'),
+               DateTime = as.Date(POSIXct),
+               DOW = DOWLKNUM, depth = Depth_m, temp = Water_Temp_C, timezone = "UTC") %>%
+        select(DateTime, time, timezone, depth, temp, DOW) %>%
+        arrange(DateTime)
+
+      data_out <- rbind(data_out, data)
+    }
+
+  } else {
+    tables <- Hmisc::mdb.get(infile)
+    lakes <- names(tables)
+
+    data_out <- data.frame(DateTime = c(), time = c(), depth = c(), temp = c(), DOW = c())
+
+    for (lake in lakes){
+      data <- tables[[lake]] %>% as.data.frame %>%
+        filter(FlagV == "P", FlagG == "P", FlagS == 'P', FlagR == 'P', FlagF == 'P') %>%
+        mutate(POSIXct = as.POSIXct(Date.Time, "%m/%d/%y %H:%M:%S", tz = "UTC"),
+               time = strftime(POSIXct, format = '%H:%M'),
+               DateTime = as.Date(POSIXct),
+               DOW = DOWLKNUM, depth = Depth.m, temp = Water.Temp.C, timezone = "UTC") %>%
+        select(DateTime, time, timezone, depth, temp, DOW) %>%
+        arrange(DateTime)
+
+      data_out <- rbind(data_out, data)
+    }
   }
+
   saveRDS(object = data_out, file = outfile)
   sc_indicate(ind_file = outind, data_file =  outfile)
 }
@@ -46,7 +79,7 @@ parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
 
-  infile_full_path <- file.path('D:/R Projects/lake-temperature-model-prep', infile)
+  infile_full_path <- file.path(getwd(), infile)
   file_connection <- odbcConnectAccess2007(infile_full_path)
 
   if (file_connection != -1){
