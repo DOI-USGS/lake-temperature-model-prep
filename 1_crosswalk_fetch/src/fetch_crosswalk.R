@@ -2,7 +2,7 @@
 #' http://dx.doi.org/10.5066/F7DV1H10, "Spatial data" item.
 #'
 #' Here we return a single indicator file to represent the entirety of
-fetch_crosswalk_shapefile <- function(ind_file) {
+fetch_winslow_shapefile <- function(ind_file) {
 
   # figure out where we will be putting the files
   data_file <- scipiper::as_data_file(ind_file)
@@ -30,6 +30,7 @@ fetch_crosswalk_shapefile <- function(ind_file) {
   # post to google drive and return an indicator file
   gd_put(ind_file, data_file)
 }
+
 
 fetch_crosswalk_wqp_nhd <- function(ind_file) {
 
