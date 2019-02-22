@@ -15,12 +15,13 @@ targets:
     depends:
       - 2_crosswalk_munge/out/feature_crosswalk.rds.ind
       - 2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind
+      - 2_crosswalk_munge/out/wqp_nhdLookup.rds.ind
 
   2_crosswalk_munge/out/feature_crosswalk.rds.ind:
     command: merge_id_crosswalks(
       merged_ind = target_name,
       lakes_sf_ind = '1_crosswalk_fetch/out/lakes_sf.rds.ind',
-      wqp_nhd_ind = '1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind')
+      wqp_nhd_ind = '2_crosswalk_munge/out/wqp_nhdLookup.rds.ind')
   2_crosswalk_munge/out/feature_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/feature_crosswalk.rds.ind')
 
@@ -32,3 +33,8 @@ targets:
 
   2_crosswalk_munge/out/micorps_nhd_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind')
+
+  2_crosswalk_munge/out/wqp_nhdLookup.rds.ind:
+    command: calc_crosswalk_wqp_nhd(target_name, features = '1_crosswalk_fetch/out/lakes_sf.rds.ind')
+  2_crosswalk_munge/out/wqp_nhdLookup.rds:
+    command: gd_get('2_crosswalk_munge/out/wqp_nhdLookup.rds.ind')
