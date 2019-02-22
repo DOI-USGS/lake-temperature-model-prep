@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 7_drivers_munge/out/7_drivers_munge_tasks.ind
+type: file
+hash: 99fc5c45be1530baa0eb76a25426ce35
+time: 2019-01-11 15:47:50 UTC
+depends:
+  7_drivers_munge_tasks.yml: f89849e735a491ff57e77be63a9e9b0a
+fixed: e86dacf62bed4674026f6c82c3a9252a
+code:
+  functions: {}
+
