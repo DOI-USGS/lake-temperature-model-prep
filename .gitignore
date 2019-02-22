@@ -63,7 +63,11 @@ rsconnect/
 !/6_temp_coop_fetch/in/*.placeholder
 # downloaded LTER data
 6_temp_coop_fetch/downloads/*.csv
+7_drivers_munge/mendota_out/*
+7_drivers_munge/sparkling_out/*
 
+6_drivers/in/*.csv
+!6_drivers/in/*.rds
 
 # tmp wqp indicators
 6_temp_wqp_fetch/tmp/*
