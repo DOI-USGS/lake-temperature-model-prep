@@ -60,6 +60,17 @@ fetch_micorps_sites <- function(ind_file) {
 
 }
 
+#' use `dummy` to trigger rebuilds. I am using the date, as a light reminder of when it was changed
+fetch_wqp_lake_sites <- function(ind_file, dummy){
+  lake_sites_sf <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment") %>%
+    select(MonitoringLocationIdentifier, LatitudeMeasure, LongitudeMeasure) %>%
+    st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326)
+
+  data_file <- scipiper::as_data_file(ind_file)
+  saveRDS(lake_sites_sf, data_file)
+  gd_put(ind_file, data_file)
+}
+
 fetch_crosswalk_wbic_nhd <- function(ind_file) {
 
   # figure out where we will be putting the file

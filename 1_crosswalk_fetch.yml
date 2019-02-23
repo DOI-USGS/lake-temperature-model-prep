@@ -3,6 +3,7 @@ target_default: 1_crosswalk_fetch
 packages:
   - dplyr
   - scipiper
+  - dataRetrieval
   - sf
 
 sources:
@@ -18,6 +19,7 @@ targets:
       - 1_crosswalk_fetch/out/micorps_sites.xlsx.ind
       - 1_crosswalk_fetch/out/nhd2wbic.RData.ind
       - 1_crosswalk_fetch/out/nhd2dowlknum.RData.ind
+      - 1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind
 
   1_crosswalk_fetch/out/lakes_shapefile.xml.ind:
     command: fetch_winslow_shapefile(target_name)
@@ -50,6 +52,11 @@ targets:
       '1_crosswalk_fetch/out/lakes_shapefile.shx.ind')
   1_crosswalk_fetch/out/lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/lakes_sf.rds.ind')
+
+  1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind:
+    command: fetch_wqp_lake_sites(target_name, dummy = I('2019-02-22'))
+  1_crosswalk_fetch/out/wqp_lake_sites_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind')
 
   1_crosswalk_fetch/out/MGLP_lakes.zip:
     command: gd_get('1_crosswalk_fetch/in/MGLP_lakes.zip.ind')
