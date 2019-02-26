@@ -18,6 +18,7 @@ targets:
       - 2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind
       - 2_crosswalk_munge/out/wqp_nhdLookup.rds.ind
       - 2_crosswalk_munge/out/lakes_sf.rds.ind
+      - 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
 
   2_crosswalk_munge/out/feature_crosswalk.rds.ind:
     command: merge_id_crosswalks(
@@ -49,3 +50,12 @@ targets:
       "1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind")
   2_crosswalk_munge/out/lakes_sf.rds:
     command: gd_get('2_crosswalk_munge/out/lakes_sf.rds.ind')
+
+  2_crosswalk_munge/out/buffered_lakes_sf.rds.ind:
+    command: buffer_sf_lakes(
+      out_ind = target_name,
+      lake_ind = "2_crosswalk_munge/out/lakes_sf.rds.ind",
+      buffer_width = I(100))
+  2_crosswalk_munge/out/buffered_lakes_sf.rds:
+    command: gd_get('2_crosswalk_munge/out/buffered_lakes_sf.rds.ind')
+
