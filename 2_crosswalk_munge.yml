@@ -17,27 +17,35 @@ targets:
       - 2_crosswalk_munge/out/feature_crosswalk.rds.ind
       - 2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind
       - 2_crosswalk_munge/out/wqp_nhdLookup.rds.ind
+      - 2_crosswalk_munge/out/lakes_sf.rds.ind
 
   2_crosswalk_munge/out/feature_crosswalk.rds.ind:
     command: merge_id_crosswalks(
       merged_ind = target_name,
-      lakes_sf_ind = '1_crosswalk_fetch/out/lakes_sf.rds.ind',
+      lakes_sf_ind = '2_crosswalk_munge/out/lakes_sf.rds.ind',
       wqp_nhd_ind = '2_crosswalk_munge/out/wqp_nhdLookup.rds.ind')
   2_crosswalk_munge/out/feature_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/feature_crosswalk.rds.ind')
+
+  2_crosswalk_munge/out/wqp_nhdLookup.rds.ind:
+    command: crosswalk_points_in_poly(target_name,
+      poly_ind_file = '2_crosswalk_munge/out/lakes_sf.rds.ind',
+      points_ind_file = '1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind')
+  2_crosswalk_munge/out/wqp_nhdLookup.rds:
+    command: gd_get('2_crosswalk_munge/out/wqp_nhdLookup.rds.ind')
 
   2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind:
     command: munge_micorps_crosswalk(
       out_ind = target_name,
       site_ind = '1_crosswalk_fetch/out/micorps_sites.xlsx.ind',
-      wqp_nhd_ind = '1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind')
-
+      wqp_nhd_ind = '2_crosswalk_munge/out/wqp_nhdLookup.rds')
   2_crosswalk_munge/out/micorps_nhd_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind')
 
-  2_crosswalk_munge/out/wqp_nhdLookup.rds.ind:
-    command: crosswalk_points_in_poly(target_name,
-      poly_ind_file = '1_crosswalk_fetch/out/lakes_sf.rds.ind',
-      points_ind_file = '1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind')
-  2_crosswalk_munge/out/wqp_nhdLookup.rds:
-    command: gd_get('2_crosswalk_munge/out/wqp_nhdLookup.rds.ind')
+  2_crosswalk_munge/out/lakes_sf.rds.ind:
+    command: combine_sf_lakes(
+      out_ind=target_name,
+      "1_crosswalk_fetch/out/winslow_lakes_sf.rds.ind",
+      "1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind")
+  2_crosswalk_munge/out/lakes_sf.rds:
+    command: gd_get('2_crosswalk_munge/out/lakes_sf.rds.ind')

@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/lakes_sf.rds.ind
+type: file
+hash: 0f87300576174ed4df5c6c4fe8a0d796
+time: 2019-02-26 14:36:21 UTC
+depends:
+  1_crosswalk_fetch/out/winslow_lakes_sf.rds.ind: a4113639a27a88557c6b3ab3c497533b
+  1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind: 99b120a885cf8a69295a39e23cabbd65
+fixed: 16eaf33145fcbae0a912a350114db454
+code:
+  functions:
+    combine_sf_lakes: 773ae9d3d22576cfb49aff23c6762ae7
+

@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind
+type: file
+hash: 99b120a885cf8a69295a39e23cabbd65
+time: 2019-02-26 14:35:10 UTC
+depends:
+  1_crosswalk_fetch/in/MGLP_lakes.zip.ind: 65b4381bd97a2d8c1fba1f24cf020664
+fixed: 133df72910e4984db0e96d25a9cb0e18
+code:
+  functions:
+    MGLP_zip_to_sf: 6186cb31c0944d4676220affdad5dab4
+
