@@ -4,6 +4,7 @@ crosswalk_points_in_poly <- function(ind_file, poly_ind_file, points_ind_file){
   points_data <- gd_get(ind_file = points_ind_file) %>% readRDS
 
   stopifnot('site_id' %in% names(poly_data))
+  stopifnot('MonitoringLocationIdentifier' %in% names(points_data))
 
   crosswalked_points <- st_join(points_data, poly_data, join = st_intersects) %>%
     filter(!is.na(site_id))
