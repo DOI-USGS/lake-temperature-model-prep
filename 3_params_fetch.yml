@@ -1,0 +1,17 @@
+target_default: 3_params_fetch
+
+packages:
+  - dplyr
+  - scipiper
+
+sources:
+  - 3_params_fetch/src/fetch_nlcd.R
+
+targets:
+  3_params_fetch:
+    depends:
+      - '3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip.ind'
+
+  3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip:
+    command: gd_get('3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip.ind')
+
