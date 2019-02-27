@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 3_params_fetch/out/nlcd_classes.rds.ind
+type: file
+hash: d9f95e960fea663f6c7cca35bc821958
+time: 2019-02-27 01:58:02 UTC
+depends: {}
+fixed: aa44f673bffb930ba090033db3c5d8c6
+code:
+  functions:
+    fetch_nlcd_classes: 9e50a5ed61fa5763978dd6f17305b3bd
+

@@ -4,7 +4,6 @@ packages:
   - dplyr
   - scipiper
   - readxl
-  - dplyr
 
 sources:
   - 2_crosswalk_munge/src/merge_id_crosswalks.R

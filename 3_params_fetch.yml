@@ -11,7 +11,14 @@ targets:
   3_params_fetch:
     depends:
       - '3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip.ind'
+      - '3_params_fetch/out/nlcd_classes.rds.ind'
 
   3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip:
     command: gd_get('3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip.ind')
+
+  3_params_fetch/out/nlcd_classes.rds.ind:
+    command: fetch_nlcd_classes(target_name)
+  3_params_fetch/out/nlcd_classes.rds:
+    command: gd_get('3_params_fetch/out/nlcd_classes.rds.ind')
+
 
