@@ -32,13 +32,13 @@ munge_nlcd_buffers <- function(out_ind, lake_buffer_ind, nlcd_zip_ind, nlcd_clas
       freq() %>% data.frame %>% filter(!is.na(value))
 
     tot.px <- sum(buffer.data$count)
-    browser()
+
     data.out[i, ] <- mutate(buffer.data, perc = count/tot.px*100) %>%
       rename(class=value) %>%
       right_join(nlcd_classes, by="class") %>% arrange(class) %>% mutate(perc=ifelse(is.na(perc), 0, perc)) %>%
-      select(class, perc) %>%
+      dplyr::select(class, perc) %>%
       tidyr::spread(key='class','perc') %>% as.numeric
-    browser()
+
     if (i %% 100 == 0)
       cat(i,' of ', length(ids))
     cat('.')
