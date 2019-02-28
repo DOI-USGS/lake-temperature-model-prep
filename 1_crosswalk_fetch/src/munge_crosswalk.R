@@ -30,7 +30,29 @@ MGLP_zip_to_sf <- function(out_ind, gdb_file, zip_ind, ...){
 
   shp <- sf::st_read(file.path(shp.path, gdb_file), layer = 'MGLP_LAKES') %>%
     filter(ASSESS == 'Y', STATE %in% states) %>%
-    mutate(site_id = paste0('mglp_', LAKE_ID)) %>% select(site_id, geometry = SHAPE) %>% # why do I need to rename SHAPE to geometry??
+    mutate(site_id = paste0('mglp_', LAKE_ID)) %>% dplyr::select(site_id, geometry = SHAPE) %>% # why do I need to rename SHAPE to geometry??
+    st_transform(x, crs = 4326)
+
+
+  # write, post, and promise the file is posted
+  data_file <- scipiper::as_data_file(out_ind)
+  saveRDS(shp, data_file)
+  gd_put(out_ind, data_file)
+}
+
+
+LAGOS_zip_to_sf <- function(out_ind, layer, zip_ind, ...){
+
+
+  states <- c(...)
+  zip_file <- scipiper::sc_retrieve(zip_ind)
+
+  shp.path <- tempdir()
+  unzip(zip_file, exdir = shp.path)
+
+  shp <- sf::st_read(shp.path, layer = layer) %>%
+    filter(STATE %in% states) %>%
+    mutate(site_id = paste0('nhdhr_', Permanent_)) %>% dplyr::select(site_id, geometry) %>%
     st_transform(x, crs = 4326)
 
 

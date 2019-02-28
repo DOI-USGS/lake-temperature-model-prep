@@ -31,6 +31,11 @@ fetch_winslow_shapefile <- function(ind_file) {
   gd_put(ind_file, data_file)
 }
 
+fetch_LAGOS_NE_All_Lakes_4ha <- function(ind_file){
+  data_file <- scipiper::as_data_file(ind_file)
+  download.file("https://portal.edirepository.org/nis/dataviewer?packageid=edi.98.3&entityid=846a50d9be7ab8262a9fd818edfcd2d0", destfile = data_file)
+  gd_put(ind_file, data_file)
+}
 
 fetch_crosswalk_wqp_nhd <- function(ind_file) {
 

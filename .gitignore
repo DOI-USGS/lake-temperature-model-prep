@@ -41,6 +41,7 @@ rsconnect/
 **_tasks.yml
 1_crosswalk_fetch/in/*.zip
 3_params_fetch/in/*.zip
+3_params_fetch/out/*.csv
 6_drivers/log/feather/*.feather.ind
 7_drivers_munge/out/*.csv
 7_drivers_munge/out/*.csv.ind

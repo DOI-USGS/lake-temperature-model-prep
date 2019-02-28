@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind
+type: file
+hash: d437046c2f26c37dc0a1b9fb5dad55ae
+time: 2019-02-28 22:40:10 UTC
+depends:
+  1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind: 4dd52b741ca3c3d86e8dd33dd1177b28
+  2_crosswalk_munge/out/lakes_sf.rds.ind: 0f87300576174ed4df5c6c4fe8a0d796
+fixed: 3e57c189d4c88aaeb229ecbd839a73de
+code:
+  functions:
+    crosswalk_poly_over_poly: c819b1499f1a10326108e52c6fcc8dc7
+

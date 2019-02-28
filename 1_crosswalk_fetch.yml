@@ -55,6 +55,20 @@ targets:
   1_crosswalk_fetch/in/MGLP_lakes.zip:
     command: gd_get('1_crosswalk_fetch/in/MGLP_lakes.zip.ind')
 
+  1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind:
+    command: fetch_LAGOS_NE_All_Lakes_4ha(target_name)
+  1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip:
+    command: gd_get('1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind')
+
+  1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind:
+    command: LAGOS_zip_to_sf(
+      out_ind = target_name,
+      layer = I("LAGOS_NE_All_Lakes_4ha"),
+      zip_ind = '1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind',
+      I("IA"), I("IN"), I("SD"), I("ND"))
+  1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.rds:
+    command: gd_get('1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind')
+
   1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind:
     command: MGLP_zip_to_sf(
       out_ind = target_name,
@@ -63,6 +77,7 @@ targets:
       I("IA"), I("IN"), I("SD"), I("ND"))
   1_crosswalk_fetch/out/MGLP_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind')
+
 
 
   1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind:
