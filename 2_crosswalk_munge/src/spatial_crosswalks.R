@@ -26,13 +26,13 @@ crosswalk_poly_over_poly <- function(ind_file, poly1_ind_file, poly2_ind_file, p
   stopifnot('site_id' %in% names(poly2_data))
 
 
-  out <- data.frame(poly1_data$site_id) %>% setNames(poly1_ID_name) %>% mutate(site_id=NA)
+  out <- data.frame(poly1_data$site_id, stringsAsFactors = FALSE) %>% setNames(poly1_ID_name) %>% mutate(site_id=NA_character_)
   poly2_sp <- as(st_zm(poly2_data), 'Spatial')
   pb <- txtProgressBar(min = 0, max = nrow(out), initial=0)
 
   for(i in 1:nrow(out)){
     tmp <- over(poly2_sp, as(st_zm(poly1_data[i,]), 'Spatial'))
-    site_id <- poly2_sp$site_id[!is.na(tmp)]
+    site_id <- poly2_sp$site_id[!is.na(tmp)] %>% as.character()
     if(!is.na(site_id[1])){
       if (length(site_id) > 1){
         subset_polys <- poly2_data[!is.na(tmp), ] %>% mutate(starea = st_area(geometry))
