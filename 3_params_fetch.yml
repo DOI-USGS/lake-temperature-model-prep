@@ -27,5 +27,10 @@ targets:
     command: fetch_LAGOS_NE_depths(target_name)
   3_params_fetch/out/LAGOS_NE_depths.csv:
     command: gd_get('3_params_fetch/out/LAGOS_NE_depths.csv.ind')
-#secchi: https://portal.edirepository.org/nis/dataviewer?packageid=edi.101.2&entityid=f02dd4d3375bed6871a33c648ef1631e
+
+  3_params_fetch/out/LAGOS_NE_secchi.csv.ind:
+    command: fetch_LAGOS_NE_secchi(target_name)
+  3_params_fetch/out/LAGOS_NE_secchi.csv:
+    command: gd_get('3_params_fetch/out/LAGOS_NE_secchi.csv')
+
 
