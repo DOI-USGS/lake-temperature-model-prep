@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind
+type: file
+hash: cf9a76753883aa720b2aa4166a1c6f0a
+time: 2019-02-23 08:10:51 UTC
+depends: {}
+fixed: 74dda0e92099fb142bf36c78a42b7b38
+code:
+  functions:
+    fetch_wqp_lake_sites: da2084a0ee0cb64baff9f282c0b21291
+

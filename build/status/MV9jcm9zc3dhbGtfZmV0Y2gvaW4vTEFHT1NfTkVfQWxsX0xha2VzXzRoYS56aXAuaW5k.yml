@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind
+type: file
+hash: 874c85601dfe8043f6487bc8ac1a540e
+time: 2019-02-28 19:35:24 UTC
+depends: {}
+fixed: c1051df6a6636102cbcd7fe881594509
+code:
+  functions:
+    fetch_LAGOS_NE_All_Lakes_4ha: 63a7d07c318741cbd8d51fdec5cd2963
+

@@ -1,0 +1,22 @@
+target_default: 4_params_munge
+
+packages:
+  - dplyr
+  - scipiper
+  - feather
+  - raster
+
+sources:
+  - 4_params_munge/src/munge_nlcd.R
+
+targets:
+  4_params_munge:
+    depends:
+      - '4_params_munge/out/nlcd_2011_buffers.rds.ind'
+
+  4_params_munge/out/nlcd_2011_buffers.rds.ind:
+    command: munge_nlcd_buffers(target_name,
+      lake_buffer_ind = '2_crosswalk_munge/out/buffered_lakes_sf.rds.ind',
+      nlcd_zip_ind = '3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip.ind',
+      nlcd_classes_ind = '3_params_fetch/out/nlcd_classes.rds.ind')
+

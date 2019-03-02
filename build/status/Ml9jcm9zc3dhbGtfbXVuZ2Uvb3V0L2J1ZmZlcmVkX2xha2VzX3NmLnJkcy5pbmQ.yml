@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
+type: file
+hash: e4fddfd9569f18b9d14ed29d450f018d
+time: 2019-02-26 20:33:11 UTC
+depends:
+  2_crosswalk_munge/out/lakes_sf.rds.ind: 0f87300576174ed4df5c6c4fe8a0d796
+fixed: 2a82722fb65d52da4f9d59ddcbc66f01
+code:
+  functions:
+    buffer_sf_lakes: 986ec60f12074ff2da0002eb8f29e439
+
