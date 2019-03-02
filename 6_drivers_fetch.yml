@@ -72,10 +72,10 @@ targets:
     command: nldas_update_cells(nldas_cells, nldas_new_cells, '6_drivers/in/nldas_times.rds')
 
   nldas_new_cube_plan:
-    command: create_cube_task_plan(nldas_new_cube_files, ind_dir = cube_ind_dir)
+    command: create_cube_task_plan(nldas_new_cube_files)
 
   nldas_append_cube_plan:
-    command: create_cube_task_plan(nldas_append_cube_files, ind_dir = cube_ind_dir)
+    command: create_cube_task_plan(nldas_append_cube_files)
 
   "6_fetch_new_cubes_tasks.yml":
     command: create_cube_task_makefile(target_name, nldas_new_cube_plan)

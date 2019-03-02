@@ -137,7 +137,7 @@ parse_nc_filename <- function(filename, out = c('y','x','time','var')){
   }
 }
 
-create_cube_task_plan <- function(sub_files, ind_dir){
+create_cube_task_plan <- function(sub_files){
   nc_dir <- dirname(sub_files) %>% unique()
   if (length(nc_dir) != 1 & length(sub_files) > 0){
     stop('using more than one dir is not supported for this function currently', call. = FALSE)
@@ -150,7 +150,7 @@ create_cube_task_plan <- function(sub_files, ind_dir){
     command = "nccopy_split_combine(target_name, max_steps = I(100))"
   )
 
-  cube_task_plan <- create_task_plan(basename(sub_files), list(cube_task_step), final_steps='nccopy', ind_dir=ind_dir)
+  cube_task_plan <- create_task_plan(basename(sub_files), list(cube_task_step), final_steps='nccopy')
 }
 create_cube_task_makefile <- function(makefile, cube_task_plan){
   packages <- c('dplyr','ncdf4','progress')
@@ -158,7 +158,7 @@ create_cube_task_makefile <- function(makefile, cube_task_plan){
   sources <- '6_drivers/src/nccopy_utils.R'
 
   create_task_makefile(
-    cube_task_plan, makefile = makefile, ind_complete = TRUE,
+    cube_task_plan, makefile = makefile,
     include = include, sources = sources,
     file_extensions=c('ind'), packages = packages)
 

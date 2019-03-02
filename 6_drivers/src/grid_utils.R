@@ -48,8 +48,8 @@ sf_file_centroids <- function(filepath){
 }
 
 as_OPeNDAP_cells <- function(cell_indices_df, variables){
-  x_cells <- c(cell_indices_df$x, 221, 344) # hack to keep the outer bounds of the cells the same as the data we've already downloaded
-  y_cells <- c(cell_indices_df$y, 132, 196)
+  x_cells <- cell_indices_df$x
+  y_cells <- cell_indices_df$y
   list(x = x_cells, y = y_cells, variables = variables)
 }
 
