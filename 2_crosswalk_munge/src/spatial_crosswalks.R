@@ -18,6 +18,12 @@ crosswalk_points_in_poly <- function(ind_file, poly_ind_file, points_ind_file){
   gd_put(ind_file, data_file)
 }
 
+crosswalk_lagos_ids <- function(ind_file, poly_ind_file, ID_name){
+  poly_data <- gd_get(ind_file = poly_ind_file) %>% readRDS
+  browser()
+  # need to get both sets of IDs from the shapefile...
+}
+
 crosswalk_poly_over_poly <- function(ind_file, poly1_ind_file, poly2_ind_file, poly1_ID_name){
   poly1_data <- gd_get(ind_file = poly1_ind_file) %>% readRDS
   poly2_data <- gd_get(ind_file = poly2_ind_file) %>% readRDS

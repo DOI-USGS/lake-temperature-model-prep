@@ -52,7 +52,7 @@ LAGOS_zip_to_sf <- function(out_ind, layer, zip_ind, ...){
 
   shp <- sf::st_read(shp.path, layer = layer) %>%
     filter(STATE %in% states) %>%
-    mutate(site_id = paste0('nhdhr_', Permanent_)) %>% dplyr::select(site_id, geometry) %>%
+    mutate(site_id = paste0('lagos_', lagoslakei)) %>% dplyr::select(site_id, geometry) %>%
     st_transform(x, crs = 4326)
 
 
