@@ -7,7 +7,11 @@
 
 #'@ return the file handle
 
-nccopy_split_combine <- function(nc_filepath, max_steps = 100){
+nccopy_split_combine <- function(nc_filepath, max_steps, skip_on_exists = FALSE){
+  if (skip_on_exists & file.exists(nc_filepath)){
+    return(nc_filepath)
+  }
+
   nc_filename <- basename(nc_filepath)
 
   time_range <- parse_nc_filename(nc_filename, 'time')
@@ -20,8 +24,10 @@ nccopy_split_combine <- function(nc_filepath, max_steps = 100){
   }
   t1 <- c(tail(t0, -1L) -1, time_range[2])
 
-  temp_nc_dir <- file.path(tempdir(), '.nc_split_files')
-  dir.create(temp_nc_dir)
+  clean_name <- tools::file_path_sans_ext(nc_filename) %>% gsub("\\[", "", .) %>% gsub("\\]", "", .)
+  temp_nc_dir <- file.path(tempdir(), '.nc_split_files', clean_name)
+
+  dir.create(temp_nc_dir, recursive = TRUE)
   # delete all temporary split files and their directory:
   on.exit(unlink(temp_nc_dir, recursive = TRUE))
 
@@ -30,14 +36,14 @@ nccopy_split_combine <- function(nc_filepath, max_steps = 100){
   }, USE.NAMES = FALSE)
 
   split_file_info <- data.frame(file_meta = split_file_metadata, file_num = 1:length(split_file_metadata)) %>%
-    mutate(nc_temp_file_unl = file.path(temp_nc_dir, sprintf("NLDAS_%s_unlimited.nc", stringr::str_pad(file_num, width = 3, pad = '0')))) %>%
-    mutate(nc_temp_file_fixed = file.path(temp_nc_dir, sprintf("NLDAS_%s_fixed.nc", stringr::str_pad(file_num, width = 3, pad = '0'))))
+    mutate(nc_temp_file_unl = file.path(temp_nc_dir,
+                                        sprintf("NLDAS_%s_unlimited.nc", stringr::str_pad(file_num, width = 3, pad = '0')))) %>%
+    mutate(nc_temp_file_fixed = file.path(temp_nc_dir,
+                                          sprintf("NLDAS_%s_fixed.nc", stringr::str_pad(file_num, width = 3, pad = '0'))))
 
-  pb <- progress_bar$new(
-    format = "  nccopy :what [:bar] :percent eta: :eta",
-    clear = TRUE, total = length(t0))
+  registerDoMC(cores=4)
 
-  for (split_file in split_file_metadata){
+  foreach(split_file=split_file_metadata) %dopar% {
 
     nc_temp_file_fixed <- split_file_info %>% filter(file_meta == split_file) %>% pull(nc_temp_file_fixed)
     nc_temp_file_unl <- split_file_info %>% filter(file_meta == split_file) %>% pull(nc_temp_file_unl)
@@ -48,8 +54,6 @@ nccopy_split_combine <- function(nc_filepath, max_steps = 100){
     # make the time dimension unlimited so we can append to this file:
     system(sprintf("ncks --mk_rec_dmn time %s -o %s", nc_temp_file_fixed, nc_temp_file_unl))
 
-    what_download <- strsplit(nldas_url, split = '[?]')[[1]][2]
-    pb$tick(tokens = list(what = what_download))
   }
 
   split_filepaths <- paste(pull(split_file_info, nc_temp_file_unl), collapse = ' ')
@@ -69,7 +73,8 @@ nccopy_split_combine <- function(nc_filepath, max_steps = 100){
 #' needs to remove time as a record dimension w/ ncks
 combine_nc_files <- function(filepaths_to_combine, nc_out_filepath){
 
-  nc_unl_filepath <- file.path(tempdir(), "NLDAS_COMBINED_unl.nc")
+  clean_name <- tools::file_path_sans_ext(nc_out_filepath) %>% basename() %>% gsub("\\[", "", .) %>% gsub("\\]", "", .)
+  nc_unl_filepath <- file.path(tempdir(), '.nc_split_files', clean_name, "NLDAS_COMBINED_unl.nc")
   # need NCO to run this. Combine all split files into one:
   system(sprintf('ncrcat -h --overwrite %s %s', filepaths_to_combine, nc_unl_filepath))
 
