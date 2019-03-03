@@ -137,7 +137,7 @@ parse_nc_filename <- function(filename, out = c('y','x','time','var')){
   }
 }
 
-create_cube_task_plan <- function(sub_files){
+create_cube_task_plan <- function(sub_files, max_steps, skip_on_exists){
   nc_dir <- dirname(sub_files) %>% unique()
   if (length(nc_dir) != 1 & length(sub_files) > 0){
     stop('using more than one dir is not supported for this function currently', call. = FALSE)
@@ -147,10 +147,10 @@ create_cube_task_plan <- function(sub_files){
     target = function(task_name, step_name, ...) {
       file.path(nc_dir, task_name)
     },
-    command = "nccopy_split_combine(target_name, max_steps = I(100))"
+    command = sprintf("nccopy_split_combine(target_name, max_steps = I(%s), skip_on_exists = I(%s))", max_steps, skip_on_exists)
   )
 
-  cube_task_plan <- create_task_plan(basename(sub_files), list(cube_task_step), final_steps='nccopy')
+  cube_task_plan <- create_task_plan(basename(sub_files), list(cube_task_step), add_complete = FALSE)
 }
 create_cube_task_makefile <- function(makefile, cube_task_plan){
   packages <- c('dplyr','ncdf4','progress')
@@ -160,6 +160,7 @@ create_cube_task_makefile <- function(makefile, cube_task_plan){
   create_task_makefile(
     cube_task_plan, makefile = makefile,
     include = include, sources = sources,
+    final_targets = file.path('6_drivers/log', paste0(tools::file_path_sans_ext(makefile),'.ind')),
     file_extensions=c('ind'), packages = packages)
 
 }
