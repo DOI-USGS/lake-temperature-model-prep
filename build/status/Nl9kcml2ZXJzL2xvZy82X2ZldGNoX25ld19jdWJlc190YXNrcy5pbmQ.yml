@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 6_drivers/log/6_fetch_new_cubes_tasks.ind
+type: file
+hash: a7c64d46c10a7160e9f0b1af3fdf886e
+time: 2019-03-05 01:09:44 UTC
+depends:
+  nldas_new_cube_plan: 3ae59410e83bf2fa46fa36c5e9659ea8
+  6_fetch_new_cubes_tasks.yml: 3c98ddcb2e5d6340731bea68b392e9a6
+fixed: ~
+code:
+  functions: {}
+

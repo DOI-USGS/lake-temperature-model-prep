@@ -35,8 +35,8 @@ cells_containing_points <- function(cell_grid, points){
   grid_contains <- st_intersects(cell_grid, points) # intersects (instead of st_contains) covers the edge case where the point lies right on an edge or vertex
 
   cells_w_pts <- cell_grid %>% mutate(contains_point = lengths(grid_contains) > 0) %>%
-    filter(contains_point) %>% st_set_geometry(NULL) %>%
-    select(x, y)
+    dplyr::filter(contains_point) %>% st_set_geometry(NULL) %>%
+    dplyr::select(x, y)
   return(cells_w_pts)
 }
 
