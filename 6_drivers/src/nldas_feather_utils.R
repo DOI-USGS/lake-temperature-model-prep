@@ -1,4 +1,4 @@
-create_new_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, cell_ind_dir, cube_data_dir, cube_ind_dir){
+create_new_cell_task_plan <- function(cells, time_range, cube_files_ind, cell_data_dir, cell_ind_dir){
 
   # from https://stackoverflow.com/questions/17256834/getting-the-arguments-of-a-parent-function-in-r-with-names
   # we want to get the name of the object passed to `cells`, so we can refer to it elsewhere
@@ -7,23 +7,20 @@ create_new_cell_task_plan <- function(cells, time_range, cube_files, cell_data_d
   cl <- match.call(definition=f, call=cl)
   cell_obj <- as.list(cl)[-1][['cells']] %>% as.character()
 
-
+  cube_files <- yaml.load_file(cube_files_ind) %>% names()
   cube_task_step <- create_task_step(
     step_name = 'build_feathers',
     target = function(task_name, step_name, ...) {
       file.path(cell_ind_dir, task_name)
     },
     command = function(target_name, task_name, ...) {
-
       this_var <- parse_cellgroup_filename(task_name, 'var') # better filtering needed?
       these_files <- cube_files[grepl(this_var, cube_files)] %>%
-        basename() %>% paste0('.ind') %>% file.path(cube_ind_dir, .) %>%
         paste0("\n       '", ., "'", collapse = ",")
       # cells = the data.frame object of cells to use
       # out_dir = the directory to write the feather files
-      # nc_dir = the directory where the .nc files live
-      # ... = a vector of .nc indicator filepaths that have a 1:1 relationship with the actual .nc data files
-      sprintf('cubes_to_cell_files(target_name, cells = %s, out_dir = I(\'%s\'), nc_dir = I(\'%s\'), %s)', cell_obj, cell_data_dir, cube_data_dir, these_files)
+      # ... = a vector of .nc data files
+      sprintf('cubes_to_cell_files(target_name, cells = %s, out_dir = I(\'%s\'), %s)', cell_obj, cell_data_dir, these_files)
     }
   )
 
@@ -35,7 +32,8 @@ create_new_cell_task_plan <- function(cells, time_range, cube_files, cell_data_d
 }
 
 create_update_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, cell_ind_dir, cube_data_dir, cube_ind_dir, secondary_cube_files = c()){
-
+  stop('use cube_files_ind in place of cube_files and cube_data_dir, cube_ind_dir,...\n
+       update this code to follow the new pattern')
   # we want to get the name of the object passed to `cells`, so we can refer to it elsewhere
   cl <- sys.call(0)
   f <- get(as.character(cl[[1]]), mode="function", sys.frame(-1))
@@ -118,7 +116,7 @@ create_cell_task_makefile <- function(makefile, cell_task_plan){
   sources <- '6_drivers/src/nldas_feather_utils.R'
 
   create_task_makefile(
-    cell_task_plan, makefile = makefile, ind_complete = TRUE,
+    cell_task_plan, makefile = makefile,
     include = include, sources = sources,
     file_extensions=c('ind'), packages = packages)
 
@@ -180,13 +178,13 @@ parse_feather_filename <- function(filename, out = c('var','y','x','time')){
 
 
 #' @param filename the feather file to be written, generated w/ `create_feather_filename`
-#' @param ... nc.ind files passed in as unnamed arguments
+#' @param ... nc files passed in as unnamed arguments
 #' @param nc_dir the directory of nc files (ignored if `nc_files` is not NULL)
 #' @param cells a data.frame of cells to use (not necessarily filtered)
 #' @param nc_files a vector of nc files (if used, `...` is ignored)
 #' @param src_filepath an existing file to use for data
 #'
-cubes_to_cell_files <- function(filename, ..., nc_dir, cells, out_dir, nc_files = NULL, src_filepath = NULL){
+cubes_to_cell_files <- function(filename, ..., cells, out_dir, nc_files = NULL, src_filepath = NULL){
 
 
   cell_time_range <- parse_cellgroup_filename(filename, 'time')
@@ -202,8 +200,7 @@ cubes_to_cell_files <- function(filename, ..., nc_dir, cells, out_dir, nc_files 
   }) %>% setNames(file_info$filepath)
 
   if (is.null(nc_files)){
-    nc.ind_files <- c(...)
-    nc_files <- file.path(nc_dir, scipiper::as_data_file(basename(nc.ind_files)))
+    nc_files <- c(...)
   }
 
   if (!is.null(src_filepath)){

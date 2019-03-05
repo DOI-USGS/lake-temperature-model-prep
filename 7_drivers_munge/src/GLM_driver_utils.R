@@ -100,7 +100,7 @@ create_driver_task_plan <- function(driver_files, cell_group_table, data_dir, in
   stopifnot(length(out_dir) == 1) # more than one not supported with this pattern
   filenames <- basename(driver_files)
 
-  create_task_plan(filenames, list(subset_table_task_step, driver_task_step), final_steps='munge_drivers', ind_dir = ind_dir)
+  create_task_plan(filenames, list(subset_table_task_step, driver_task_step), final_steps='munge_drivers', ind_dir = ind_dir, add_complete = FALSE)
 }
 
 create_driver_task_makefile <- function(makefile, task_plan){
@@ -109,7 +109,7 @@ create_driver_task_makefile <- function(makefile, task_plan){
   sources <- '7_drivers_munge/src/GLM_driver_utils.R'
 
   create_task_makefile(
-    task_plan, makefile = makefile, ind_complete = TRUE,
+    task_plan, makefile = makefile,
     include = include, sources = sources,
     file_extensions=c('ind'), packages = packages)
 
