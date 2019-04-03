@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 4_params_munge/out/mglp_depths.rds.ind
+type: file
+hash: 084a31ac998f06f07da16f23f4331e3b
+time: 2019-04-03 13:33:56 UTC
+depends:
+  3_params_fetch/in/Data_MGLP_TDOx_Models.csv.ind: 6e95fc62c118dd32f53a1790bb6e871b
+fixed: deabae16f5fef35f9a036fbafc678765
+code:
+  functions:
+    mglp_depths_from_TDOx: fa09f064b3dd658c04695039cade031d
+
