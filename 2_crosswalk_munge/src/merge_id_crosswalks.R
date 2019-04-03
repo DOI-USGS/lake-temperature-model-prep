@@ -12,8 +12,8 @@ merge_id_crosswalks <- function(
   # match is based on nhd id with nhd_ prefix)
   merged <- left_join(
     mutate(lakes_sf, site_id=as.character(site_id)),
-    mutate(wqp_nhd, id=as.character(id)),
-    by=c(site_id='id'))
+    mutate(wqp_nhd, site_id=as.character(site_id)),
+    by=c('site_id'))
 
   data_file <- scipiper::as_data_file(merged_ind)
   saveRDS(merged, data_file)

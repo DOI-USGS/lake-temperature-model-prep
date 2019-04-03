@@ -33,6 +33,7 @@ crosswalk_poly_over_poly <- function(ind_file, poly1_ind_file, poly2_ind_file, p
 
 
   out <- data.frame(poly1_data$site_id, stringsAsFactors = FALSE) %>% setNames(poly1_ID_name) %>% mutate(site_id=NA_character_)
+
   poly2_sp <- as(st_zm(poly2_data), 'Spatial')
   pb <- txtProgressBar(min = 0, max = nrow(out), initial=0)
 
@@ -42,14 +43,16 @@ crosswalk_poly_over_poly <- function(ind_file, poly1_ind_file, poly2_ind_file, p
     if(!is.na(site_id[1])){
       if (length(site_id) > 1){
         subset_polys <- poly2_data[!is.na(tmp), ] %>% mutate(starea = st_area(geometry))
-        id <- arrange(subset_polys, desc(starea)) %>% pull(site_id) %>% head(1)
+        id <- arrange(subset_polys, desc(starea)) %>% pull(site_id) %>% as.character() %>% head(1)
       } else {
         id <- site_id[1]
       }
+
       out$site_id[i] <- id
     }
     setTxtProgressBar(pb, i)
   }
+
   crosswalk_out <- filter(out, !is.na(site_id))
 
   data_file <- scipiper::as_data_file(ind_file)

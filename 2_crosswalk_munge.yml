@@ -18,6 +18,7 @@ targets:
       - 2_crosswalk_munge/out/wqp_nhdLookup.rds.ind
       - 2_crosswalk_munge/out/lakes_sf.rds.ind
       - 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
+      - 2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind
 
   2_crosswalk_munge/out/feature_crosswalk.rds.ind:
     command: merge_id_crosswalks(
@@ -47,7 +48,7 @@ targets:
     command: munge_micorps_crosswalk(
       out_ind = target_name,
       site_ind = '1_crosswalk_fetch/out/micorps_sites.xlsx.ind',
-      wqp_nhd_ind = '2_crosswalk_munge/out/wqp_nhdLookup.rds')
+      wqp_nhd_ind = '2_crosswalk_munge/out/wqp_nhdLookup.rds.ind')
   2_crosswalk_munge/out/micorps_nhd_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind')
 
