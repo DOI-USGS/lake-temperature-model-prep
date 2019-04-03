@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 4_params_munge/out/lagos_secchi.rds.ind
+type: file
+hash: f100f28dc1648b87836fd811956d1866
+time: 2019-04-03 13:59:35 UTC
+depends:
+  3_params_fetch/out/LAGOS_NE_secchi.csv.ind: 25594224bde1aa3c0d63696ccb4a696d
+fixed: 84280f9db743c5a3158e73f2c447879a
+code:
+  functions:
+    munge_lagos_secchi: f5c195f2f8609829a3561c4b5f33c4d1
+
