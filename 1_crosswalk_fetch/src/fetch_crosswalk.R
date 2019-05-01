@@ -2,7 +2,7 @@
 #' http://dx.doi.org/10.5066/F7DV1H10, "Spatial data" item.
 #'
 #' Here we return a single indicator file to represent the entirety of
-fetch_crosswalk_shapefile <- function(ind_file) {
+fetch_winslow_shapefile <- function(ind_file) {
 
   # figure out where we will be putting the files
   data_file <- scipiper::as_data_file(ind_file)
@@ -28,6 +28,12 @@ fetch_crosswalk_shapefile <- function(ind_file) {
   }
 
   # post to google drive and return an indicator file
+  gd_put(ind_file, data_file)
+}
+
+fetch_LAGOS_NE_All_Lakes_4ha <- function(ind_file){
+  data_file <- scipiper::as_data_file(ind_file)
+  download.file("https://portal.edirepository.org/nis/dataviewer?packageid=edi.98.3&entityid=846a50d9be7ab8262a9fd818edfcd2d0", destfile = data_file)
   gd_put(ind_file, data_file)
 }
 
@@ -57,6 +63,17 @@ fetch_micorps_sites <- function(ind_file) {
   # post to google drive and return an indicator file
   gd_put(ind_file, data_file)
 
+}
+
+#' use `dummy` to trigger rebuilds. I am using the date, as a light reminder of when it was changed
+fetch_wqp_lake_sites <- function(ind_file, dummy){
+  lake_sites_sf <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment") %>%
+    select(MonitoringLocationIdentifier, LatitudeMeasure, LongitudeMeasure) %>%
+    st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326)
+
+  data_file <- scipiper::as_data_file(ind_file)
+  saveRDS(lake_sites_sf, data_file)
+  gd_put(ind_file, data_file)
 }
 
 fetch_crosswalk_wbic_nhd <- function(ind_file) {

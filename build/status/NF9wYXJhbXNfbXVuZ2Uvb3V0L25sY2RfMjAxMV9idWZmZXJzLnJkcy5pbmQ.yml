@@ -1,0 +1,15 @@
+version: 0.3.0
+name: 4_params_munge/out/nlcd_2011_buffers.rds.ind
+type: file
+hash: 16a999addf8cba7d2e21196247983568
+time: 2019-02-28 01:18:36 UTC
+depends:
+  2_crosswalk_munge/out/buffered_lakes_sf.rds.ind: e4fddfd9569f18b9d14ed29d450f018d
+  3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip.ind: 60380dd095319c69364b9cbbd7ff4cae
+  3_params_fetch/out/nlcd_classes.rds.ind: d9f95e960fea663f6c7cca35bc821958
+fixed: e5df856e6b48ddf5d84f4c08d8145c0d
+code:
+  functions:
+    decompress_file: 6c30abefd777d383cc9471e033b85e07
+    munge_nlcd_buffers: 43171b55103bc10663be8b4913587cc2
+

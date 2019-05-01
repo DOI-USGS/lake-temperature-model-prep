@@ -35,8 +35,8 @@ cells_containing_points <- function(cell_grid, points){
   grid_contains <- st_intersects(cell_grid, points) # intersects (instead of st_contains) covers the edge case where the point lies right on an edge or vertex
 
   cells_w_pts <- cell_grid %>% mutate(contains_point = lengths(grid_contains) > 0) %>%
-    filter(contains_point) %>% st_set_geometry(NULL) %>%
-    select(x, y)
+    dplyr::filter(contains_point) %>% st_set_geometry(NULL) %>%
+    dplyr::select(x, y)
   return(cells_w_pts)
 }
 
@@ -48,8 +48,8 @@ sf_file_centroids <- function(filepath){
 }
 
 as_OPeNDAP_cells <- function(cell_indices_df, variables){
-  x_cells <- c(cell_indices_df$x, 221, 344) # hack to keep the outer bounds of the cells the same as the data we've already downloaded
-  y_cells <- c(cell_indices_df$y, 132, 196)
+  x_cells <- cell_indices_df$x
+  y_cells <- cell_indices_df$y
   list(x = x_cells, y = y_cells, variables = variables)
 }
 

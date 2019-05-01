@@ -19,6 +19,7 @@ munge_micorps_crosswalk <- function(out_ind, site_ind, wqp_nhd_ind) {
                             mi_lat = Latitude, mi_long = Longitude) %>%
     dplyr::distinct()
 
+  stop('I must have broken something by removing lat/lon from the wqp lookup...')
   potential_matches <- left_join(potential_sites, mi_sites, by = c('reduced_site_id' = 'mi_id')) %>%
     mutate(lat_diff = abs(round(LatitudeMeasure, 4) - round(as.numeric(mi_lat), 4)),
            long_diff = abs(round(LongitudeMeasure, 4) - round(as.numeric(mi_long), 4)))

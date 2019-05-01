@@ -1,0 +1,39 @@
+target_default: 4_params_munge
+
+packages:
+  - dplyr
+  - scipiper
+  - feather
+  - readr
+  - raster
+
+sources:
+  - 4_params_munge/src/munge_nlcd.R
+  - 4_params_munge/src/munge_mglp.R
+  - 4_params_munge/src/munge_lagos.R
+
+targets:
+  4_params_munge:
+    depends:
+      - '4_params_munge/out/nlcd_2011_buffers.rds.ind'
+      - '4_params_munge/out/mglp_depths.rds.ind'
+
+  4_params_munge/out/nlcd_2011_buffers.rds.ind:
+    command: munge_nlcd_buffers(target_name,
+      lake_buffer_ind = '2_crosswalk_munge/out/buffered_lakes_sf.rds.ind',
+      nlcd_zip_ind = '3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip.ind',
+      nlcd_classes_ind = '3_params_fetch/out/nlcd_classes.rds.ind')
+  4_params_munge/out/nlcd_2011_buffers.rds:
+    command: gd_get('4_params_munge/out/nlcd_2011_buffers.rds.ind')
+
+  4_params_munge/out/mglp_depths.rds.ind:
+    command: mglp_depths_from_TDOx(target_name,
+      TDOx_ind = '3_params_fetch/in/Data_MGLP_TDOx_Models.csv.ind')
+  4_params_munge/out/mglp_depths.rds:
+    command: gd_get('4_params_munge/out/mglp_depths.rds.ind')
+
+  4_params_munge/out/lagos_secchi.rds.ind:
+    command: munge_lagos_secchi(target_name,
+      lagos_secchi_ind = '3_params_fetch/out/LAGOS_NE_secchi.csv.ind')
+  4_params_munge/out/lagos_secchi.rds:
+    command: gd_get('4_params_munge/out/lagos_secchi.rds.ind')

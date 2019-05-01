@@ -3,6 +3,8 @@ target_default: everything
 include:
   - 1_crosswalk_fetch.yml
   - 2_crosswalk_munge.yml
+  - 3_params_fetch.yml
+  - 4_params_munge.yml
   - 6_drivers_fetch.yml
   - 6_temp_wqp_fetch.yml
   - 6_temp_coop_fetch.yml

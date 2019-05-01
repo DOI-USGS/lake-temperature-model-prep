@@ -3,6 +3,8 @@ target_default: 1_crosswalk_fetch
 packages:
   - dplyr
   - scipiper
+  - dataRetrieval
+  - sf
 
 sources:
   - 1_crosswalk_fetch/src/fetch_crosswalk.R
@@ -12,22 +14,22 @@ targets:
   1_crosswalk_fetch:
     depends:
       - 1_crosswalk_fetch/out/lakes_shapefile.xml.ind
-      - 1_crosswalk_fetch/out/lakes_sf.rds.ind
       - 1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind
       - 1_crosswalk_fetch/out/micorps_sites.xlsx.ind
       - 1_crosswalk_fetch/out/nhd2wbic.RData.ind
       - 1_crosswalk_fetch/out/nhd2dowlknum.RData.ind
+      - 1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind
 
   1_crosswalk_fetch/out/lakes_shapefile.xml.ind:
-    command: fetch_crosswalk_shapefile(target_name)
+    command: fetch_winslow_shapefile(target_name)
   1_crosswalk_fetch/out/lakes_shapefile.dbf.ind:
-    command: fetch_crosswalk_shapefile(target_name)
+    command: fetch_winslow_shapefile(target_name)
   1_crosswalk_fetch/out/lakes_shapefile.prj.ind:
-    command: fetch_crosswalk_shapefile(target_name)
+    command: fetch_winslow_shapefile(target_name)
   1_crosswalk_fetch/out/lakes_shapefile.shp.ind:
-    command: fetch_crosswalk_shapefile(target_name)
+    command: fetch_winslow_shapefile(target_name)
   1_crosswalk_fetch/out/lakes_shapefile.shx.ind:
-    command: fetch_crosswalk_shapefile(target_name)
+    command: fetch_winslow_shapefile(target_name)
 
   1_crosswalk_fetch/out/lakes_shapefile.xml:
     command: gd_get('1_crosswalk_fetch/out/lakes_shapefile.xml.ind')
@@ -40,20 +42,48 @@ targets:
   1_crosswalk_fetch/out/lakes_shapefile.shx:
     command: gd_get('1_crosswalk_fetch/out/lakes_shapefile.shx.ind')
 
-  1_crosswalk_fetch/out/lakes_sf.rds.ind:
+  1_crosswalk_fetch/out/winslow_lakes_sf.rds.ind:
     command: munge_crosswalk(
       out_ind=target_name,
       shp_ind='1_crosswalk_fetch/out/lakes_shapefile.shp.ind',
       '1_crosswalk_fetch/out/lakes_shapefile.dbf.ind',
       '1_crosswalk_fetch/out/lakes_shapefile.prj.ind',
       '1_crosswalk_fetch/out/lakes_shapefile.shx.ind')
-  1_crosswalk_fetch/out/lakes_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/lakes_sf.rds.ind')
+  1_crosswalk_fetch/out/winslow_lakes_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/winslow_lakes_sf.rds.ind')
 
-  1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind:
-    command: fetch_crosswalk_wqp_nhd(target_name)
-  1_crosswalk_fetch/out/wqp_nhdLookup.rds:
-    command: gd_get('1_crosswalk_fetch/out/wqp_nhdLookup.rds.ind')
+  1_crosswalk_fetch/in/MGLP_lakes.zip:
+    command: gd_get('1_crosswalk_fetch/in/MGLP_lakes.zip.ind')
+
+  1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind:
+    command: fetch_LAGOS_NE_All_Lakes_4ha(target_name)
+  1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip:
+    command: gd_get('1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind')
+
+  1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind:
+    command: LAGOS_zip_to_sf(
+      out_ind = target_name,
+      layer = I("LAGOS_NE_All_Lakes_4ha"),
+      zip_ind = '1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind',
+      I("IA"), I("IN"), I("SD"), I("ND"))
+  1_crosswalk_fetch/out/LAGOS_lakes_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind')
+
+  1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind:
+    command: MGLP_zip_to_sf(
+      out_ind = target_name,
+      gdb_file = I("MGLP_model_data&results.gdb"),
+      zip_ind = '1_crosswalk_fetch/in/MGLP_lakes.zip.ind',
+      I("IA"), I("IN"), I("SD"), I("ND"))
+  1_crosswalk_fetch/out/MGLP_lakes_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind')
+
+
+
+  1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind:
+    command: fetch_wqp_lake_sites(target_name, dummy = I('2019-02-22'))
+  1_crosswalk_fetch/out/wqp_lake_sites_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind')
 
   1_crosswalk_fetch/out/micorps_sites.xlsx.ind:
     command: fetch_micorps_sites(target_name)

@@ -7,6 +7,7 @@ packages:
   - ncdf4
   - sf
   - stringr
+  - doMC
 
 sources:
   - 6_drivers/src/nldas_cube_utils.R
@@ -21,7 +22,7 @@ targets:
       - "6_drivers/log/feather/6_fetch_new_cell_tasks.ind"
 
   replete_time_range:
-    command: c(t0=I(0), t1 = I(346848))
+    command: c(t0=I(0), t1 = I(351500)) # for doing one timechunk: 24999
 
   append_time_range:
     command: nldas_times_diff(replete_time_range, '6_drivers/in/nldas_times.rds')
@@ -42,7 +43,7 @@ targets:
     command: c(I("6_drivers/log/feather"))
 
   feature_centroids:
-    command: sf_file_centroids("1_crosswalk_fetch/out/lakes_sf.rds")
+    command: sf_file_centroids("2_crosswalk_munge/out/lakes_sf.rds")
 
   NLDAS_grid: # info from OPeNDAP: https://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FORA0125_H.002
     command: create_ldas_grid(x0 = I(-124.9375), y0 = I(25.0625), x_num = I(464), y_num = I(224), cell_res = I(0.125))
@@ -72,10 +73,10 @@ targets:
     command: nldas_update_cells(nldas_cells, nldas_new_cells, '6_drivers/in/nldas_times.rds')
 
   nldas_new_cube_plan:
-    command: create_cube_task_plan(nldas_new_cube_files, ind_dir = cube_ind_dir)
+    command: create_cube_task_plan(nldas_new_cube_files, max_steps = I(100), skip_on_exists = TRUE)
 
   nldas_append_cube_plan:
-    command: create_cube_task_plan(nldas_append_cube_files, ind_dir = cube_ind_dir)
+    command: create_cube_task_plan(nldas_append_cube_files)
 
   "6_fetch_new_cubes_tasks.yml":
     command: create_cube_task_makefile(target_name, nldas_new_cube_plan)
@@ -83,16 +84,17 @@ targets:
   "6_fetch_append_cubes_tasks.yml":
     command: create_cube_task_makefile(target_name, nldas_append_cube_plan)
 
-  "6_drivers/log/nc/6_fetch_new_cubes_tasks.ind":
-    command: loop_tasks(task_plan = nldas_new_cube_plan, task_makefile = "6_fetch_new_cubes_tasks.yml")
+  "6_drivers/log/6_fetch_new_cubes_tasks.ind":
+    command: loop_tasks(
+      task_plan = nldas_new_cube_plan,
+      task_makefile = "6_fetch_new_cubes_tasks.yml")
 
   "6_drivers/log/nc/6_fetch_append_cubes_tasks.ind":
     command: loop_tasks(task_plan = nldas_append_cube_plan, task_makefile = "6_fetch_append_cubes_tasks.yml")
 
   new_cell_plan:
-    command: create_new_cell_task_plan(nldas_new_cells, replete_time_range, nldas_new_cube_files,
-      cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir,
-      cube_data_dir = cube_data_dir, cube_ind_dir = cube_ind_dir)
+    command: create_new_cell_task_plan(nldas_new_cells, replete_time_range, cube_files_ind = "6_drivers/log/6_fetch_new_cubes_tasks.ind",
+      cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir)
 
   append_cell_plan:
     command: create_update_cell_task_plan(nldas_append_cells, replete_time_range, nldas_append_cube_files,
