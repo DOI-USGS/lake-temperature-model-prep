@@ -4,7 +4,7 @@
 #'   making up the shapefile
 munge_crosswalk <- function(out_ind, shp_ind, ...) {
   # read the file
-  shp <- sf::st_read(scipiper::sc_retrieve(shp_ind)) %>% select(site_id)
+  shp <- sf::st_read(scipiper::sc_retrieve(shp_ind)) %>% dplyr::select(site_id)
 
   # munging could happen here
 
