@@ -48,7 +48,7 @@ inventory_wqp <- function(inv_ind, needs_ind, wqp_pull_params, wqp_partition_cfg
           call_time <- system.time({
             wqp_wdat <- tryCatch({
               do.call(whatWQPdata, wqp_args) %>%
-                select(MonitoringLocationIdentifier, MonitoringLocationName, resultCount)
+                dplyr::select(MonitoringLocationIdentifier, MonitoringLocationName, resultCount)
             }, error=function(e) {
               # keep going IFF the only error was that there weren't any matching sites
               if(grepl('arguments imply differing number of rows', e$message)) {
@@ -158,8 +158,8 @@ partition_wqp_inventory <- function(partitions_ind, inventory_ind, wqp_partition
         PullDate = pull_time,
         ParamGroup = constituent,
         PullTask = sprintf('%s_%s_%03d', constituent, pull_id, assignments)) %>%
-      left_join(select(constit_inventory, site_id, MonitoringLocationIdentifier, SiteNumObs=resultCount), by='site_id') %>%
-      select(site_id, LakeNumObs, MonitoringLocationIdentifier, SiteNumObs, PullTask, PullDate, ParamGroup)
+      left_join(dplyr::select(constit_inventory, site_id, MonitoringLocationIdentifier, SiteNumObs=resultCount), by='site_id') %>%
+      dplyr::select(site_id, LakeNumObs, MonitoringLocationIdentifier, SiteNumObs, PullTask, PullDate, ParamGroup)
 
     return(partitions)
   }))

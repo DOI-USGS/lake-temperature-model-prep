@@ -5,6 +5,7 @@ packages:
   - scipiper
   - dataRetrieval
   - sf
+  - sbtools
 
 sources:
   - 1_crosswalk_fetch/src/fetch_crosswalk.R
@@ -49,6 +50,7 @@ targets:
       '1_crosswalk_fetch/out/lakes_shapefile.dbf.ind',
       '1_crosswalk_fetch/out/lakes_shapefile.prj.ind',
       '1_crosswalk_fetch/out/lakes_shapefile.shx.ind')
+
   1_crosswalk_fetch/out/winslow_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/winslow_lakes_sf.rds.ind')
 
