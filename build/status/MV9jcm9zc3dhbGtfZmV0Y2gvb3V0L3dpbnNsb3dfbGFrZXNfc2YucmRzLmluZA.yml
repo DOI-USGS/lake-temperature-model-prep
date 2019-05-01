@@ -1,0 +1,15 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/winslow_lakes_sf.rds.ind
+type: file
+hash: 982fd85c8d4d0b80ddbb9269a8357d6d
+time: 2019-05-01 14:12:38 UTC
+depends:
+  1_crosswalk_fetch/out/lakes_shapefile.shp.ind: d8bf416d48196323d9ea1618689a6b0b
+  1_crosswalk_fetch/out/lakes_shapefile.dbf.ind: c07bd309156f21d99a673cb00422c084
+  1_crosswalk_fetch/out/lakes_shapefile.prj.ind: c666f0cdb46f1c6f8d81bcd739262b5c
+  1_crosswalk_fetch/out/lakes_shapefile.shx.ind: 2d4e75f8fdf3619b0f807e19a033f680
+fixed: cb93c6937174fbf490d61d637bb73780
+code:
+  functions:
+    munge_crosswalk: ed0151771341518de0ba2d3f95e4012f
+
