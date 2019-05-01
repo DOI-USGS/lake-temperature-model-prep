@@ -29,7 +29,7 @@ nhd_add_wqp_sites <- function(site_ids, feature_crosswalk_ind) {
   # couldn't find a WQP ID
   data_frame(site_id=site_ids) %>%
     inner_join(feature_crosswalk, by='site_id') %>%
-    select(site_id, MonitoringLocationIdentifier)
+    dplyr::select(site_id, MonitoringLocationIdentifier)
 }
 
 
