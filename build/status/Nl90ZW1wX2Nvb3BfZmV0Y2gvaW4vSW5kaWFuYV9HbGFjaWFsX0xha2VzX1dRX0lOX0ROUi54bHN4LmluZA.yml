@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Indiana_Glacial_Lakes_WQ_IN_DNR.xlsx.ind
+type: file
+hash: 608c02f65b9f7b3cad6298ab3d424e8a
+time: 2019-05-02 14:01:38 UTC
+depends: {}
+fixed: b455ceb88c2f2d1797fd36ef5009fc5a
+code:
+  functions: {}
+

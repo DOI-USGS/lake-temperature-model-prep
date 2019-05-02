@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/LeechMain2018.csv.ind
+type: file
+hash: 1dba9c8d2045aa2c6a35bb26bf70ee95
+time: 2019-05-02 14:01:10 UTC
+depends: {}
+fixed: 37b85e9d6bd16dc2779dfc4a7eba2c7f
+code:
+  functions: {}
+
