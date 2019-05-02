@@ -95,7 +95,7 @@ create_wqp_pull_makefile <- function(makefile, task_plan) {
     include='6_temp_wqp_fetch.yml',
     packages=c('dplyr', 'dataRetrieval', 'feather', 'scipiper', 'yaml'),
     file_extensions=c('ind','tind','feather'),
-    ind_complete=TRUE, ind_dir='6_temp_wqp_fetch/log')
+    ind_complete=TRUE)
 }
 
 loop_wqp_tasks <- function(ind_file, task_plan, ...) {
