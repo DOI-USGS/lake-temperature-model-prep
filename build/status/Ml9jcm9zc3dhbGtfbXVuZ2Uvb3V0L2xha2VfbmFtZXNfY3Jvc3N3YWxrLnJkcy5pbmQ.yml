@@ -1,0 +1,16 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/lake_names_crosswalk.rds.ind
+type: file
+hash: d6cd013ca6c031b392fc367a361ed1ce
+time: 2019-05-03 16:50:56 UTC
+depends:
+  1_crosswalk_fetch/out/lakes_shapefile.shp.ind: d8bf416d48196323d9ea1618689a6b0b
+  1_crosswalk_fetch/in/MGLP_lakes.zip.ind: 65b4381bd97a2d8c1fba1f24cf020664
+  1_crosswalk_fetch/out/lakes_shapefile.dbf.ind: c07bd309156f21d99a673cb00422c084
+  1_crosswalk_fetch/out/lakes_shapefile.prj.ind: c666f0cdb46f1c6f8d81bcd739262b5c
+  1_crosswalk_fetch/out/lakes_shapefile.shx.ind: 2d4e75f8fdf3619b0f807e19a033f680
+fixed: 3eeb240e8bae8bc28d63cf63d7bbb7f8
+code:
+  functions:
+    munge_names: 2662896d2c969ec9218e7d117375c1a8
+
