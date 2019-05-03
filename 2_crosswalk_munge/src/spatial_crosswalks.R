@@ -25,8 +25,8 @@ crosswalk_lagos_ids <- function(ind_file, poly_ind_file, ID_name){
 }
 
 crosswalk_poly_over_poly <- function(ind_file, poly1_ind_file, poly2_ind_file, poly1_ID_name){
-  poly1_data <- gd_get(ind_file = poly1_ind_file) %>% readRDS
-  poly2_data <- gd_get(ind_file = poly2_ind_file) %>% readRDS
+  poly1_data <- readRDS(sc_retrieve(ind_file = poly1_ind_file))
+  poly2_data <- readRDS(sc_retrieve(ind_file = poly2_ind_file))
 
   stopifnot('site_id' %in% names(poly1_data))
   stopifnot('site_id' %in% names(poly2_data))
