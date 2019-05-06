@@ -2,7 +2,8 @@ munge_area <- function(out_ind, area_ind){
 
   #format for lakeattributes, which is column site_id and area_m2
   area_dat <- readRDS(sc_retrieve(area_ind)) %>%
-    dplyr::select(-lake_name)
+    dplyr::select(-lake_name) %>%
+    filter(!is.na(area_m2))
 
   data_file <- scipiper::as_data_file(out_ind)
   saveRDS(area_dat, data_file)
