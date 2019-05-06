@@ -12,3 +12,13 @@ fetch_nlcd_classes <- function(out_ind){
   saveRDS(nlcd_classes, data_file)
   gd_put(out_ind, data_file)
 }
+
+fetch_nlcd_classes_canopyheight <- function(out_ind) {
+  # fetch from Winslow et al
+  nlcd_heights <- read.csv('https://media.nature.com/original/nature-assets/sdata/2017/sdata201753/extref/sdata201753-s2.csv') %>%
+    rename(type = `Landcover.Name`, height_m = `Height.Value..meters.`, class = `NLCD.ID`)
+
+  data_file <- scipiper::as_data_file(out_ind)
+  saveRDS(nlcd_heights, data_file)
+  gd_put(out_ind, data_file)
+}
