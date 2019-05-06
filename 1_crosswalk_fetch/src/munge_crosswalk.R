@@ -99,6 +99,6 @@ munge_names <- function(out_ind, mglp_gdb_file, mglp_zip_ind, states, ...){
 
   # write, post, and promise the file is posted
   data_file <- scipiper::as_data_file(out_ind)
-  saveRDS(shp, data_file)
+  saveRDS(lake_info, data_file)
   gd_put(out_ind, data_file)
 }
