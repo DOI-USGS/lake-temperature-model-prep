@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 4_params_munge/out/lakeattributes_area.rds.ind
+type: file
+hash: 289034f04751572c99add6276b6016ae
+time: 2019-05-03 21:17:54 UTC
+depends:
+  2_crosswalk_munge/out/lake_names_crosswalk.rds.ind: 0e798c8f88fa4e2f464bdce0c3428c45
+fixed: cd889697b873ee9745e80b330bcdabf2
+code:
+  functions:
+    munge_area: 3267151bcf7d5b659c953985943357fe
+

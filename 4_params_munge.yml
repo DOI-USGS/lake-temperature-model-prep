@@ -11,12 +11,16 @@ sources:
   - 4_params_munge/src/munge_nlcd.R
   - 4_params_munge/src/munge_mglp.R
   - 4_params_munge/src/munge_lagos.R
+  - 4_params_munge/src/munge_for_lakeattributes.R
 
 targets:
   4_params_munge:
     depends:
-      - '4_params_munge/out/nlcd_2011_buffers.rds.ind'
-      - '4_params_munge/out/mglp_depths.rds.ind'
+      - '4_params_munge/out/lakeattributes_depth.rds.ind'
+      - '4_params_munge/out/lakeattributes_area.rds.ind'
+      - '4_params_munge/out/lakeattributes_secchi.rds.ind'
+      - '4_params_munge/out/lakeattributes_canopyheight.rds.ind'
+      - '4_params_munge/out/lakeattributes_location.rds.ind'
 
   4_params_munge/out/nlcd_2011_buffers.rds.ind:
     command: munge_nlcd_buffers(target_name,
@@ -37,3 +41,46 @@ targets:
       lagos_secchi_ind = '3_params_fetch/out/LAGOS_NE_secchi.csv.ind')
   4_params_munge/out/lagos_secchi.rds:
     command: gd_get('4_params_munge/out/lagos_secchi.rds.ind')
+
+  4_params_munge/out/lakeattributes_secchi.rds.ind:
+    command: munge_secchi(target_name,
+      lagos_secchi_ind = '4_params_munge/out/lagos_secchi.rds.ind',
+      lagos_crosswalk = '2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind')
+
+  4_params_munge/out/lakeattributes_secchi.rds:
+    command: gd_get('4_params_munge/out/lakeattributes_secchi.rds.ind')
+
+  4_params_munge/out/lakeattributes_area.rds.ind:
+    command: munge_area(target_name, '2_crosswalk_munge/out/lake_names_crosswalk.rds.ind')
+
+  4_params_munge/out/lakeattributes_area.rds:
+    command: gd_get('4_params_munge/out/lakeattributes_area.rds.ind')
+
+  4_params_munge/out/lakeattributes_depth.rds.ind:
+    command: munge_depth(
+      target_name,
+      lagos_depth_ind = '3_params_fetch/out/LAGOS_NE_depths.csv.ind',
+      lagos_crosswalk = '2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind',
+      mglp_depth_ind = '4_params_munge/out/mglp_depths.rds.ind')
+
+  4_params_munge/out/lakeattributes_depth.rds:
+    command: gd_get('4_params_munge/out/lakeattributes_depth.rds.ind')
+
+  4_params_munge/out/lakeattributes_location.rds.ind:
+    command: munge_location(
+      target_name,
+      mglp_gdb_file = I("MGLP_model_data&results.gdb"),
+      mglp_zip_ind = '1_crosswalk_fetch/in/MGLP_lakes.zip.ind',
+      states = I(c("IA", "IN", "SD", "ND")))
+
+  4_params_munge/out/lakeattributes_location.rds:
+    command: gd_get('4_params_munge/out/lakeattributes_location.rds.ind')
+
+  4_params_munge/out/lakeattributes_canopyheight.rds.ind:
+    command: munge_location(
+      target_name,
+      nlcd_dat_ind = '4_params_munge/out/nlcd_2011_buffers.rds.ind',
+      nlcd_heights_ind = '3_params_fetch/out/nlcd_classes_canopyheight.rds.ind')
+
+  4_params_munge/out/lakeattributes_canopyheight.rds:
+    command: gd_get('4_params_munge/out/lakeattributes_canopyheight.rds.ind')

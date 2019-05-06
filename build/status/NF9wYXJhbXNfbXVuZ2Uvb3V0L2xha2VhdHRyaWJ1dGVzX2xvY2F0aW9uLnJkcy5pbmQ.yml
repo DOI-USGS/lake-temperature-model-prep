@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 4_params_munge/out/lakeattributes_location.rds.ind
+type: file
+hash: 71207a2072343dcecf06b65532d8807f
+time: 2019-05-06 13:33:46 UTC
+depends:
+  1_crosswalk_fetch/in/MGLP_lakes.zip.ind: 65b4381bd97a2d8c1fba1f24cf020664
+fixed: 71be659e54da0aa9239add0ffa19f250
+code:
+  functions:
+    munge_location: e22987e8d7ad527d45a4150cc60127f4
+

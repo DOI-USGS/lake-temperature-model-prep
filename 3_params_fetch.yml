@@ -37,4 +37,10 @@ targets:
   3_params_fetch/in/Data_MGLP_TDOx_Models.csv:
     command: gd_get('3_params_fetch/in/Data_MGLP_TDOx_Models.csv.ind')
 
+  3_params_fetch/out/nlcd_classes_canopyheight.rds.ind:
+    command: fetch_nlcd_classes_canopyheight(target_name)
+
+  3_params_fetch/out/nlcd_classes_canopyheight.rds:
+    command: gd_get('3_params_fetch/out/nlcd_classes.rds.ind')
+
 
