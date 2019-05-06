@@ -9,6 +9,7 @@ sources:
   - 2_crosswalk_munge/src/merge_id_crosswalks.R
   - 2_crosswalk_munge/src/spatial_crosswalks.R
   - 2_crosswalk_munge/src/mi_storet_crosswalk.R
+  - 1_crosswalk_fetch/src/munge_crosswalk.R
 
 targets:
   2_crosswalk_munge:
