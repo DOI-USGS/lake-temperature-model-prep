@@ -24,7 +24,8 @@ munge_depth <- function(out_ind, lagos_depth_ind, lagos_crosswalk, mglp_depth_in
     right_join(lagos_cross) %>%
     dplyr::select(site_id, source, zmax_m = zmaxobs)
 
-  mglp_clean <- rename(mglp_depth_dat, zmax_m = z_max)
+  mglp_clean <- rename(mglp_depth_dat, zmax_m = z_max) %>%
+    mutate(source = 'mglp')
 
   depth_dat <- bind_rows(lagos_clean, mglp_clean) %>%
     distinct()
