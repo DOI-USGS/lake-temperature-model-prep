@@ -1,8 +1,8 @@
 version: 0.3.0
 name: 4_params_munge/out/lakeattributes_depth.rds.ind
 type: file
-hash: be4ae9c58bbe7ead873264ae4eb56897
-time: 2019-05-03 21:16:43 UTC
+hash: 70db45d0a7b0ff1baf755c3e79d5d6dd
+time: 2019-05-06 20:08:27 UTC
 depends:
   3_params_fetch/out/LAGOS_NE_depths.csv.ind: 95a7a2a7c293b4653e8f4679c870199e
   2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind: 22b6a0f99ce3e23d0c46c7ce98637e8e
@@ -10,5 +10,5 @@ depends:
 fixed: e36cf01a49a97fac0189285d04139b3d
 code:
   functions:
-    munge_depth: ff918a293c6c5e5ba2f1000d781cd1b4
+    munge_depth: f6fa83d5ca33e993b4e4905009152878
 

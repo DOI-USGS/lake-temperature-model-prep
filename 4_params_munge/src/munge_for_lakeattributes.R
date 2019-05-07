@@ -78,6 +78,8 @@ munge_location <- function(out_ind, mglp_zip_ind, mglp_gdb_file, states){
                          lon = latlong$X,
                          lat = latlong$Y)
 
+  location$site_id <- paste0('mglp_', location$site_id)
+
   data_file <- scipiper::as_data_file(out_ind)
   saveRDS(location, data_file)
   gd_put(out_ind, data_file)
