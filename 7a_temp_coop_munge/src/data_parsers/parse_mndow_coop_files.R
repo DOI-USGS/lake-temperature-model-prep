@@ -3,7 +3,7 @@ parse_MPCA_temp_data_all <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw_file <- data.table::fread(infile, colClasses = c(DOW="character"),
-                                select = c("SAMPLE_DATE", "START_DEPTH", "SAMPLETIME", "DEPTH_UNIT",
+                                dplyr::select = c("SAMPLE_DATE", "START_DEPTH", "SAMPLETIME", "DEPTH_UNIT",
                                            "RESULT_NUMERIC", "RESULT_UNIT", "DOW"))
 
 
@@ -11,7 +11,7 @@ parse_MPCA_temp_data_all <- function(inind, outind) {
   #some measurements missing depth unit
   clean <- raw_file %>%
     filter(DEPTH_UNIT == "m") %>%
-    select(-RESULT_UNIT, -DEPTH_UNIT) %>%
+    dplyr::select(-RESULT_UNIT, -DEPTH_UNIT) %>%
     mutate(SAMPLE_DATE = as.Date(SAMPLE_DATE, format = "%m/%d/%Y"),
            timezone = 'CST/CDT') %>%
     rename(DateTime = SAMPLE_DATE, time = SAMPLETIME, depth = START_DEPTH, temp = RESULT_NUMERIC)
@@ -64,7 +64,7 @@ parse_Water_Temp <- function(inind, outind){
                time = strftime(POSIXct, format = '%H:%M'),
                DateTime = as.Date(POSIXct),
                DOW = DOWLKNUM, depth = Depth.m, temp = Water.Temp.C, timezone = "UTC") %>%
-        select(DateTime, time, timezone, depth, temp, DOW) %>%
+        dplyr::select(DateTime, time, timezone, depth, temp, DOW) %>%
         arrange(DateTime)
 
       data_out <- rbind(data_out, data)
@@ -118,7 +118,7 @@ parse_MN_fisheries_all_temp_data_Jan2018 <- function(inind, outind) {
                           depth = feet_to_meters(DEPTH_FT),
                           DateTime = as.Date(SAMPLING_DATE,
                                              format = "%m/%d/%Y")) %>%
-    select(DateTime, depth, temp, DOW)
+    dplyr::select(DateTime, depth, temp, DOW)
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -210,6 +210,24 @@ parse_LotW_WQ_Gretchen_H <- function(inind, outind) {
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
+parse_LOTW2018 <- function(inind, outind) {
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+  outfile <- as_data_file(outind)
+  raw <- read.csv(infile)
+  clean <- raw %>% filter(QCflag == 0) %>%
+    mutate(depth = Depth,
+           temp = fahrenheit_to_celsius(Temp),
+           DateTime = as.Date(Time, format = '%m/%d/%Y'),
+           DOW = as.character(DOW),
+           time = as.POSIXct(Time, format = '%m/%d/%Y %H:%M'),
+           timezone = 'GMT-5') %>%
+    mutate(time = as.character(format(time, format = '%H:%M'))) %>%
+    dplyr::select(DateTime, time, timezone, depth, temp, DOW)
+
+  saveRDS(object = clean, file = outfile)
+  sc_indicate(ind_file = outind, data_file = outfile)
+}
+
 #mille lacs
 # no time data
 parse_ML_observed_temperatures <- function(inind, outind) {
@@ -281,3 +299,53 @@ parse_Sand_Bay_All_2016 <- parse_Sand_Bay_all_2015 <- parse_Sand_Bay_all_2014 <-
   saveRDS(object = clean_sheet, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
+
+parse_LeechMain2018 <-
+  parse_LeechWalkerBay2018 <-
+  parse_MilleLacs2018 <-
+  parse_Winnie2018 <-
+  parse_Rainy2018 <-
+  parse_Kab2018 <- function(inind, outind) {
+
+    infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+  outfile <- as_data_file(outind)
+  raw <- read.csv(infile)
+
+  clean <- raw %>% filter(QCflag == 0) %>%
+    mutate(depth = Depth,
+           temp = fahrenheit_to_celsius(Temp),
+           DateTime = as.Date(Time, format = '%m/%d/%Y'),
+           DOW = as.character(DOW),
+           time = as.POSIXct(Time, format = '%m/%d/%Y %H:%M'),
+           timezone = 'GMT-5') %>%
+    mutate(time = as.character(format(time, format = '%H:%M'))) %>%
+    dplyr::select(DateTime, time, timezone, depth, temp, DOW)
+
+  saveRDS(object = clean, file = outfile)
+  sc_indicate(ind_file = outind, data_file = outfile)
+  }
+
+parse_South_Center_DO_2018_09_11_All <-
+  parse_Greenwood_DO_2018_09_14_All <-
+  parse_Carlos_DO_2018_11_05_All <- function(inind, outind){
+
+    infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+    outfile <- as_data_file(outind)
+    raw <- read.csv(infile)
+
+    clean <- raw %>%
+      mutate(depth = -Depth_m,
+             Date_Time = as.POSIXct(Date_Time, format = '%Y-%m-%d %H:%M:%S'),
+             DOW = as.character(DOWLKNUM),
+             time = as.character(format(Date_Time, format = '%H:%M')),
+             DateTime = as.Date(Date_Time),
+             timezone = 'GMT-5',
+             time = as.character(format(time, format = '%H:%M'))) %>%
+      dplyr::select(DateTime, time, timezone, depth, temp = Water_Temp_C, DOW)
+
+    saveRDS(object = clean, file = outfile)
+    sc_indicate(ind_file = outind, data_file = outfile)
+
+}
+
+

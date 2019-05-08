@@ -37,7 +37,7 @@ parse_mndnr_files <- function(inind, outind) {
     grepl('Sand', sheet) ~ '69061700'
   ))
 
-  all_dat <- select(all_dat, DateTime, time, depth, temp, DOW, site)
+  all_dat <- dplyr::select(all_dat, DateTime, time, depth, temp, DOW, site)
 
   saveRDS(object = all_dat, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
