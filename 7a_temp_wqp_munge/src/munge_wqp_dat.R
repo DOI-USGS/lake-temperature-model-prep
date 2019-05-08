@@ -17,7 +17,7 @@ munge_temperature <- function(data.in){
   activity.sites <- group_by(data.in, OrganizationIdentifier) %>%
     summarize(act.n = sum(!is.na(ActivityDepthHeightMeasure.MeasureValue)), res.n=sum(!is.na((ResultDepthHeightMeasure.MeasureValue)))) %>%
     mutate(use.depth.code = ifelse(act.n>res.n, 'act','res')) %>%
-    select(OrganizationIdentifier, use.depth.code)
+    dplyr::select(OrganizationIdentifier, use.depth.code)
 
   left_join(data.in, activity.sites, by='OrganizationIdentifier') %>%
     mutate(raw.depth = as.numeric(ifelse(use.depth.code == 'act', ActivityDepthHeightMeasure.MeasureValue, ResultDepthHeightMeasure.MeasureValue)),
@@ -28,12 +28,12 @@ munge_temperature <- function(data.in){
            wqx.id=MonitoringLocationIdentifier,
            timezone = ActivityStartTime.TimeZoneCode) %>%
     mutate(time = substr(ActivityStartTime.Time, 0, 5)) %>%
-    select(Date, time, timezone, raw.value, units, raw.depth, depth.units, wqx.id) %>%
+    dplyr::select(Date, time, timezone, raw.value, units, raw.depth, depth.units, wqx.id) %>%
     left_join(unit.map, by='units') %>%
     left_join(depth.unit.map, by='depth.units') %>%
     mutate(wtemp=convert*(raw.value+offset), depth=raw.depth*depth.convert) %>%
     filter(!is.na(wtemp), !is.na(depth), wtemp <= max.temp, wtemp >= min.temp, depth <= max.depth) %>%
-    select(Date, time, timezone, wqx.id, depth, wtemp)
+    dplyr::select(Date, time, timezone, wqx.id, depth, wtemp)
 }
 
 munge_wqp_dat <- function(outind, wqp_ind) {
@@ -42,7 +42,7 @@ munge_wqp_dat <- function(outind, wqp_ind) {
 
   wqp_in <- scipiper::sc_retrieve(wqp_ind)
   wqp_files <- feather::read_feather(wqp_in) %>%
-    select(PullFile) %>%
+    dplyr::select(PullFile) %>%
     distinct() %>%
     pull()
 
@@ -73,18 +73,29 @@ munge_wqp_dat <- function(outind, wqp_ind) {
 
 }
 
-crosswalk_wqp_dat <- function(outind, wqp_munged, wqp_crosswalk) {
+crosswalk_wqp_dat <- function(outind, wqp_munged, wqp_crosswalk, wqp_latlong_ind) {
 
   outfile = as_data_file(outind)
 
-  crossfile <- sc_retrieve(wqp_crosswalk, remake_file = '1_crosswalk_fetch.yml')
-  wqp2nhd <- readRDS(crossfile)
+  crossfile <- sc_retrieve(wqp_crosswalk)
+  wqp2nhd <- readRDS(crossfile) %>%
+    distinct()
 
-  infile <- sc_retrieve(wqp_munged, remake_file = '7a_temp_wqp_munge.yml')
+  wqp_latlong <- readRDS(sc_retrieve(wqp_latlong_ind))
+
+  latlong <- as.data.frame(st_coordinates(wqp_latlong)) %>%
+    mutate(MonitoringLocationIdentifier = wqp_latlong$MonitoringLocationIdentifier) %>%
+    rename(LongitudeMeasure = X, LatitudeMeasure = Y) %>%
+    distinct()
+
+  wqp_nhdLookup <- left_join(wqp2nhd, latlong)
+
+  infile <- sc_retrieve(wqp_munged)
   wqp_dat <- readRDS(infile)
 
-  wqp_linked <- left_join(wqp_dat, wqp2nhd, by = c('wqx.id' = 'MonitoringLocationIdentifier')) %>%
-    select(-LatitudeMeasure, -LongitudeMeasure) %>%
+  wqp_linked <- left_join(wqp_dat, wqp_nhdLookup, by = c('wqx.id' = 'MonitoringLocationIdentifier')) %>%
+    dplyr::select(-LatitudeMeasure, -LongitudeMeasure) %>%
+    rename(id = site_id) %>%
     filter(!is.na(id))
 
   cat(nrow(wqp_dat) - nrow(wqp_linked), "temperature observations were dropped from WQP data for missing NHD lake identifiers.")
