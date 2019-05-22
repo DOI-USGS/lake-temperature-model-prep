@@ -3,7 +3,7 @@ parse_MPCA_temp_data_all <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw_file <- data.table::fread(infile, colClasses = c(DOW="character"),
-                                dplyr::select = c("SAMPLE_DATE", "START_DEPTH", "SAMPLETIME", "DEPTH_UNIT",
+                                select = c("SAMPLE_DATE", "START_DEPTH", "SAMPLETIME", "DEPTH_UNIT",
                                            "RESULT_NUMERIC", "RESULT_UNIT", "DOW"))
 
 
