@@ -1,0 +1,104 @@
+---
+title: "Lake Modeling Data Status"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(maps)
+library(sf)
+library(dplyr)
+library(lakeattributes)
+
+all_lakes <- readRDS('2_crosswalk_munge/out/lakes_sf.rds')
+all_dat <- feather::read_feather('7b_temp_merge/out/merged_temp_data_daily.feather')
+
+
+zmax <- lakeattributes::zmax
+lakes_w_zmax <- unique(zmax$site_id)
+lakes_w_dat <- unique(all_dat$nhd_id)
+
+all_lakes <- mutate(all_lakes, depth = site_id %in% lakes_w_zmax,
+                    temp_obs = site_id %in% lakes_w_dat)
+
+states <- st_as_sf(map("state", plot = FALSE, fill = TRUE))
+footprint <- filter(states, ID %in% c('minnesota', 'wisconsin', 'michigan', 'north dakota', 'south dakota', 'iowa', 'indiana', 'illinois'))
+
+mglp_dat <- filter(all_dat, grepl('mglp', nhd_id, ignore.case = TRUE))
+```
+
+## Inventory of lakes
+
+There are `r nrow(all_lakes)` lakes in the geographic footprint, `r sum(grepl('nhd', all_lakes$site_id, ignore.case = TRUE))` from the original Winslow data release and `r sum(grepl('mglp', all_lakes$site_id, ignore.case = TRUE))` that have been added in the new footprint.
+
+```{r echo=FALSE}
+p <- ggplot() +
+  geom_sf(data = footprint) +
+  geom_sf(data = all_lakes, fill = 'dodgerblue', color = 'dodgerblue')
+  #coord_cartesian(xlim = c(-100.7, -81.8), ylim = c(39.7, 49.6))
+
+print(p)
+
+```
+
+## Inventory of parameters
+
+For a lake to be modeled, we must also know lake depth. A total of `r sum(all_lakes$depth)` lakes have depth data. `r sum(all_lakes$depth[grepl('nhd', all_lakes$nhd_id)])` lakes from the Winslow data have depth, and `r sum(all_lakes$depth[grepl('mglp', all_lakes$nhd_id)])` from the expanded footprint have depth.
+```{r echo=FALSE}
+p <- ggplot() +
+  geom_sf(data = footprint) +
+  geom_sf(data = all_lakes, aes(fill = depth, color = depth)) +
+  scale_fill_manual(values = c('#C95D63', 'dodgerblue')) +
+  scale_color_manual(values = c('#C95D63', 'dodgerblue'))
+
+print(p)
+
+ dat_summary <- all_dat %>%
+   group_by(nhd_id, date) %>%
+   summarize(n_depths = n()) %>%
+   filter(n_depths >= 5) %>%
+   group_by(nhd_id) %>%
+   summarize(n_days = n())
+   
+ 
+ mglp_lakes <- filter(dat_summary, grepl('mglp', nhd_id))
+
+```
+
+## Inventory of data
+There were `r round(nrow(all_dat)/1000000, 2)` million lake temperature observations in `r length(unique(all_dat$nhd_id))` lakes, `r length(unique(mglp_lakes$nhd_id))` of which are lakes in the new footprint.
+
+```{r echo=FALSE, warning=FALSE}
+p <- ggplot() +
+  geom_sf(data = footprint) +
+  geom_sf(data = all_lakes, aes(fill = temp_obs, color = temp_obs)) +
+  scale_fill_manual(values = c('#C95D63', 'dodgerblue')) +
+  scale_color_manual(values = c('#C95D63', 'dodgerblue'))
+print(p)
+```
+
+When filtered to profiles that have at least 5 measured depths, there were were `r nrow(filter(dat_summary, n_days > 100))` lakes with >100 profiles and `r nrow(filter(dat_summary, n_days > 980))` lakes with >980 profiles.
+
+```{r echo=FALSE, warning=FALSE}
+all_lakes <- left_join(all_lakes, dat_summary, by = c('site_id' = 'nhd_id'))
+p <- ggplot() +
+  geom_sf(data = footprint) +
+  geom_sf(data = all_lakes, aes(fill = n_days, color = n_days)) +
+  scale_fill_viridis_c(direction = -1, option = 'inferno', trans = 'log10') +
+  scale_color_viridis_c(direction = -1, option = 'inferno', trans = 'log10')
+print(p)
+```
+
+## Prioritizing data collection
+`r nrow(filter(all_lakes, depth == FALSE & temp_obs == TRUE))` lakes have temperature observations, but no lake depth. 
+
+```{r echo=FALSE, warning=FALSE}
+all_lakes <- mutate(all_lakes, priority = ifelse(depth == FALSE & temp_obs == TRUE, TRUE, FALSE))
+priority_lakes <- filter(all_lakes, priority)
+p <- ggplot() +
+  geom_sf(data = footprint) +
+  geom_sf(data = priority_lakes, fill = '#C95D63', color = '#C95D63')
+print(p)
+```
+
