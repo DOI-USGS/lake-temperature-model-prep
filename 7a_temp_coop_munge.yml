@@ -31,7 +31,7 @@ targets:
   # -- create makefile with targets to parse each file pulled from gd -- #
 
   7a_temp_coop_munge_tasks.yml:
-    command: create_coop_munge_makefile(target_name, coop_munge_taskplan)
+    command: create_coop_munge_makefile(target_name, coop_munge_taskplan, I('7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind'))
 
   7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind:
     command: loop_tasks(task_plan = coop_munge_taskplan, task_makefile = '7a_temp_coop_munge_tasks.yml')
