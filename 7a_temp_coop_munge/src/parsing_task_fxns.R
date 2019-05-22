@@ -79,7 +79,7 @@ create_coop_munge_taskplan <- function(wants, parsers) {
   return(task_plan)
 }
 
-create_coop_munge_makefile <- function(target_name, taskplan) {
+create_coop_munge_makefile <- function(target_name, taskplan, final_targets) {
   create_task_makefile(
     makefile = target_name,
     task_plan = taskplan,
@@ -99,6 +99,7 @@ create_coop_munge_makefile <- function(target_name, taskplan) {
                 '7a_temp_coop_munge/src/data_parsers/parse_indiana_files.R',
                 '7a_temp_coop_munge/src/parsing_task_fxns.R',
                 'lib/src/require_local.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_unit_functions.R')
+                '7a_temp_coop_munge/src/data_parsers/parse_unit_functions.R'),
+    final_targets = final_targets
     )
 }
