@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 8_viz/out/lakes_summary_fig.html.ind
+type: file
+hash: 9b4f916d7d492ec7bd110761ee83c5d1
+time: 2019-06-05 15:23:50 UTC
+depends:
+  test_map.Rmd: acacaeb3486bc3fa5a6ec96bc5f79477
+  8_viz/inout/lakes_summary.feather.ind: 1702b24f4471eba40f82ac032e94302d
+fixed: 5d6ae07a331d1340432bc59c57e3a311
+code:
+  functions:
+    render_html: 54f8107e1ea9a6a8c5c798ce8ba3c437
+

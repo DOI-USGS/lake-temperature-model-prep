@@ -39,6 +39,3 @@ targets:
 
   8_viz/out/lakes_summary_fig.html:
     command: gd_get('8_viz/out/lakes_summary_fig.html.ind')
-
-
-
