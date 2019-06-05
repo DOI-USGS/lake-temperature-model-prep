@@ -92,7 +92,7 @@ targets:
     command: crosswalk_lakes_to_states(
       out_ind = target_name,
       lakes_ind = '2_crosswalk_munge/out/lakes_sf.rds.ind',
-      states = I(c('minnesota', 'wisconsin', 'north dakota', 'south dakota', 'michigan', 'indiana')))
+      states = I(c('minnesota', 'wisconsin', 'north dakota', 'south dakota', 'michigan', 'indiana', 'iowa')))
 
   4_params_munge/out/nhd2states.rds:
     command: gd_get('4_params_munge/out/nhd2states.rds.ind')
