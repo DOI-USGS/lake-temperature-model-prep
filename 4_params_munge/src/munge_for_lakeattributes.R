@@ -110,3 +110,25 @@ munge_canopyheight <- function(out_ind, nlcd_dat_ind, nlcd_heights_ind){
   saveRDS(dom_class, data_file)
   gd_put(out_ind, data_file)
 }
+
+crosswalk_lakes_to_states <- function(out_ind, lakes_ind, states) {
+  all_centers <- sc_retrieve(lakes_ind) %>%
+    readRDS %>%
+    mutate(centroid = st_centroid(geometry)) %>%
+    mutate(centroid = st_transform(centroid, crs = 4326)) %>%
+    dplyr::select(site_id, centroid)
+
+
+  polygons <- st_as_sf(map("state", plot = FALSE, fill = TRUE)) %>%
+    filter(ID %in% states)
+
+  points_to_poly <- st_join(all_centers, polygons, join = st_intersects) %>%
+    filter(!is.na(site_id))
+
+  points_to_poly <- data.frame(site_id = points_to_poly$site_id,
+                                  state = points_to_poly$ID)
+
+  data_file <- scipiper::as_data_file(out_ind)
+  saveRDS(points_to_poly, data_file)
+  gd_put(out_ind, data_file)
+}

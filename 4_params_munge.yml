@@ -6,6 +6,8 @@ packages:
   - feather
   - readr
   - raster
+  - sf
+  - maps
 
 sources:
   - 4_params_munge/src/munge_nlcd.R
@@ -21,6 +23,7 @@ targets:
       - '4_params_munge/out/lakeattributes_secchi.rds.ind'
       - '4_params_munge/out/lakeattributes_canopyheight.rds.ind'
       - '4_params_munge/out/lakeattributes_location.rds.ind'
+      - '4_params_munge/out/nhd2states.rds.ind'
 
   4_params_munge/out/nlcd_2011_buffers.rds.ind:
     command: munge_nlcd_buffers(target_name,
@@ -84,3 +87,12 @@ targets:
 
   4_params_munge/out/lakeattributes_canopyheight.rds:
     command: gd_get('4_params_munge/out/lakeattributes_canopyheight.rds.ind')
+
+  4_params_munge/out/nhd2states.rds.ind:
+    command: crosswalk_lakes_to_states(
+      out_ind = target_name,
+      lakes_ind = '2_crosswalk_munge/out/lakes_sf.rds.ind',
+      states = I(c('minnesota', 'wisconsin', 'north dakota', 'south dakota', 'michigan', 'indiana')))
+
+  4_params_munge/out/nhd2states.rds:
+    command: gd_get('4_params_munge/out/nhd2states.rds.ind')

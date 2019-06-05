@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 4_params_munge/out/nhd2states.rds.ind
+type: file
+hash: 776555dd395c68bda82be7f17a4b56eb
+time: 2019-06-05 13:56:52 UTC
+depends:
+  2_crosswalk_munge/out/lakes_sf.rds.ind: 74d199834fd5e649b05a831f3ab67e1d
+fixed: 5b4509a26e0d194c65e430c6b7eeead8
+code:
+  functions:
+    crosswalk_lakes_to_states: ca2b729e9d678d47ccfd46c60bc842bf
+
