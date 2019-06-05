@@ -84,4 +84,3 @@ targets:
 
   2_crosswalk_munge/out/lake_names_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/lake_names_crosswalk.rds.ind')
-

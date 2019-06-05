@@ -80,8 +80,6 @@ targets:
   1_crosswalk_fetch/out/MGLP_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind')
 
-
-
   1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind:
     command: fetch_wqp_lake_sites(target_name, dummy = I('2019-02-22'))
   1_crosswalk_fetch/out/wqp_lake_sites_sf.rds:
