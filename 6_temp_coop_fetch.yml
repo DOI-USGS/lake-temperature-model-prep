@@ -53,7 +53,7 @@ targets:
     command: create_coop_taskplan(coop_wants)
 
   6_temp_coop_fetch_tasks.yml:
-    command: create_coop_fetch_makefile(target_name, coop_wants_fetch_plan)
+    command: create_coop_fetch_makefile(target_name, coop_wants_fetch_plan, I('6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind'))
 
   6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind:
     command: loop_tasks(task_plan = coop_wants_fetch_plan, task_makefile = '6_temp_coop_fetch_tasks.yml')

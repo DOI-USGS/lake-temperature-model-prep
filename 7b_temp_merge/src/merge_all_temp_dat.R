@@ -11,9 +11,9 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
   total_obs <- nrow(wqp_dat) + nrow(coop_dat)
 
   # merge and remove duplicate observations - defined by rounding to 1 decimal point for depth and temp
-  all_dat <- select(wqp_dat, date = Date, time, timezone, depth, temp = wtemp, nhd_id = id, source_id = wqx.id, source_site_id = wqx.id) %>%
+  all_dat <- dplyr::select(wqp_dat, date = Date, time, timezone, depth, temp = wtemp, nhd_id = id, source_id = wqx.id, source_site_id = wqx.id) %>%
     mutate(source = 'wqp') %>%
-    bind_rows(select(coop_dat, date = DateTime, time, timezone, depth, temp, nhd_id = site_id, source_id = state_id, source_site_id = site, source)) %>%
+    bind_rows(dplyr::select(coop_dat, date = DateTime, time, timezone, depth, temp, nhd_id = site_id, source_id = state_id, source_site_id = site, source)) %>%
     mutate(depth = round(depth, 2),
            depth1 = round(depth, 1),
            temp = round(temp, 2),
@@ -23,7 +23,7 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
   all_dat_distinct <- all_dat %>%
     mutate(timezone = ifelse(is.na(time), NA, timezone)) %>%
     distinct(nhd_id, date, time, depth1, temp1, .keep_all = TRUE) %>%
-    select(-depth1, -temp1)
+    dplyr::select(-depth1, -temp1)
 
   # note - could still have lake/date/depth duplicates here
   # the risk of removing time from the above distinct() is that if you have
@@ -102,8 +102,8 @@ reduce_temp_data <- function(outind, inind) {
   # this first distinct has the potential to drop observations from multiple sites that have
   # the same depth/temp/day -- however, I think the risk of having duplicate data is higher than
   # dropping values that are the same which would be averaged later
-  all_dat_singletimes <- bind_rows(select(dat_notimes_timeresolved, -time, -timezone),
-                                   select(dat_singletimes, -time, -ntimeobs)) %>%
+  all_dat_singletimes <- bind_rows(dplyr::select(dat_notimes_timeresolved, -time, -timezone),
+                                   dplyr::select(dat_singletimes, -time, -ntimeobs)) %>%
     distinct(nhd_id, date, depth, temp, .keep_all = TRUE) %>%
     group_by(nhd_id, date, depth) %>%
     summarize(temp = mean(temp))

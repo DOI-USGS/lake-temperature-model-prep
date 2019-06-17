@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Indiana CLP lake data 1994-2013.xlsx.ind
+type: file
+hash: cdf13355e99f3333a0dd4498be4e907f
+time: 2019-05-02 14:02:14 UTC
+depends: {}
+fixed: c79801d1900b50f1383d0d3358c19e59
+code:
+  functions: {}
+

@@ -12,7 +12,7 @@ find_parser <- function(coop_wants, parser_files) {
     if (grepl('manualentry', coop_wants[i])) {
       parsers[i] <- 'parse_manualentry_files'
 
-    } else if (grepl('winnie', coop_wants[i], ignore.case = TRUE)) {
+    } else if (grepl('winnie\\D', coop_wants[i], ignore.case = TRUE)) {
       parsers[i] <- 'parse_winnie_files'
 
     }  else if (grepl('DNRdatarequest', coop_wants[i])){
@@ -79,7 +79,7 @@ create_coop_munge_taskplan <- function(wants, parsers) {
   return(task_plan)
 }
 
-create_coop_munge_makefile <- function(target_name, taskplan) {
+create_coop_munge_makefile <- function(target_name, taskplan, final_targets) {
   create_task_makefile(
     makefile = target_name,
     task_plan = taskplan,
@@ -95,10 +95,11 @@ create_coop_munge_makefile <- function(target_name, taskplan) {
                 '7a_temp_coop_munge/src/data_parsers/parse_winnie_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_wi_wbic_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_redlake_files.R',
+                '7a_temp_coop_munge/src/data_parsers/parse_dakota_files.R',
+                '7a_temp_coop_munge/src/data_parsers/parse_indiana_files.R',
                 '7a_temp_coop_munge/src/parsing_task_fxns.R',
                 'lib/src/require_local.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_unit_functions.R'),
-    ind_dir = '7a_temp_coop_munge/log',
-    ind_complete = TRUE
+    final_targets = final_targets
     )
 }

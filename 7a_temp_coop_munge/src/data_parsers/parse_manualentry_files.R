@@ -29,7 +29,7 @@ parse_manualentry_files <- function(inind, outind) {
     mutate(depth = ifelse(depth.units %in% 'f', feet_to_meters(depth), depth),
            temp = ifelse(temp.units %in% "F", fahrenheit_to_celsius(temperature), temperature)) %>%
     mutate(DateTime = as.Date(Date), DOW = as.character(DOW)) %>%
-    select(DateTime, depth, temp, DOW)
+    dplyr::select(DateTime, depth, temp, DOW)
 
   saveRDS(object = dat_clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)

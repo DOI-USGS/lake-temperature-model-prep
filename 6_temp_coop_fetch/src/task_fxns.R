@@ -28,14 +28,13 @@ create_coop_taskplan <- function(wants) {
   return(task_plan)
 }
 
-create_coop_fetch_makefile <- function(target_name, taskplan) {
+create_coop_fetch_makefile <- function(target_name, taskplan, final_targets) {
   create_task_makefile(
     makefile = target_name,
     task_plan = taskplan,
     include = '6_temp_coop_fetch.yml',
     packages = c('scipiper'),
     file_extensions = c("ind"),
-    ind_dir = '6_temp_coop_fetch/log',
-    ind_complete = TRUE
+    final_targets = final_targets
   )
 }

@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Carlos_DO_2018_11_05_All.csv.ind
+type: file
+hash: ab74cb364a8e755716300fba66ad0b4a
+time: 2019-05-02 14:03:56 UTC
+depends: {}
+fixed: 28b844ca1923c94aba80ef398b19b85a
+code:
+  functions: {}
+

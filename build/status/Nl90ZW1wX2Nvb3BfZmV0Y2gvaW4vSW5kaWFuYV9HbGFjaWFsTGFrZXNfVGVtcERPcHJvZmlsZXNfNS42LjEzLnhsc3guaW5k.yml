@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Indiana_GlacialLakes_TempDOprofiles_5.6.13.xlsx.ind
+type: file
+hash: e74646bed0a2bfe37b3cb6dfaf4e90d3
+time: 2019-05-02 14:02:44 UTC
+depends: {}
+fixed: 17dfc4b56255cb4b8fed47a7e519aa59
+code:
+  functions: {}
+

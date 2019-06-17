@@ -41,7 +41,7 @@ crosswalk_coop_dat <- function(outind = target_name,
   dows_in_dat <- dow2nhd %>%
     filter(DOW %in% unique(dat$DOW)) %>%
     distinct() %>%
-    select(-dowlknum) %>%
+    dplyr::select(-dowlknum) %>%
     group_by(DOW) %>%
     summarize(site_id = first(site_id)) # this is a bandaid for multiple site matches
 

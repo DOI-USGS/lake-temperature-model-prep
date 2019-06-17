@@ -4,10 +4,21 @@
 # Looks likely it is 21MICH as orgid.
 # try loose match, do some checking to see if lakes match based on this loose match
 
-munge_micorps_crosswalk <- function(out_ind, site_ind, wqp_nhd_ind) {
+munge_micorps_crosswalk <- function(out_ind, site_ind, wqp_nhd_ind, wqp_latlong_ind) {
 
   mi_storet_ids <- read_excel(sc_retrieve(site_ind), sheet = 'oxygen_temp')
-  wqp_nhdLookup <- readRDS(sc_retrieve(wqp_nhd_ind))
+  wqp_nhdLookup <- readRDS(sc_retrieve(wqp_nhd_ind)) %>%
+    distinct()
+  wqp_latlong <- readRDS(sc_retrieve(wqp_latlong_ind))
+
+  latlong <- as.data.frame(st_coordinates(wqp_latlong)) %>%
+    mutate(MonitoringLocationIdentifier = wqp_latlong$MonitoringLocationIdentifier) %>%
+    rename(LongitudeMeasure = X, LatitudeMeasure = Y) %>%
+    distinct()
+
+  wqp_nhdLookup <- left_join(wqp_nhdLookup, latlong) %>%
+    rename(id = site_id)
+
 
   source_ids <- as.character(unique(mi_storet_ids$STORETID))
 
@@ -19,14 +30,14 @@ munge_micorps_crosswalk <- function(out_ind, site_ind, wqp_nhd_ind) {
                             mi_lat = Latitude, mi_long = Longitude) %>%
     dplyr::distinct()
 
-  stop('I must have broken something by removing lat/lon from the wqp lookup...')
+  #stop('I must have broken something by removing lat/lon from the wqp lookup...')
   potential_matches <- left_join(potential_sites, mi_sites, by = c('reduced_site_id' = 'mi_id')) %>%
     mutate(lat_diff = abs(round(LatitudeMeasure, 4) - round(as.numeric(mi_lat), 4)),
            long_diff = abs(round(LongitudeMeasure, 4) - round(as.numeric(mi_long), 4)))
 
   # filter to near perfect lat/long match
   matches <- filter(potential_matches, lat_diff <= 0.05 & long_diff <= 0.05) %>%
-    select(reduced_site_id, id) %>%
+    dplyr::select(reduced_site_id, id) %>%
     distinct() %>%
     rename(micoorps_id = reduced_site_id) %>%
     filter(!is.na(id))

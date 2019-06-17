@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/MilleLacs2018.csv.ind
+type: file
+hash: ddf64735dbcf97934251c8a29e69cb45
+time: 2019-05-02 13:59:37 UTC
+depends: {}
+fixed: 99395dd841205fb186a19d80e91a7be4
+code:
+  functions: {}
+

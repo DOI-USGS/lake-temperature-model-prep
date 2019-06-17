@@ -1,0 +1,41 @@
+target_default: 8_viz
+
+packages:
+  - scipiper
+  - dplyr
+  - feather
+  - lakeattributes
+
+sources:
+  - 8_viz/src/merge_lake_data.R
+  - 8_viz/src/render_html.R
+
+targets:
+
+  8_viz:
+    depends:
+     - 8_viz/inout/lakes_summary.feather.ind
+
+  # -- get WQP, coop data and merge -- #
+  # -- removes (coarsely defined) duplicates -- #
+  # -- removes egregious outliers in Jan/Feb (>10 deg C) and July/Aug (surface, <10 deg C)
+  # -- returns all times -- ##
+
+  8_viz/inout/lakes_summary.feather.ind:
+    command: merge_lake_data(
+      out_ind = target_name,
+      temp_data_ind = '7b_temp_merge/out/merged_temp_data_daily.feather.ind',
+      lake_names_ind = '2_crosswalk_munge/out/lake_names_crosswalk.rds.ind',
+      dow_cross_ind = '1_crosswalk_fetch/out/nhd2dowlknum.RData.ind',
+      state_cross_ind = '4_params_munge/out/nhd2states.rds.ind')
+
+  8_viz/inout/lakes_summary.feather:
+    command: gd_get('8_viz/inout/lakes_summary.feather.ind')
+
+  8_viz/out/lakes_summary_fig.html.ind:
+    command: render_html(filename_md = 'lake_data_map.Rmd', out_ind = target_name)
+    depends:
+      - 8_viz/inout/lakes_summary.feather.ind
+
+  8_viz/out/lakes_summary_fig.html:
+    command: gd_get('8_viz/out/lakes_summary_fig.html.ind')
