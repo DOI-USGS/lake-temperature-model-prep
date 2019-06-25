@@ -18,7 +18,7 @@ parse_WI_Profile_Data_1995to2015 <- function(inind, outind) {
            timezone = 'CST/CDT') %>%
     #group_by(DateTime, WBIC, depth) %>%
     #summarize(temp = first(temp)) %>%
-    select(DateTime, time, timezone, depth, temp, WBIC) %>%
+    dplyr::select(DateTime, time, timezone, depth, temp, WBIC) %>%
     filter(!is.na(depth), !is.na(temp)) %>%
     arrange(WBIC, DateTime)
 

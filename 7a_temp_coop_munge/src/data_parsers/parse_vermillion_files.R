@@ -19,7 +19,7 @@ parse_Joes_Dock_2013 <- function(inind, outind) {
            DOW = '69037801',
            site = "Joe's Dock") %>%
     filter(!is.na(temp)) %>%
-    select(DateTime, time,  timezone, depth, temp, DOW, site)
+    dplyr::select(DateTime, time,  timezone, depth, temp, DOW, site)
 
   #downsampled <- clean %>%
   #  group_by(DateTime) %>%
@@ -40,7 +40,7 @@ parse_Joes_Dock_Logger_2012 <- function(inind, outind) {
            depth = 0,
            DOW = '69037801') %>%
     rename(DateTime = Date) %>%
-    select(-Temp) %>%
+    dplyr::select(-Temp) %>%
     mutate(DateTime = as.Date(DateTime),
            site = "Joe's Dock")
   saveRDS(object = clean, file = outfile)
@@ -65,7 +65,7 @@ parse_Lake_Vermilion_2016 <- function(inind, outind) {
            timezone = 'GMT-5',
            site = 'open water logger') %>%
     #filter(time == "14:00") %>%
-    select(DateTime, time, timezone, temp, depth, DOW, site)
+    dplyr::select(DateTime, time, timezone, temp, depth, DOW, site)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -87,7 +87,7 @@ parse_Logger_Temps_2009_Joes_Dock <- function(inind, outind) {
            site = "Joe's Dock") %>%
     #filter(time == "02:34:47 PM") %>%
     filter(!is.na(temp)) %>%
-    select(DateTime, time, timezone, temp, depth, DOW, site)
+    dplyr::select(DateTime, time, timezone, temp, depth, DOW, site)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -109,7 +109,7 @@ parse_Logger_Temps_2009_Open_Water <- function(inind, outind) {
            timezone = 'GMT-5',
            site = 'open water logger') %>%
     #filter(time == "03:52:33 PM") %>%
-    select(DateTime, time, timezone, temp, depth, DOW, site)
+    dplyr::select(DateTime, time, timezone, temp, depth, DOW, site)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -131,7 +131,7 @@ parse_Logger_Temps_2010_Open_Water <- function(inind, outind) {
            site = 'open water logger') %>%
     #samping interval isn't quite even, so afternoon measurement isn't at the same time
     filter(!is.na(temp)) %>%
-    select(DateTime, time, timezone, temp, depth, DOW, site)
+    dplyr::select(DateTime, time, timezone, temp, depth, DOW, site)
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 }
@@ -157,7 +157,7 @@ parse_Logger_Temps_2011_Open_Water <- function(inind, outind) {
            site = 'open water logger') %>%
     #group_by(DateTime) %>%
     #filter(n() > 3 & time == "15:21:27") %>%
-  select(DateTime, time, timezone, temp, depth, DOW, site)
+  dplyr::select(DateTime, time, timezone, temp, depth, DOW, site)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -179,7 +179,7 @@ parse_Open_Water_Logger_2013 <- function(inind, outind) {
            DOW = '69037801',
            site = 'open water logger') %>%
     #filter(time == "02:36:01 PM") %>%
-    select(DateTime, time, timezone, temp, depth, DOW, site) %>%
+    dplyr::select(DateTime, time, timezone, temp, depth, DOW, site) %>%
     filter(!is.na(temp))
 
   saveRDS(object = clean, file = outfile)
@@ -206,7 +206,7 @@ parse_Temp_Logger_Data_2015 <- function(inind, outind) {
            site = 'open water logger') %>%
     #group_by(DateTime) %>%
     #filter(n() > 3 & time == "03:08:30") %>%
-    select(DateTime, time, timezone, temp, depth, DOW, site)
+    dplyr::select(DateTime, time, timezone, temp, depth, DOW, site)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -230,7 +230,7 @@ parse_Vermilion_Logger_2014 <- function(inind, outind) {
     filter(!is.na(temp)) %>%
     #group_by(DateTime) %>% filter(n() > 3) %>%
     #filter(time == "01:42:21 PM") %>%
-    select(DateTime, time, timezone, temp, depth, DOW, site)
+    dplyr::select(DateTime, time, timezone, temp, depth, DOW, site)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -247,7 +247,7 @@ parse_Verm_annual_tempDO_longformat <- function(inind, outind) {
            site = toupper(station)) %>%
     #filter(station == "WQ1") %>%
     rename(depth = depth_m, DateTime = date) %>%
-    select(DateTime, temp, depth, DOW, site) %>%
+    dplyr::select(DateTime, temp, depth, DOW, site) %>%
     mutate(DateTime = as.Date(DateTime))
 
   saveRDS(object = clean, file = outfile)
@@ -264,7 +264,7 @@ parse_vermillion_repeated_tempDO_longformat <- function(inind, outind) {
     mutate(DOW = '69037801', site = toupper(site)) %>%
     #filter(site == "wq1") %>%
     rename(DateTime = datetext) %>%
-    select(DateTime, temp, depth, DOW, site) %>%
+    dplyr::select(DateTime, temp, depth, DOW, site) %>%
     mutate(DateTime = as.Date(DateTime))
 
   saveRDS(object = clean, file = outfile)
