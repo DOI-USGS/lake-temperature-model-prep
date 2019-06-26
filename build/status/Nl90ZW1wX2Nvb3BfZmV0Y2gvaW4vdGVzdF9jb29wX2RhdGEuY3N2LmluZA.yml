@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/test_coop_data.csv.ind
+type: file
+hash: ab6328099a36c9c696a155d2dff613d2
+time: 2019-06-25 16:33:47 UTC
+depends: {}
+fixed: 94b79a28d4f293202b90381bd3a878ac
+code:
+  functions: {}
+
