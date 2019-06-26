@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 3_params_fetch/in/86027900_daily_secchi.csv.ind
+type: file
+hash: 4409f49d50fb6d48a98054be94e706d6
+time: 2019-06-25 19:48:52 UTC
+depends: {}
+fixed: a76997b2ac058f3a018dd31f5a6751f5
+code:
+  functions: {}
+
