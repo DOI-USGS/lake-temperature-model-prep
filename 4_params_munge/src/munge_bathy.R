@@ -1,11 +1,7 @@
 
+munge_bathy <- function(out_ind, bathy_list_ind){
 
- # out_ind <- "4_params_munge/out/MN_bathy.rds.ind"
- # bathy_list <- bathy_files <- drive_ls(path = as_id(('1M3gcGSN_mxPPsz0CBHpS0C8tEhIDyseJ')))
-  # Need to write bathy_files as RDS?
-
-
-munge_bathy <- function(out_ind, bathy_list){
+  bathy_list <- readRDS(sc_retrieve('3_params_fetch/out/bathy_files.rds.ind'))
 
   bathy_dat <- NULL
 
