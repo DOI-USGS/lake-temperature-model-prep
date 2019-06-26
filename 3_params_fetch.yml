@@ -24,6 +24,13 @@ targets:
   3_params_fetch/out/nlcd_classes.rds:
     command: gd_get('3_params_fetch/out/nlcd_classes.rds.ind')
 
+  # Retrieve MN bathy file names
+  bathy_files_location:
+    command: as_id(I('1M3gcGSN_mxPPsz0CBHpS0C8tEhIDyseJ'))
+
+  bathy_files:
+    command: drive_ls(path = bathy_files_location)
+
   3_params_fetch/out/LAGOS_NE_depths.csv.ind:
     command: fetch_LAGOS_NE_depths(target_name)
   3_params_fetch/out/LAGOS_NE_depths.csv:

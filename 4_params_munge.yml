@@ -14,6 +14,7 @@ sources:
   - 4_params_munge/src/munge_mglp.R
   - 4_params_munge/src/munge_lagos.R
   - 4_params_munge/src/munge_for_lakeattributes.R
+  - 4_params_munge/src/munge_bathy.R
 
 targets:
   4_params_munge:
@@ -24,6 +25,7 @@ targets:
       - '4_params_munge/out/lakeattributes_canopyheight.rds.ind'
       - '4_params_munge/out/lakeattributes_location.rds.ind'
       - '4_params_munge/out/nhd2states.rds.ind'
+      - '4_params_munge/out/MN_bathy.rds.ind'
 
   4_params_munge/out/nlcd_2011_buffers.rds.ind:
     command: munge_nlcd_buffers(target_name,
@@ -68,6 +70,17 @@ targets:
 
   4_params_munge/out/lakeattributes_depth.rds:
     command: gd_get('4_params_munge/out/lakeattributes_depth.rds.ind')
+
+  # Combine MN bathy files and add DOW ID
+  4_params_munge/out/MN_bathy.rds.ind:
+    command: munge_bathy(
+      out_ind = target_name,
+      bathy_list = bathy_files)
+
+  4_params_munge/out/MN_bathy.rds:
+    command: gd_get('4_params_munge/out/MN_bathy.rds.ind')
+
+
 
   4_params_munge/out/lakeattributes_location.rds.ind:
     command: munge_location(

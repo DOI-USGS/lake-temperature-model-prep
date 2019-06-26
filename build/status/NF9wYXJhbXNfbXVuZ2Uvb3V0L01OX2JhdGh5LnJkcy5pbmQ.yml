@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 4_params_munge/out/MN_bathy.rds.ind
+type: file
+hash: 48124931346dad6514cbe1f2adda8a9a
+time: 2019-06-26 14:48:39 UTC
+depends:
+  bathy_files: b211943fd8fec47cecebef98c88ebdb5
+fixed: 17acfb5c24f66c43ae625ab0a6d76724
+code:
+  functions:
+    munge_bathy: dba6d5964a20ba3c4db28a72d06c0837
+
