@@ -43,4 +43,8 @@ targets:
   3_params_fetch/out/nlcd_classes_canopyheight.rds:
     command: gd_get('3_params_fetch/out/nlcd_classes.rds.ind')
 
+  3_params_fetch/in/86027900_daily_secchi.csv.ind:
+    command: gd_confirm_posted(target_name)
 
+  3_params_fetch/in/86027900_daily_secchi.csv:
+    command: gd_get('3_params_fetch/in/86027900_daily_secchi.csv.ind')
