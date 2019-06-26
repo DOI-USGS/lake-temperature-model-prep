@@ -75,7 +75,7 @@ targets:
   4_params_munge/out/MN_bathy.rds.ind:
     command: munge_bathy(
       out_ind = target_name,
-      bathy_list = bathy_files)
+      bathy_list_ind = '3_params_fetch/out/bathy_files.rds.ind')
 
   4_params_munge/out/MN_bathy.rds:
     command: gd_get('4_params_munge/out/MN_bathy.rds.ind')
