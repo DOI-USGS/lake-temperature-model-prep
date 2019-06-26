@@ -15,6 +15,7 @@ sources:
   - 4_params_munge/src/munge_lagos.R
   - 4_params_munge/src/munge_for_lakeattributes.R
   - 4_params_munge/src/munge_bathy.R
+  - 4_params_munge/src/munge_secchi_model_data.R
 
 targets:
   4_params_munge:
@@ -109,3 +110,13 @@ targets:
 
   4_params_munge/out/nhd2states.rds:
     command: gd_get('4_params_munge/out/nhd2states.rds.ind')
+
+  4_params_munge/out/daily_secchi.feather.ind:
+    command: munge_daily_secchi(
+      in_ind = '3_params_fetch/in/86027900_daily_secchi.csv.ind',
+      dow_crosswalk_ind = '1_crosswalk_fetch/out/nhd2dowlknum.RData.ind',
+      out_ind = target_name)
+
+  4_params_munge/out/daily_secchi.feather:
+    command: gd_get('4_params_munge/out/daily_secchi.feather.ind')
+
