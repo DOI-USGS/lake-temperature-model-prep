@@ -87,3 +87,5 @@ build/status/N2FfdGVtcF9jb29wX211bmdlL3RtcC9*
 build/status/N2FfdGVtcF93cXBfbXVuZ2UvdG1wL2FsbF93cXBfZGF0LnJkcy5pbmQ*
 
 
+# ignore bathy downloads
+3_params_fetch/in/hypsos_m/*

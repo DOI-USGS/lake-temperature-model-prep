@@ -284,7 +284,7 @@ parse_Sand_Bay_All_2016 <- parse_Sand_Bay_all_2015 <- parse_Sand_Bay_all_2014 <-
   raw_sheet <- readxl::read_excel(infile, sheet = sheet)
   names(raw_sheet)[1] <- "DateTime"
   clean_sheet <- raw_sheet %>%
-    select(contains("Sand Bay"), contains("Date")) %>%
+    dplyr::select(contains("Sand Bay"), contains("Date")) %>%
     tidyr::gather(key = depth, value = "temp", -DateTime) %>%
     #0 sensor is at the bottom, 10 at top
     mutate(depth = 10 - as.numeric(stringr::str_sub(depth, -1,-1))) %>%
@@ -294,7 +294,7 @@ parse_Sand_Bay_All_2016 <- parse_Sand_Bay_all_2015 <- parse_Sand_Bay_all_2014 <-
     mutate(DateTime = as.Date(DateTime),
            temp = fahrenheit_to_celsius(temp),
            DOW = "69069400") %>%
-    select(DateTime, time, timezone, depth, temp)
+    dplyr::select(DateTime, time, timezone, depth, temp)
 
   saveRDS(object = clean_sheet, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
