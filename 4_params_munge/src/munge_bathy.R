@@ -11,7 +11,9 @@ munge_bathy <- function(out_ind, bathy_list_ind){
     csv_id <- as_id(bathy_list$id[i])
 
     lake_dow <- unlist(strsplit(csv_name, ".csv"))
-    lake_dow <- unlist(strsplit(lake_dow, "_"))[2]
+    lake_dow <- unlist(strsplit(lake_dow, "_"))
+    lake_dow <- lake_dow[length(lake_dow)]
+
 
     # Create folder to save downloaded files
     dir.create("3_params_fetch/in/hypsos_m/", showWarnings = FALSE)
