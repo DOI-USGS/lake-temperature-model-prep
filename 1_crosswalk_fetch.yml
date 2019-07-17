@@ -9,6 +9,7 @@ packages:
 
 sources:
   - 1_crosswalk_fetch/src/fetch_crosswalk.R
+  - 1_crosswalk_fetch/src/fetch_NHD.R
   - 1_crosswalk_fetch/src/munge_crosswalk.R
 
 targets:
@@ -31,6 +32,15 @@ targets:
     command: fetch_winslow_shapefile(target_name)
   1_crosswalk_fetch/out/lakes_shapefile.shx.ind:
     command: fetch_winslow_shapefile(target_name)
+
+  nhd_HR_download_plan:
+    command: create_nhd_HR_download_plan(I(c("Wisconsin","Minnesota")))
+
+  1_crosswalk_fetch_nhd_tasks.yml:
+    command: create_nhd_HR_download_makefile(target_name, nhd_HR_download_plan)
+
+  1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind:
+    command: fetch_state_nhd_HR(I(c("Wisconsin","Minnesota")))
 
   1_crosswalk_fetch/out/lakes_shapefile.xml:
     command: gd_get('1_crosswalk_fetch/out/lakes_shapefile.xml.ind')
