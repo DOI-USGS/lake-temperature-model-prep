@@ -34,13 +34,14 @@ targets:
     command: fetch_winslow_shapefile(target_name)
 
   nhd_HR_download_plan:
-    command: create_nhd_HR_download_plan(I(c("Wisconsin","Minnesota")))
+    command: create_nhd_HR_download_plan(I(c("Wisconsin","Minnesota")),
+      min_size = I(300))
 
   1_crosswalk_fetch_nhd_tasks.yml:
-    command: create_nhd_HR_download_makefile(target_name, nhd_HR_download_plan)
+    command: create_nhd_HR_download_makefile(target_name, nhd_HR_download_plan, final_targets = I('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind'))
 
   1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind:
-    command: fetch_state_nhd_HR(I(c("Wisconsin","Minnesota")))
+    command: loop_tasks(nhd_HR_download_plan, '1_crosswalk_fetch_nhd_tasks.yml')
 
   1_crosswalk_fetch/out/lakes_shapefile.xml:
     command: gd_get('1_crosswalk_fetch/out/lakes_shapefile.xml.ind')
