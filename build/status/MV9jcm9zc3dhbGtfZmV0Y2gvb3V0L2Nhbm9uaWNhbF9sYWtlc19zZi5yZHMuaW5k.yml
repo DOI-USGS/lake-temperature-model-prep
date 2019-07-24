@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind
+type: file
+hash: f383b681688fd74bacc76ae51bbe1ade
+time: 2019-07-24 17:02:03 UTC
+depends:
+  nhd_HR_download_plan: 64416cb14f02e1318d5feb3a3bd9aeab
+  1_crosswalk_fetch_nhd_tasks.yml: cdc43860c1b9555b52be843430229eb7
+fixed: ~
+code:
+  functions: {}
+
