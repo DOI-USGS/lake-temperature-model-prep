@@ -17,31 +17,30 @@ targets:
       - 2_crosswalk_munge/out/feature_crosswalk.rds.ind
       - 2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind
       - 2_crosswalk_munge/out/wqp_nhdLookup.rds.ind
-      - 2_crosswalk_munge/out/lakes_sf.rds.ind
       - 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
-      - 2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind
+      - 2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/lake_names_crosswalk.rds.ind
 
   2_crosswalk_munge/out/feature_crosswalk.rds.ind:
     command: merge_id_crosswalks(
       merged_ind = target_name,
-      lakes_sf_ind = '2_crosswalk_munge/out/lakes_sf.rds.ind',
+      lakes_sf_ind = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
       wqp_nhd_ind = '2_crosswalk_munge/out/wqp_nhdLookup.rds.ind')
   2_crosswalk_munge/out/feature_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/feature_crosswalk.rds.ind')
 
-  2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind:
+  2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind:
     command: crosswalk_poly_over_poly(
       target_name,
       poly1_ind_file = '1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind',
-      poly2_ind_file = '2_crosswalk_munge/out/lakes_sf.rds.ind',
+      poly2_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
       poly1_ID_name = I("LAGOS_ID"))
   2_crosswalk_munge/out/lagosne_nhdLookup.rds:
     command: gd_get('2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind')
 
   2_crosswalk_munge/out/wqp_nhdLookup.rds.ind:
     command: crosswalk_points_in_poly(target_name,
-      poly_ind_file = '2_crosswalk_munge/out/lakes_sf.rds.ind',
+      poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
       points_ind_file = '1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind')
   2_crosswalk_munge/out/wqp_nhdLookup.rds:
     command: gd_get('2_crosswalk_munge/out/wqp_nhdLookup.rds.ind')
@@ -55,18 +54,10 @@ targets:
   2_crosswalk_munge/out/micorps_nhd_crosswalk.rds:
     command: gd_get('2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind')
 
-  2_crosswalk_munge/out/lakes_sf.rds.ind:
-    command: combine_sf_lakes(
-      out_ind=target_name,
-      "1_crosswalk_fetch/out/winslow_lakes_sf.rds.ind",
-      "1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind")
-  2_crosswalk_munge/out/lakes_sf.rds:
-    command: gd_get('2_crosswalk_munge/out/lakes_sf.rds.ind')
-
   2_crosswalk_munge/out/buffered_lakes_sf.rds.ind:
     command: buffer_sf_lakes(
       out_ind = target_name,
-      lake_ind = "2_crosswalk_munge/out/lakes_sf.rds.ind",
+      lake_ind = "1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind",
       buffer_width = I(100))
   2_crosswalk_munge/out/buffered_lakes_sf.rds:
     command: gd_get('2_crosswalk_munge/out/buffered_lakes_sf.rds.ind')

@@ -46,7 +46,8 @@ filter_sf_lakes <- function(waterbodies_sf, min_size, remove_IDs = NULL, keep_ID
   waterbodies_sf$area_m2 <- as.numeric(sf::st_area(waterbodies_sf))# in m2, stripping "units" class because I don't know how to filter against
   waterbodies_sf %>%
     filter(area_m2 > min_size) %>%
-    mutate(site_id = paste0('nhdhr_', Permanent_Identifier)) %>% dplyr::select(site_id) #geometry selected automatically
+    mutate(site_id = paste0('nhdhr_', Permanent_Identifier)) %>% dplyr::select(site_id) %>%  #geometry selected automatically
+    sf::st_transform(crs = 4326)
 
 }
 

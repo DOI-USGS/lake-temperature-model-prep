@@ -19,10 +19,9 @@ munge_crosswalk <- function(out_ind, shp_ind, ...) {
 #' then remove lakes that aren't part of the assessment and/or aren't
 #' part of the expansion footprint, as defined by state IDs in ...
 #'
-#' @param ... state IDs to include (e.g., "SD" for South Dakota)
+#' @param states state IDs to include (e.g., "SD" for South Dakota)
 #'
-MGLP_zip_to_sf <- function(out_ind, gdb_file, zip_ind, ...){
-  states <- c(...)
+MGLP_zip_to_sf <- function(out_ind, gdb_file, zip_ind, states){
   zip_file <- scipiper::sc_retrieve(zip_ind)
 
   shp.path <- tempdir()
@@ -41,10 +40,9 @@ MGLP_zip_to_sf <- function(out_ind, gdb_file, zip_ind, ...){
 }
 
 
-LAGOS_zip_to_sf <- function(out_ind, layer, zip_ind, ...){
+LAGOS_zip_to_sf <- function(out_ind, layer, zip_ind, states){
 
 
-  states <- c(...)
   zip_file <- scipiper::sc_retrieve(zip_ind)
 
   shp.path <- tempdir()
