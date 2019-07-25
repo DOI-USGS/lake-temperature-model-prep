@@ -34,7 +34,7 @@ targets:
     command: fetch_winslow_shapefile(target_name)
 
   nhd_HR_download_plan:
-    command: create_nhd_HR_download_plan(I(c("Wisconsin","Minnesota")),
+    command: create_nhd_HR_download_plan(I(c("North_Dakota","South_Dakota","Iowa","Michigan","Indiana","Illinois","Wisconsin", "Minnesota")),
       min_size = I(40000))
 
   1_crosswalk_fetch_nhd_tasks.yml:

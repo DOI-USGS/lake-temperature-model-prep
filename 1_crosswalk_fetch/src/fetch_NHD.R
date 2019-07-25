@@ -2,7 +2,7 @@
 
 
 create_nhd_HR_download_plan <- function(states, min_size, remove_IDs = NULL, keep_IDs = NULL){
-  base_url <- 'ftp://rockyftp.cr.usgs.gov/vdelivery/Datasets/Staged/Hydrography/NHD/State/HighResolution/Shape/NHD_H_%s_State_Shape.zip'
+  base_url <- 'ftp://rockyftp.cr.usgs.gov/vdelivery/Datasets/Staged/Hydrography/NHD/State/HighResolution/GDB/NHD_H_%s_State_GDB.zip'
 
   fetch_as_sf_step <- create_task_step(
     step_name = 'fetch_NHD_as_sf',
@@ -32,7 +32,7 @@ create_nhd_HR_download_plan <- function(states, min_size, remove_IDs = NULL, kee
 
 create_nhd_HR_download_makefile <- function(makefile, task_plan, final_targets){
   include <- "1_crosswalk_fetch.yml"
-  packages <- c('dplyr','sf')
+  packages <- c('dplyr','sf', 'lwgeom')
   sources <- '1_crosswalk_fetch/src/fetch_NHD.R'
 
   create_task_makefile(task_plan, makefile, include = include, packages = packages, sources = sources, finalize_funs = 'combine_nhd_sfs', final_targets = final_targets)
@@ -42,11 +42,11 @@ create_nhd_HR_download_makefile <- function(makefile, task_plan, final_targets){
 #' 4 ha is 40000 m^2
 filter_sf_lakes <- function(waterbodies_sf, min_size, remove_IDs = NULL, keep_IDs = NULL){
 
+  waterbodies_sf <- sf::st_transform(waterbodies_sf, crs = "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs")
+  waterbodies_sf$area_m2 <- as.numeric(sf::st_area(waterbodies_sf))# in m2, stripping "units" class because I don't know how to filter against
   waterbodies_sf %>%
-    sf::st_transform(crs = "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs") %>%
-    mutate(area_m2 = as.numeric(st_area(geometry))) %>% # in m2, stripping "units" class because I don't know how to filter against
     filter(area_m2 > min_size) %>%
-    mutate(site_id = paste0('nhdhr_', Permanent_)) %>% dplyr::select(site_id) #geometry selected automatically
+    mutate(site_id = paste0('nhdhr_', Permanent_Identifier)) %>% dplyr::select(site_id) #geometry selected automatically
 
 }
 
@@ -63,7 +63,8 @@ fetch_NHD_as_sf <- function(url){
 
   download.file(url, destfile = dl_dest, quiet = TRUE)
   unzip(dl_dest, exdir = unzip_dir)
-  sf::st_read(file.path(unzip_dir,'Shape', 'NHDWaterbody.shp')) %>%
+
+  sf::read_sf(file.path(unzip_dir,paste0(tools::file_path_sans_ext(basename(url)), '.gdb')), layer = 'NHDWaterbody') %>%
     filter(FType %in% c(390, 436, 361)) #select only lakes/ponds/reservoirs. This drops things like swamp/marsh
 }
 
