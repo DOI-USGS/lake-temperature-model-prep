@@ -29,7 +29,7 @@ MGLP_zip_to_sf <- function(out_ind, gdb_file, zip_ind, states){
 
   shp <- sf::st_read(file.path(shp.path, gdb_file), layer = 'MGLP_LAKES') %>%
     filter(ASSESS == 'Y', STATE %in% states) %>%
-    mutate(site_id = paste0('mglp_', LAKE_ID)) %>% dplyr::select(site_id, geometry = SHAPE) %>% # why do I need to rename SHAPE to geometry??
+    mutate(site_id = paste0('MGLP_', LAKE_ID)) %>% dplyr::select(site_id, geometry = SHAPE) %>% # why do I need to rename SHAPE to geometry??
     st_transform(x, crs = 4326)
 
 
