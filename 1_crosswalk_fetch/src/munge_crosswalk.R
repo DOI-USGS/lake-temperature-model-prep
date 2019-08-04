@@ -40,6 +40,7 @@ MGLP_zip_to_sf <- function(out_ind, gdb_file, zip_ind, states){
 }
 
 
+
 LAGOS_zip_to_sf <- function(out_ind, layer, zip_ind, states){
 
 
@@ -60,43 +61,19 @@ LAGOS_zip_to_sf <- function(out_ind, layer, zip_ind, states){
   gd_put(out_ind, data_file)
 }
 
-#' we take the MGLP geodatabase and read it into sf,
-#' then remove lakes that aren't part of the assessment and/or aren't
-#' part of the expansion footprint, as defined by state IDs in ...
-#'
 #' @param out_ind indicator file to write for output
-#' @param mglp_gdb_file geodatabase file for mglp footprint
-#' @param mglp_zip_ind indicator for zipped location of mglp footprint
-#' @param states states filter for mglp footprint
-#' @param ... other indicator files for those files (not explicitly inspected)
-#'   making up the shapefile
-munge_names <- function(out_ind, mglp_gdb_file, mglp_zip_ind, states, ...){
+#' @param lake_ind canonical lake feature collection indicator file
+munge_names <- function(out_ind, lake_ind){
 
-  # get mglp lake info
-  zip_file <- scipiper::sc_retrieve(mglp_zip_ind)
+  stop("this will break because we aren't carrying the lake names w/ the canonical sf")
+  # get lake info
+  lakes_sf <- readRDS(scipiper::sc_retrieve(lake_ind))
 
-  shp.path <- tempdir()
-  unzip(zip_file, exdir = shp.path)
-
-  shp <- sf::st_read(file.path(shp.path, mglp_gdb_file), layer = 'MGLP_LAKES') %>%
-    filter(ASSESS == 'Y', STATE %in% states) %>%
-    mutate(site_id = paste0('mglp_', LAKE_ID))
-
-  mglp_lake_info <- data.frame(site_id = shp$site_id,
-                                  area_m2 = shp$SHAPE_Area,
-                                  lake_name = shp$LAKE_NAME)
-
-  # get winslow lake info
-  shp_w <- sf::st_read(scipiper::sc_retrieve(winslow_shp_ind))
-
-  winslow_lake_info <- data.frame(site_id = shp_w$site_id,
-                               area_m2 = NA,
-                               lake_name = shp_w$GNIS_Nm)
-
-  lake_info <- bind_rows(mglp_lake_info, winslow_lake_info)
+  lakes_sf_info <- data.frame(lake_name = lakes_sf$GNIS_Nm,
+                              site_id = lakes_sf$site_id, stringsAsFactors = FALSE)
 
   # write, post, and promise the file is posted
   data_file <- scipiper::as_data_file(out_ind)
-  saveRDS(lake_info, data_file)
+  saveRDS(lakes_sf_info, data_file)
   gd_put(out_ind, data_file)
 }

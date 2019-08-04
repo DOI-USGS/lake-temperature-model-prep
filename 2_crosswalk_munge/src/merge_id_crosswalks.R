@@ -1,8 +1,7 @@
 merge_id_crosswalks <- function(
   merged_ind,
-  lakes_sf_ind = '1_crosswalk_fetch/out/lakes_sf.rds.ind',
-  wqp_nhd_ind = '2_crosswalk_munge/out/wqp_nhdLookup.rds.ind'
-) {
+  lakes_sf_ind,
+  wqp_nhd_ind) {
 
   lakes_sf <- readRDS(sc_retrieve(lakes_sf_ind))
   wqp_nhd <- readRDS(sc_retrieve(wqp_nhd_ind))

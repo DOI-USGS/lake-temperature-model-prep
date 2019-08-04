@@ -82,10 +82,10 @@ buffer_sf_lakes <- function(out_ind, lake_ind, buffer_width){
 
   sf_donut_lakes <- sf_lakes
   for (j in 1:nrow(sf_donut_lakes)){
-    sf_donut_lakes[j, ] <- st_difference(sf_buffered_lakes[j, ], sf_lakes[j, ]) %>% dplyr::select(site_id, geometry)
+    sf_donut_lakes[j, ] <- st_difference(sf_buffered_lakes[j, ], sf_lakes[j, ]) %>% dplyr::select(site_id, Shape)
   }
   sf_donut_lakes <- sf_donut_lakes %>%
-    dplyr::select(site_id, geometry) %>%
+    dplyr::select(site_id, Shape) %>%
     st_transform(crs = 4326)
 
   data_file <- scipiper::as_data_file(out_ind)

@@ -31,10 +31,35 @@ fetch_winslow_shapefile <- function(ind_file) {
   gd_put(ind_file, data_file)
 }
 
+fetch_mndow_lakes <- function(ind_file, layer, dummy){
+  data_file <- scipiper::as_data_file(ind_file)
+
+  zip_file <- tempfile(pattern = 'lakes.zip')
+
+  download.file("ftp://ftp.gisdata.mn.gov/pub/gdrs/data/pub/us_mn_state_dnr/water_dnr_hydrography/shp_water_dnr_hydrography.zip",
+                destfile = zip_file)
+
+  shp.path <- tempdir()
+  unzip(zip_file, exdir = shp.path)
+
+  shp <- sf::st_read(shp.path, layer = layer) %>%
+    filter(!is.na(dowlknum), dowlknum != '00000000') %>%
+    mutate(site_id = paste0('mndow_', dowlknum)) %>% dplyr::select(site_id, geometry) %>%
+    st_transform(x, crs = 4326)
+
+
+  # write, post, and promise the file is posted
+  data_file <- scipiper::as_data_file(ind_file)
+  saveRDS(shp, data_file)
+  gd_put(ind_file, data_file)
+}
+
+
 fetch_LAGOS_NE_All_Lakes_4ha <- function(ind_file){
   data_file <- scipiper::as_data_file(ind_file)
   download.file("https://portal.edirepository.org/nis/dataviewer?packageid=edi.98.3&entityid=846a50d9be7ab8262a9fd818edfcd2d0", destfile = data_file)
   gd_put(ind_file, data_file)
+
 }
 
 fetch_crosswalk_wqp_nhd <- function(ind_file) {
@@ -68,7 +93,7 @@ fetch_micorps_sites <- function(ind_file) {
 #' use `dummy` to trigger rebuilds. I am using the date, as a light reminder of when it was changed
 fetch_wqp_lake_sites <- function(ind_file, dummy){
   lake_sites_sf <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment") %>%
-    select(MonitoringLocationIdentifier, LatitudeMeasure, LongitudeMeasure) %>%
+    dplyr::select(MonitoringLocationIdentifier, LatitudeMeasure, LongitudeMeasure) %>%
     st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326)
 
   data_file <- scipiper::as_data_file(ind_file)

@@ -16,6 +16,8 @@ targets:
   1_crosswalk_fetch:
     depends:
       - 1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind
+      - 1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind
+      - 1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind
       - 1_crosswalk_fetch/out/micorps_sites.xlsx.ind
       - 1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind
 
@@ -30,6 +32,14 @@ targets:
     command: loop_tasks(nhd_HR_download_plan, '1_crosswalk_fetch_nhd_tasks.yml')
   1_crosswalk_fetch/out/canonical_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
+
+  1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind:
+    command: fetch_mndow_lakes(
+      ind_file = target_name,
+      dummy = I("2019-08-03"),
+      layer = I("dnr_hydro_features_all"))
+  1_crosswalk_fetch/out/mndow_lakes_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind')
 
   1_crosswalk_fetch/in/MGLP_lakes.zip:
     command: gd_get('1_crosswalk_fetch/in/MGLP_lakes.zip.ind')
@@ -57,8 +67,10 @@ targets:
   1_crosswalk_fetch/out/MGLP_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind')
 
+  # see https://data-wi-dnr.opendata.arcgis.com/datasets/0128cce2c06342218725f1069031a4fa for WI hydrolayer
+
   1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind:
-    command: fetch_wqp_lake_sites(target_name, dummy = I('2019-07-25'))
+    command: fetch_wqp_lake_sites(target_name, dummy = I('2019-08-03'))
   1_crosswalk_fetch/out/wqp_lake_sites_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind')
 
