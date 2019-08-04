@@ -18,6 +18,7 @@ targets:
       - 2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/names_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
       - 2_crosswalk_munge/out/feature_crosswalk.rds.ind
@@ -49,6 +50,15 @@ targets:
       poly1_ID_name = I("LAGOS_ID"))
   2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind')
+
+  2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind:
+    command: crosswalk_poly_over_poly(
+      target_name,
+      poly1_ind_file = '1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind',
+      poly2_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      poly1_ID_name = I("MNDOW_ID"))
+  2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
 
   2_crosswalk_munge/out/wqp_nhdhr_xwalk.rds.ind:
     command: crosswalk_points_in_poly(target_name,
