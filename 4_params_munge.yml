@@ -65,6 +65,7 @@ targets:
   4_params_munge/out/lakeattributes_depth.rds.ind:
     command: munge_depth(
       target_name,
+      I("THIS IS GOING TO BREAK W/ NEW LAGOS FILE FORMAT"),
       lagos_depth_ind = '3_params_fetch/out/LAGOS_NE_depths.csv.ind',
       lagos_crosswalk = '2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind',
       mglp_depth_ind = '4_params_munge/out/mglp_depths.rds.ind')
@@ -116,7 +117,6 @@ targets:
       in_ind = '3_params_fetch/in/86027900_daily_secchi.csv.ind',
       dow_crosswalk_ind = '1_crosswalk_fetch/out/nhd2dowlknum.RData.ind',
       out_ind = target_name)
-
   4_params_munge/out/daily_secchi.feather:
     command: gd_get('4_params_munge/out/daily_secchi.feather.ind')
 
