@@ -30,7 +30,6 @@ targets:
 
   3_params_fetch/out/bathy_files.rds.ind:
     command: save_bathy(out_ind=target_name, bathy_gd_location = I('1M3gcGSN_mxPPsz0CBHpS0C8tEhIDyseJ'))
-
   3_params_fetch/out/bathy_files.rds:
     command: gd_get('3_params_fetch/out/bathy_files.rds.ind')
 
@@ -51,7 +50,6 @@ targets:
 
   3_params_fetch/out/nlcd_classes_canopyheight.rds.ind:
     command: fetch_nlcd_classes_canopyheight(target_name)
-
   3_params_fetch/out/nlcd_classes_canopyheight.rds:
     command: gd_get('3_params_fetch/out/nlcd_classes.rds.ind')
 

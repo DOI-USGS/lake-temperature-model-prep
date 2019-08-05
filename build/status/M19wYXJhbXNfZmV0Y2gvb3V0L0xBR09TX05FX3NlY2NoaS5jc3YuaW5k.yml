@@ -2,7 +2,7 @@ version: 0.3.0
 name: 3_params_fetch/out/LAGOS_NE_secchi.csv.ind
 type: file
 hash: 25594224bde1aa3c0d63696ccb4a696d
-time: 2019-03-01 02:04:26 UTC
+time: 2019-08-05 02:00:52 UTC
 depends: {}
 fixed: 4240b2fb0eb4ea50abbd94708e59ea84
 code:

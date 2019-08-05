@@ -38,15 +38,25 @@ targets:
 
   4_params_munge/out/mglp_depths.rds.ind:
     command: mglp_depths_from_TDOx(target_name,
-      TDOx_ind = '3_params_fetch/in/Data_MGLP_TDOx_Models.csv.ind')
+      TDOx_ind = '3_params_fetch/in/Data_MGLP_TDOx_Models.csv.ind',
+      mglp_xwalk_ind = '2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind')
   4_params_munge/out/mglp_depths.rds:
     command: gd_get('4_params_munge/out/mglp_depths.rds.ind')
 
   4_params_munge/out/lagos_secchi.rds.ind:
     command: munge_lagos_secchi(target_name,
-      lagos_secchi_ind = '3_params_fetch/out/LAGOS_NE_secchi.csv.ind')
+      lagos_secchi_ind = '3_params_fetch/out/LAGOS_NE_secchi.csv.ind',
+      lagos_xwalk_ind = '2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind')
   4_params_munge/out/lagos_secchi.rds:
     command: gd_get('4_params_munge/out/lagos_secchi.rds.ind')
+
+
+  4_params_munge/out/lagos_depths.rds.ind:
+    command: munge_lagos_depths(target_name,
+      lagos_depths_ind = '3_params_fetch/out/LAGOS_NE_depths.csv.ind',
+      lagos_xwalk_ind = '2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind')
+  4_params_munge/out/lagos_depths.rds:
+    command: gd_get('4_params_munge/out/lagos_depths.rds.ind')
 
   4_params_munge/out/lakeattributes_secchi.rds.ind:
     command: munge_secchi(target_name,
@@ -65,6 +75,7 @@ targets:
   4_params_munge/out/lakeattributes_depth.rds.ind:
     command: munge_depth(
       target_name,
+      I("THIS IS GOING TO BREAK W/ NEW LAGOS FILE FORMAT"),
       lagos_depth_ind = '3_params_fetch/out/LAGOS_NE_depths.csv.ind',
       lagos_crosswalk = '2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind',
       mglp_depth_ind = '4_params_munge/out/mglp_depths.rds.ind')
@@ -116,7 +127,6 @@ targets:
       in_ind = '3_params_fetch/in/86027900_daily_secchi.csv.ind',
       dow_crosswalk_ind = '1_crosswalk_fetch/out/nhd2dowlknum.RData.ind',
       out_ind = target_name)
-
   4_params_munge/out/daily_secchi.feather:
     command: gd_get('4_params_munge/out/daily_secchi.feather.ind')
 

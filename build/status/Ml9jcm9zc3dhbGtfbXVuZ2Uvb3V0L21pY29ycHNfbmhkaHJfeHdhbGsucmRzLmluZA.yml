@@ -1,0 +1,14 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind
+type: file
+hash: 0dcab56cbdb46c6b421c466268760e65
+time: 2019-08-03 18:50:50 UTC
+depends:
+  1_crosswalk_fetch/out/micorps_sites.xlsx.ind: e644243ed949ed12504a3bfe6a1fccff
+  2_crosswalk_munge/out/wqp_nhdhr_xwalk.rds.ind: 2dffe58e659270982a86212e029052c2
+  1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind: 2d9ff83f7a995dcfbae507006bf46efd
+fixed: eaf5a24339076f799c83c2e1e992e0c7
+code:
+  functions:
+    munge_micorps_crosswalk: 1396515f6bef0974c5ebc3076cb0c82d
+
