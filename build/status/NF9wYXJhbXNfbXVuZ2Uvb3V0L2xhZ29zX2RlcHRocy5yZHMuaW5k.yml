@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 4_params_munge/out/lagos_depths.rds.ind
+type: file
+hash: a849468330d0787c619881ace84695be
+time: 2019-08-05 14:02:10 UTC
+depends:
+  3_params_fetch/out/LAGOS_NE_depths.csv.ind: 01edada66db3fa9183ff8ee3dae08f78
+  2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind: 424e2e4b419ec96eae0ba715788d3800
+fixed: 38c9ed43d7c36bb500fea926ef8e6149
+code:
+  functions:
+    munge_lagos_depths: 4f5097d59c64e1ee2b7bc7bc8001a596
+
