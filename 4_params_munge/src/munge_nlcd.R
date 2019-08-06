@@ -20,12 +20,14 @@ munge_nlcd_buffers <- function(out_ind, lake_buffer_ind, nlcd_zip_ind, nlcd_clas
   # https://github.com/USGS-R/necsc-lake-modeling/blob/d37377ea422b9be324e8bd203fc6eecc36966401/scripts/lake_sheltering_nlcd.R#L3
 
   shelter_lakes <- st_transform(lake_buffers, crs = st_crs(proj4string(NLCD)))
+
   ids <- shelter_lakes$site_id
   # loop through lakes, crop and mask, remove NAs (from mask), calc class percentages, bind:
-
+  pb <- txtProgressBar(min = 0, max = length(ids), initial=0)
   data.out <- matrix(data = NA, nrow = length(ids), ncol = nrow(nlcd_classes))
+
   for (i in 1:length(ids)){
-    lake <- shelter_lakes[i, ] %>% as('Spatial')
+    lake <- shelter_lakes[i, ] %>% sf::st_zm() %>% as('Spatial')
 
     buffer.data <- raster::crop(NLCD, lake) %>%
       mask(lake) %>%
@@ -39,9 +41,7 @@ munge_nlcd_buffers <- function(out_ind, lake_buffer_ind, nlcd_zip_ind, nlcd_clas
       dplyr::select(class, perc) %>%
       tidyr::spread(key='class','perc') %>% as.numeric
 
-    if (i %% 100 == 0)
-      cat(i,' of ', length(ids))
-    cat('.')
+    setTxtProgressBar(pb, i)
   }
   shelter_out <- data.frame(data.out) %>% setNames(paste0('nlcd_class.',nlcd_classes$class)) %>%
     cbind(data.frame(id=ids))
@@ -54,6 +54,7 @@ munge_nlcd_buffers <- function(out_ind, lake_buffer_ind, nlcd_zip_ind, nlcd_clas
 
 # Modified from https://stackoverflow.com/questions/42740206/r-possible-truncation-of-4gb-file
 # to use 7zip
+# needed `brew install p7zip` for mac
 decompress_file <- function(directory, file, .file_cache = FALSE) {
 
   if (.file_cache == TRUE) {
