@@ -58,31 +58,6 @@ targets:
   4_params_munge/out/lagos_depths.rds:
     command: gd_get('4_params_munge/out/lagos_depths.rds.ind')
 
-  4_params_munge/out/lakeattributes_secchi.rds.ind:
-    command: munge_secchi(target_name,
-      lagos_secchi_ind = '4_params_munge/out/lagos_secchi.rds.ind',
-      lagos_crosswalk = '2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind')
-
-  4_params_munge/out/lakeattributes_secchi.rds:
-    command: gd_get('4_params_munge/out/lakeattributes_secchi.rds.ind')
-
-  4_params_munge/out/lakeattributes_area.rds.ind:
-    command: munge_area(target_name, '2_crosswalk_munge/out/lake_names_crosswalk.rds.ind')
-
-  4_params_munge/out/lakeattributes_area.rds:
-    command: gd_get('4_params_munge/out/lakeattributes_area.rds.ind')
-
-  4_params_munge/out/lakeattributes_depth.rds.ind:
-    command: munge_depth(
-      target_name,
-      I("THIS IS GOING TO BREAK W/ NEW LAGOS FILE FORMAT"),
-      lagos_depth_ind = '3_params_fetch/out/LAGOS_NE_depths.csv.ind',
-      lagos_crosswalk = '2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind',
-      mglp_depth_ind = '4_params_munge/out/mglp_depths.rds.ind')
-
-  4_params_munge/out/lakeattributes_depth.rds:
-    command: gd_get('4_params_munge/out/lakeattributes_depth.rds.ind')
-
   # Combine MN bathy files and add DOW ID
   4_params_munge/out/MN_bathy.rds.ind:
     command: munge_bathy(
