@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind
+type: file
+hash: 36b9c8b215d70a4b5409fd088f13ca4e
+time: 2019-08-15 15:08:36 UTC
+depends:
+  1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind: d80682671f9f73df8fc16a2ce83a4c3a
+  1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind: c112bdcefd0de4a7074546c79bc255bc
+fixed: 2363a948af15ee20a243154589eb1cf1
+code:
+  functions:
+    crosswalk_points_in_poly: 2302dd689a4c996439d6e202ecbf7fb4
+

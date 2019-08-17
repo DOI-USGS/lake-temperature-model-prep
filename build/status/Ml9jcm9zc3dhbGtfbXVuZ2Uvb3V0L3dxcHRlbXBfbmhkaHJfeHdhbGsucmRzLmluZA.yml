@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind
+type: file
+hash: 98c32343c6d558aa0f72f1ffd00090de
+time: 2019-08-15 15:07:10 UTC
+depends:
+  1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind: d80682671f9f73df8fc16a2ce83a4c3a
+  1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind: 06cbcf916ba303073bd09925912bc6a7
+fixed: eebeed3212cd3248f3d51eb73b35194f
+code:
+  functions:
+    crosswalk_points_in_poly: 2302dd689a4c996439d6e202ecbf7fb4
+
