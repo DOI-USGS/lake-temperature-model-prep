@@ -14,12 +14,12 @@ sources:
 targets:
   2_crosswalk_munge:
     depends:
-      - 2_crosswalk_munge/out/wqp_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind
-      - 2_crosswalk_munge/out/names_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
 
   2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind:
@@ -50,12 +50,21 @@ targets:
   2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
 
-  2_crosswalk_munge/out/wqp_nhdhr_xwalk.rds.ind:
+  2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind:
     command: crosswalk_points_in_poly(target_name,
       poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
-      points_ind_file = '1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind')
-  2_crosswalk_munge/out/wqp_nhdhr_xwalk.rds:
-    command: gd_get('2_crosswalk_munge/out/wqp_nhdhr_xwalk.rds.ind')
+      points_ind_file = '1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind',
+      points_ID_name = I("MonitoringLocationIdentifier"))
+  2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind')
+
+  2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind:
+    command: crosswalk_points_in_poly(target_name,
+      poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      points_ind_file = '1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind',
+      points_ID_name = I("MonitoringLocationIdentifier"))
+  2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind')
 
   2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind:
     command: munge_micorps_crosswalk(
