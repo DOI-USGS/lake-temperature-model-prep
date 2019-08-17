@@ -1,13 +1,13 @@
 version: 0.3.0
 name: 6_temp_wqp_fetch/inout/wqp_needs.feather.ind
 type: file
-hash: fe8ce304e4d756fc415a1ac394d56854
-time: 2019-05-01 14:43:57 UTC
+hash: a7d3b2ea2cd58c689ed0819d89c3bee3
+time: 2019-08-14 16:42:58 UTC
 depends:
-  6_temp_wqp_fetch/inout/wqp_wants.feather.ind: 676e563370e1779e6d7e60a60ae6f814
-  6_temp_wqp_fetch/inout/wqp_haves.feather.ind: 15c046dd43e8d198a7535d9ad3cebc7b
-fixed: b689a4ee2ee7f5b4134f7b6f0fda2b30
+  wqp_want_variables: e38d29cc47df8a42761b26e2a1dd5930
+  2_crosswalk_munge/out/wqp_nhdhr_xwalk.rds.ind: 2dffe58e659270982a86212e029052c2
+fixed: 322f97b373edf015a57ca220f103f6c7
 code:
   functions:
-    wqp_calc_needs: 62d8b109b13fda953fbc218f271a3814
+    wqp_calc_needs: 1b5a413b4d7bd914c241c8ae6391fa38
 

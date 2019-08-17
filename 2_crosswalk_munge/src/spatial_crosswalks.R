@@ -1,27 +1,22 @@
 
-crosswalk_points_in_poly <- function(ind_file, poly_ind_file, points_ind_file){
+crosswalk_points_in_poly <- function(ind_file, poly_ind_file, points_ind_file, points_ID_name){
   poly_data <- gd_get(ind_file = poly_ind_file) %>% readRDS
-  points_data <- gd_get(ind_file = points_ind_file) %>% readRDS
+
+  points_data <- gd_get(ind_file = points_ind_file) %>% readRDS %>%
+    rename(!!points_ID_name := "site_id")
 
   stopifnot('site_id' %in% names(poly_data))
-  stopifnot('MonitoringLocationIdentifier' %in% names(points_data))
+
 
   crosswalked_points <- st_join(points_data, poly_data, join = st_intersects) %>%
     filter(!is.na(site_id))
 
-  crosswalked_ids <- data.frame(
-    MonitoringLocationIdentifier = crosswalked_points$MonitoringLocationIdentifier,
-    site_id = crosswalked_points$site_id)
+  crosswalked_ids <- st_drop_geometry(crosswalked_points) %>%
+    dplyr::select(site_id, !!points_ID_name, everything())
 
   data_file <- scipiper::as_data_file(ind_file)
   saveRDS(crosswalked_ids, data_file)
   gd_put(ind_file, data_file)
-}
-
-crosswalk_lagos_ids <- function(ind_file, poly_ind_file, ID_name){
-  poly_data <- gd_get(ind_file = poly_ind_file) %>% readRDS
-  browser()
-  # need to get both sets of IDs from the shapefile...
 }
 
 crosswalk_poly_over_poly <- function(ind_file, poly1_ind_file, poly2_ind_file, poly1_ID_name){
