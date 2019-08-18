@@ -1,5 +1,7 @@
 target_default: 6_temp_wqp_fetch
 
+include: 2_crosswalk_munge.yml
+
 packages:
   - dataRetrieval
   - dplyr
@@ -8,7 +10,6 @@ packages:
   - yaml
 
 sources:
-  - 6_temp_wqp_fetch/src/choose_wqp_sites.R
   - 6_temp_wqp_fetch/src/wants_haves_needs.R
   - 6_temp_wqp_fetch/src/wqp_inventory.R
   - 6_temp_wqp_fetch/src/wqp_pull.R
@@ -18,69 +19,7 @@ targets:
   6_temp_wqp_fetch:
     depends:
       - 6_temp_wqp_fetch/log/6_temp_wqp_fetch_tasks.ind
-      - 6_temp_wqp_fetch/inout/wqp_haves.feather.ind
 
-  # -- compute wants, haves, and needs --
-
-  # Wants - the complete dataset we would like to obtain (all elements in sites x parameters, ignoring time)
-  # Haves - the data elements we already have
-  # Needs - the data elements we want and don't yet have, therefore need to acquire
-
-  wqp_want_lakes:
-    command: choose_wqp_lakes(feature_crosswalk_ind='2_crosswalk_munge/out/feature_crosswalk.rds.ind')
-
-  wqp_want_sites:
-    command: nhd_add_wqp_sites(wqp_want_lakes, '2_crosswalk_munge/out/feature_crosswalk.rds.ind')
-
-  wqp_pull_params:
-    command: yaml.load_file('6_temp_wqp_fetch/cfg/wqp_pull_params.yml')
-
-  wqp_want_variables:
-    command: wqp_pull_params[[I('characteristicName')]]
-
-  # compute wants
-  6_temp_wqp_fetch/inout/wqp_wants.feather.ind:
-    command: wqp_calc_wants(target_name, wqp_want_sites, wqp_want_variables)
-  6_temp_wqp_fetch/inout/wqp_wants.feather:
-    command: require_local('6_temp_wqp_fetch/inout/wqp_wants.feather.ind')
-
-  # compute haves. a complete [re]pulling workflow should include 2-3 rebuilds of wqp_haves. the first time
-  # we'll get a list of all data currently known to be pulled. the second time might happen
-  # if stop after building the partitions. in this case the rebuild will produce the same list in wqp_haves,
-  # so nothing downstream will be forced to rebuild. the last time should happen by scmake(force=TRUE)
-  # after the data [re]pull is complete - this time nothing will naturally target the rebuild, but
-  # there should be new files in the haves_dir that this final build will recognize to create
-  # a complete mapping of sites to data files (wqp_haves has a 1:1 mapping, which is better
-  # for later use than the 1:many mapping in partitions_archive).
-  6_temp_wqp_fetch/inout/wqp_haves.feather.ind:
-    command: wqp_calc_haves(
-      haves_ind=target_name,
-      haves_dir=I('6_temp_wqp_fetch/out'),
-      archive_ind='6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind')
-  6_temp_wqp_fetch/inout/wqp_haves.feather:
-    command: gd_get('6_temp_wqp_fetch/inout/wqp_haves.feather.ind')
-
-  # compute needs
-  6_temp_wqp_fetch/inout/wqp_needs.feather.ind:
-    command: wqp_calc_needs(
-      needs_ind=target_name,
-      wants_ind='6_temp_wqp_fetch/inout/wqp_wants.feather.ind',
-      haves_ind='6_temp_wqp_fetch/inout/wqp_haves.feather.ind')
-  6_temp_wqp_fetch/inout/wqp_needs.feather:
-    command: require_local('6_temp_wqp_fetch/inout/wqp_needs.feather.ind')
-
-
-  # -- get inventory of observations available to download --
-
-  # get inventory of samples available on WQP
-  6_temp_wqp_fetch/inout/wqp_inventory.feather.ind:
-    command: inventory_wqp(
-      target_name,
-      needs_ind='6_temp_wqp_fetch/inout/wqp_needs.feather.ind',
-      wqp_pull_params,
-      wqp_partition_cfg=I('6_temp_wqp_fetch/cfg/wqp_partition_config.yml'))
-  6_temp_wqp_fetch/inout/wqp_inventory.feather:
-    command: require_local('6_temp_wqp_fetch/inout/wqp_inventory.feather.ind')
 
   # make a plan for how to partition the inventory into separate data pulls, keeping track of previous dats pulls.
   # partitions_archive is altered each time we iterate through the wants-haves-needs-pull process.
@@ -90,32 +29,51 @@ targets:
   # which appends any new partition info to partitions_archive each time it runs. these updates
   # will cause rebuilds of wqp_haves and wqp_needs, but if no data files have actually been pulled,
   # those files will be unchanged and will not drive a repull of the inventory.
-  6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind:
-    command: initialize_partitions_archive(target_name)
-  6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather:
-    command: gd_get('6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind')
-  6_temp_wqp_fetch/inout/wqp_pull_partitions.feather.ind:
+  6_temp_wqp_fetch/inout/wqptemp_partitions.feather.ind:
     command: partition_wqp_inventory(
       partitions_ind=target_name,
-      inventory_ind='6_temp_wqp_fetch/inout/wqp_inventory.feather.ind',
-      wqp_partition_cfg=I('6_temp_wqp_fetch/cfg/wqp_partition_config.yml'),
-      archive_ind='6_temp_wqp_fetch/inout/wqp_pull_partitions_archive.feather.ind')
-  6_temp_wqp_fetch/inout/wqp_pull_partitions.feather:
-    command: gd_get('6_temp_wqp_fetch/inout/wqp_pull_partitions.feather.ind')
+      inventory_ind = '2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind',
+      wqp_charnames = wqp_temperature_charnames,
+      wqp_partition_cfg = '6_temp_wqp_fetch/cfg/wqp_partition_config.yml')
+  6_temp_wqp_fetch/inout/wqptemp_partitions.feather:
+    command: gd_get('6_temp_wqp_fetch/inout/wqptemp_partitions.feather.ind')
 
+  6_temp_wqp_fetch/inout/wqpsecchi_partitions.feather.ind:
+    command: partition_wqp_inventory(
+      partitions_ind=target_name,
+      inventory_ind = '2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind',
+      wqp_charnames = wqp_secchi_charnames,
+      wqp_partition_cfg = '6_temp_wqp_fetch/cfg/wqp_partition_config.yml')
+  6_temp_wqp_fetch/inout/wqpsecchi_partitions.feather:
+    command: gd_get('6_temp_wqp_fetch/inout/wqpsecchi_partitions.feather.ind')
 
   # -- pull the data ---
 
   # prepare a remake-style plan for running each state as a separate
   # remake target in a separate remake file (tasks_1_wqp.yml)
-  wqp_pull_plan:
-    command: plan_wqp_pull(partitions_ind='6_temp_wqp_fetch/inout/wqp_pull_partitions.feather.ind')
+  wqp_temp_pull_plan:
+    command: plan_wqp_pull(partitions_ind='6_temp_wqp_fetch/inout/wqptemp_partitions.feather.ind',
+      wqp_charnames_obj = I('wqp_temperature_charnames'))
+
   6_temp_wqp_fetch_tasks.yml:
-    command: create_wqp_pull_makefile(makefile=target_name, task_plan=wqp_pull_plan)
+    command: create_wqp_pull_makefile(makefile=target_name, task_plan=wqp_temp_pull_plan,
+      final_targets = I('6_temp_wqp_fetch/out/wqp_temperature_data.rds.ind'))
 
   # run the data pulls
-  6_temp_wqp_fetch/log/6_temp_wqp_fetch_tasks.ind:
-    command: loop_wqp_tasks(
-      ind_file=target_name,
-      task_plan=wqp_pull_plan, task_makefile='6_temp_wqp_fetch_tasks.yml',
+  6_temp_wqp_fetch/out/wqp_temperature_data.rds.ind:
+    command: loop_tasks(task_plan=wqp_temp_pull_plan, task_makefile='6_temp_wqp_fetch_tasks.yml',
       num_tries=I(30), sleep_on_error=I(20))
+
+  wqp_secchi_pull_plan:
+    command: plan_wqp_pull(partitions_ind='6_temp_wqp_fetch/inout/wqpsecchi_partitions.feather.ind',
+      wqp_charnames_obj = I('wqp_secchi_charnames'))
+
+  6_secchi_wqp_fetch_tasks.yml:
+    command: create_wqp_pull_makefile(makefile=target_name, task_plan=wqp_secchi_pull_plan,
+      final_targets = I('6_temp_wqp_fetch/out/wqp_secchi_data.rds.ind'))
+
+  # run the data pulls
+  6_temp_wqp_fetch/out/wqp_secchi_data.rds.ind:
+    command: loop_tasks(task_plan=wqp_secchi_pull_plan, task_makefile='6_secchi_wqp_fetch_tasks.yml',
+      num_tries=I(30), sleep_on_error=I(20))
+
