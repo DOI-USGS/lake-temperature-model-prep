@@ -23,6 +23,7 @@ targets:
       - 2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
+      - 2_crosswalk_munge/out/centroid_lakes_sf.rds.ind
 
   2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind:
     command: crosswalk_poly_over_poly(

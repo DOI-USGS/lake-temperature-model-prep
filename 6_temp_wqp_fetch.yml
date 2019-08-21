@@ -18,7 +18,8 @@ sources:
 targets:
   6_temp_wqp_fetch:
     depends:
-      - 6_temp_wqp_fetch/log/6_temp_wqp_fetch_tasks.ind
+      - 6_temp_wqp_fetch/out/wqp_temperature_data.rds.ind
+      - 6_temp_wqp_fetch/out/wqp_secchi_data.rds.ind
 
 
   # make a plan for how to partition the inventory into separate data pulls, keeping track of previous dats pulls.
