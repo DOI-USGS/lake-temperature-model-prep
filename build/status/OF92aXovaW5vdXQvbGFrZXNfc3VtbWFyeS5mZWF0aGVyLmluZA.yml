@@ -1,15 +1,16 @@
 version: 0.3.0
 name: 8_viz/inout/lakes_summary.feather.ind
 type: file
-hash: 1702b24f4471eba40f82ac032e94302d
-time: 2019-06-05 14:56:18 UTC
+hash: 1c1716b9a93860c11bf654d2209105c2
+time: 2019-07-09 00:34:40 UTC
 depends:
   7b_temp_merge/out/merged_temp_data_daily.feather.ind: f1d338bb91565d9133ad643a47f5732c
   2_crosswalk_munge/out/lake_names_crosswalk.rds.ind: 0e798c8f88fa4e2f464bdce0c3428c45
   1_crosswalk_fetch/out/nhd2dowlknum.RData.ind: ce80e67e873d6f641dafb2d7936089f9
   4_params_munge/out/nhd2states.rds.ind: e09656e6cb78ec3e2ed9d5af82ddc553
+  4_params_munge/out/MN_bathy.rds.ind: cefa7e8ed0d62b0c1839b356252aec8f
 fixed: a08061e86c9c6c92d354a47a95dc5bc9
 code:
   functions:
-    merge_lake_data: 7470fb9212583e4f25f5bcb27ef605e1
+    merge_lake_data: 64b8d5cfb7018511680cf057ef6aedad
 
