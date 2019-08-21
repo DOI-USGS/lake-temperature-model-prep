@@ -1,11 +1,11 @@
 version: 0.3.0
 name: 1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind
 type: file
-hash: 840b16492349d446ad6e141a98e4430e
-time: 2019-08-04 01:31:08 UTC
+hash: b533bec808378b91bfac97b24b276182
+time: 2019-08-20 22:40:28 UTC
 depends: {}
-fixed: a550b3557171b927e7f66b3ee728b03c
+fixed: 3d6cce4eb8c6ef7d16a6c88b1697598e
 code:
   functions:
-    fetch_mndow_lakes: 26e1e4ce3158630ac4741ba26f804f9e
+    fetch_mndow_lakes: 25b493e1a093e89b804a977982a2430d
 
