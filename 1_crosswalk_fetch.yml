@@ -20,7 +20,23 @@ targets:
       - 1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind
       - 1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind
       - 1_crosswalk_fetch/out/micorps_sites.xlsx.ind
-      - 1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind
+      - 1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind
+      - 1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind
+
+  wqp_temperature_charnames:
+    command: c(I(c(
+      "Temperature",
+      "Temperature, sample",
+      "Temperature, water",
+      "Temperature, water, deg F")))
+
+  wqp_secchi_charnames:
+    command: c(I(c(
+      "Depth, Secchi disk depth",
+      "Depth, Secchi disk depth (choice list)",
+      "Secchi Reading Condition (choice list)",
+      "Secchi depth",
+      "Water transparency, Secchi disc")))
 
   nhd_HR_download_plan:
     command: create_nhd_HR_download_plan(I(c("North_Dakota","South_Dakota","Iowa","Michigan","Indiana","Illinois","Wisconsin", "Minnesota")),
@@ -70,10 +86,15 @@ targets:
 
   # see https://data-wi-dnr.opendata.arcgis.com/datasets/0128cce2c06342218725f1069031a4fa for WI hydrolayer
 
-  1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind:
-    command: fetch_wqp_lake_sites(target_name, dummy = I('2019-08-03'))
-  1_crosswalk_fetch/out/wqp_lake_sites_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind')
+  1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind:
+    command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_temperature_charnames, dummy = I('2019-08-03'))
+  1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind')
+
+  1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind:
+    command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_secchi_charnames, dummy = I('2019-08-03'))
+  1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind')
 
   1_crosswalk_fetch/out/micorps_sites.xlsx.ind:
     command: fetch_micorps_sites(target_name)

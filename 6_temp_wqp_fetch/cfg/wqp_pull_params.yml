@@ -10,3 +10,5 @@ characteristicName:
 sampleMedia:
   - "Water"
   - "water"
+
+# is this file no longer needed if we use it in 1_crosswalk?

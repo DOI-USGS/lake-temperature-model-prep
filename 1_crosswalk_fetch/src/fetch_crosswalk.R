@@ -147,9 +147,9 @@ fetch_micorps_sites <- function(ind_file) {
 }
 
 #' use `dummy` to trigger rebuilds. I am using the date, as a light reminder of when it was changed
-fetch_wqp_lake_sites <- function(ind_file, dummy){
-  lake_sites_sf <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment") %>%
-    dplyr::select(MonitoringLocationIdentifier, LatitudeMeasure, LongitudeMeasure) %>%
+fetch_wqp_lake_sites <- function(ind_file, characteristicName, dummy){
+  lake_sites_sf <- whatWQPdata(siteType = "Lake, Reservoir, Impoundment", characteristicName = characteristicName) %>%
+    dplyr::select(site_id = MonitoringLocationIdentifier, resultCount, LatitudeMeasure = lat, LongitudeMeasure = lon) %>%
     st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326)
 
   data_file <- scipiper::as_data_file(ind_file)
@@ -157,28 +157,3 @@ fetch_wqp_lake_sites <- function(ind_file, dummy){
   gd_put(ind_file, data_file)
 }
 
-fetch_crosswalk_wbic_nhd <- function(ind_file) {
-
-  # figure out where we will be putting the file
-  data_file <- scipiper::as_data_file(ind_file)
-
-  # download from a github URL that points to necsc-lake-modeling repo
-  url <- 'https://github.com/USGS-R/necsc-lake-modeling/blob/master/data/NHD_state_crosswalk/nhd2wbic.RData?raw=true'
-  download.file(url=url, destfile=data_file, mode = 'wb')
-
-  # post to google drive and return an indicator file
-  gd_put(ind_file, data_file)
-}
-
-fetch_crosswalk_dow_nhd <- function(ind_file) {
-
-  # figure out where we will be putting the file
-  data_file <- scipiper::as_data_file(ind_file)
-
-  # download from a github URL that points to necsc-lake-modeling repo
-  url <- 'https://github.com/USGS-R/necsc-lake-modeling/blob/master/data/NHD_state_crosswalk/nhd2dowlknum.RData?raw=true'
-  download.file(url=url, destfile=data_file, mode = 'wb')
-
-  # post to google drive and return an indicator file
-  gd_put(ind_file, data_file)
-}
