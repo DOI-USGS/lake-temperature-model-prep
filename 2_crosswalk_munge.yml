@@ -22,6 +22,7 @@ targets:
       - 2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/mndow_nhdhr_intersect.rds.ind
+      - 2_crosswalk_munge/out/mndow_nhdhr_choose1_xwalk.rds.ind
       - 2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
       - 2_crosswalk_munge/out/centroid_lakes_sf.rds.ind
@@ -54,6 +55,15 @@ targets:
       crs=I(26915))
   2_crosswalk_munge/out/mndow_nhdhr_intersect.rds:
     command: gd_get('2_crosswalk_munge/out/mndow_nhdhr_intersect.rds.ind')
+
+  2_crosswalk_munge/out/mndow_nhdhr_choose1_xwalk.rds.ind:
+    command: choose1_poly_intersect_poly(
+      target_name,
+      intersect_ind_file = '2_crosswalk_munge/out/mndow_nhdhr_intersect.rds.ind',
+      poly1_ID_name = I("MNDOW_ID"))
+
+  2_crosswalk_munge/out/mndow_nhdhr_choose1_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/mndow_nhdhr_choose1_xwalk.rds.ind')
 
   2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind:
     command: crosswalk_poly_over_poly(

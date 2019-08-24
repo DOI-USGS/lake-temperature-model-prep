@@ -109,6 +109,33 @@ crosswalk_poly_intersect_poly <- function(ind_file, poly1_ind_file, poly2_ind_fi
 }
 
 
+choose1_poly_intersect_poly <- function(ind_file, intersect_ind_file, poly1_ID_name){
+
+  intersect_data <- readRDS(sc_retrieve(ind_file = intersect_ind_file))
+
+  stopifnot(paste0(poly1_ID_name) %in% names(intersect_data))
+  stopifnot('site_id' %in% names(intersect_data))
+  stopifnot('Intersect_Area' %in% names(intersect_data))
+
+  colnames(intersect_data)[colnames(intersect_data)==paste0(poly1_ID_name)] <- "Temp_ID_Name"
+
+  intersect_data <- intersect_data %>% select(Temp_ID_Name, site_id, Intersect_Area)
+
+  crosswalk_out <- intersect_data %>% group_by(Temp_ID_Name) %>%
+    arrange(desc(Intersect_Area)) %>%
+    summarise(site_id = first(site_id))
+
+  colnames(crosswalk_out)[colnames(crosswalk_out)=="Temp_ID_Name"] <- paste0(poly1_ID_name)
+
+
+  data_file <- scipiper::as_data_file(ind_file)
+  saveRDS(crosswalk_out, data_file)
+  gd_put(ind_file, data_file)
+
+}
+
+
+
 combine_sf_lakes <- function(out_ind, ...){
   sf_inds <- c(...)
 
