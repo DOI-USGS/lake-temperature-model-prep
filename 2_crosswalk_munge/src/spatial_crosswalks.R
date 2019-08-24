@@ -119,7 +119,7 @@ choose1_poly_intersect_poly <- function(ind_file, intersect_ind_file, poly1_ID_n
 
   colnames(intersect_data)[colnames(intersect_data)==paste0(poly1_ID_name)] <- "Temp_ID_Name"
 
-  intersect_data <- intersect_data %>% select(Temp_ID_Name, site_id, Intersect_Area)
+  intersect_data <- intersect_data %>% dplyr::select(Temp_ID_Name, site_id, Intersect_Area)
 
   crosswalk_out <- intersect_data %>% group_by(Temp_ID_Name) %>%
     arrange(desc(Intersect_Area)) %>%
