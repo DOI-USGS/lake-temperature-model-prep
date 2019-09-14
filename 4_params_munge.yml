@@ -63,30 +63,11 @@ targets:
     command: munge_bathy(
       out_ind = target_name,
       bathy_list_ind = '3_params_fetch/out/bathy_files.rds.ind')
-
   4_params_munge/out/MN_bathy.rds:
     command: gd_get('4_params_munge/out/MN_bathy.rds.ind')
 
 
-  4_params_munge/out/lakeattributes_location.rds.ind:
-    command: munge_location(
-      target_name,
-      mglp_gdb_file = I("MGLP_model_data&results.gdb"),
-      mglp_zip_ind = '1_crosswalk_fetch/in/MGLP_lakes.zip.ind',
-      states = I(c("IA", "IN", "SD", "ND")))
-
-  4_params_munge/out/lakeattributes_location.rds:
-    command: gd_get('4_params_munge/out/lakeattributes_location.rds.ind')
-
-  4_params_munge/out/lakeattributes_canopyheight.rds.ind:
-    command: munge_location(
-      target_name,
-      nlcd_dat_ind = '4_params_munge/out/nlcd_2011_buffers.rds.ind',
-      nlcd_heights_ind = '3_params_fetch/out/nlcd_classes_canopyheight.rds.ind')
-
-  4_params_munge/out/lakeattributes_canopyheight.rds:
-    command: gd_get('4_params_munge/out/lakeattributes_canopyheight.rds.ind')
-
+# should this be in 2_crosswalk_munge?:
   4_params_munge/out/nhd2states.rds.ind:
     command: crosswalk_lakes_to_states(
       out_ind = target_name,

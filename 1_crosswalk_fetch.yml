@@ -6,6 +6,7 @@ packages:
   - dataRetrieval
   - sf
   - sbtools
+  - smoothr
 
 sources:
   - 1_crosswalk_fetch/src/fetch_crosswalk.R
@@ -52,7 +53,7 @@ targets:
   1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind:
     command: fetch_mndow_lakes(
       ind_file = target_name,
-      dummy = I("2019-08-03"),
+      dummy = I("2019-08-20"),
       layer = I("dnr_hydro_features_all"))
   1_crosswalk_fetch/out/mndow_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind')

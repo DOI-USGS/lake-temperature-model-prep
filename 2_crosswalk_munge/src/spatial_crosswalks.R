@@ -56,6 +56,86 @@ crosswalk_poly_over_poly <- function(ind_file, poly1_ind_file, poly2_ind_file, p
   gd_put(ind_file, data_file)
 }
 
+
+crosswalk_poly_intersect_poly <- function(ind_file, poly1_ind_file, poly2_ind_file, poly1_ID_name, crs){
+
+  poly1_data <- readRDS(sc_retrieve(ind_file = poly1_ind_file))
+  poly2_data <- readRDS(sc_retrieve(ind_file = poly2_ind_file))
+
+  stopifnot('site_id' %in% names(poly1_data))
+  stopifnot('site_id' %in% names(poly2_data))
+
+  poly2_data <- st_zm(poly2_data)
+
+  poly1_data <- st_transform(poly1_data, crs = crs)
+  poly2_data <- st_transform(poly2_data, crs = crs)
+
+  # Aggregate polys by site ID (this step likely unnecessary for NHD but keeping for generality)
+  poly1_agg <- poly1_data %>%
+    group_by(site_id) %>%
+    summarise()
+
+  poly2_agg <- poly2_data %>%
+    group_by(site_id) %>%
+    summarise()
+
+  # Measure areas
+  poly1_agg$poly1_Area <- as.numeric(st_area(poly1_agg))
+  poly2_agg$site_id_Area <- as.numeric(st_area(poly2_agg))
+
+  poly1_agg <- sf::st_buffer(poly1_agg, dist = 0)
+  poly2_agg <- sf::st_buffer(poly2_agg, dist = 0)
+
+  colnames(poly1_agg)[colnames(poly1_agg)=="site_id"] <- poly1_ID_name
+
+  intersect.sf <-  sf::st_intersection(poly1_agg, poly2_agg)
+  intersect.sf$Intersect_Area <- as.numeric(st_area(intersect.sf))
+
+  ### Drop intersections that are <1% of poly1 area or poly2 area
+  intersect.sf <- intersect.sf %>%
+    filter(Intersect_Area > .01*poly1_Area) %>%
+    filter(Intersect_Area > .01*site_id_Area)
+
+  intersect_out <- intersect.sf %>%
+    st_drop_geometry()
+
+  colnames(intersect_out)[colnames(intersect_out)=="poly1_Area"] <- paste0(poly1_ID_name, "_Area")
+
+
+  data_file <- scipiper::as_data_file(ind_file)
+  saveRDS(intersect_out, data_file)
+  gd_put(ind_file, data_file)
+
+}
+
+
+choose1_poly_intersect_poly <- function(ind_file, intersect_ind_file, poly1_ID_name){
+
+  intersect_data <- readRDS(sc_retrieve(ind_file = intersect_ind_file))
+
+  stopifnot(paste0(poly1_ID_name) %in% names(intersect_data))
+  stopifnot('site_id' %in% names(intersect_data))
+  stopifnot('Intersect_Area' %in% names(intersect_data))
+
+  colnames(intersect_data)[colnames(intersect_data)==paste0(poly1_ID_name)] <- "Temp_ID_Name"
+
+  intersect_data <- intersect_data %>% dplyr::select(Temp_ID_Name, site_id, Intersect_Area)
+
+  crosswalk_out <- intersect_data %>% group_by(Temp_ID_Name) %>%
+    arrange(desc(Intersect_Area)) %>%
+    summarise(site_id = first(site_id))
+
+  colnames(crosswalk_out)[colnames(crosswalk_out)=="Temp_ID_Name"] <- paste0(poly1_ID_name)
+
+
+  data_file <- scipiper::as_data_file(ind_file)
+  saveRDS(crosswalk_out, data_file)
+  gd_put(ind_file, data_file)
+
+}
+
+
+
 combine_sf_lakes <- function(out_ind, ...){
   sf_inds <- c(...)
 
