@@ -31,6 +31,18 @@ fetch_winslow_shapefile <- function(ind_file) {
   gd_put(ind_file, data_file)
 }
 
+#' this function cheats and assumes a local file because there isn't a good webservice and the file is huge
+#' see https://data-wi-dnr.opendata.arcgis.com/datasets/0128cce2c06342218725f1069031a4fa for WI hydrolayer
+#' This function is used just to process the shapefile, and we use `gd_confirm_posted` after manually uploading to create the ind
+process_wbic_lakes <- function(file_out = '1_crosswalk_fetch/out/wbic_lakes_sf.rds'){
+  wbic_lakes <- sf::st_read('~/Downloads/24K_Hydro.gdb/', layer = 'WD_HYDRO_WATERBODY_WBIC_AR_24K') %>%
+    mutate(site_id = paste0('WBIC_', WATERBODY_WBIC)) %>% dplyr::select(site_id, SHAPE) %>%
+    rename(geometry = SHAPE) %>% # why do I need to rename SHAPE to geometry??
+    sf::st_transform(x, crs = 4326)
+
+  saveRDS(wbic_lakes, file = file_out)
+}
+
 fetch_mndow_lakes <- function(ind_file, layer, dummy){
   data_file <- scipiper::as_data_file(ind_file)
 
