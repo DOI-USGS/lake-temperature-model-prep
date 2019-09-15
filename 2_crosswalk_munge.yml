@@ -22,7 +22,6 @@ targets:
       - 2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind
-      - 2_crosswalk_munge/out/mndow_nhdhr_intersect.rds.ind
       - 2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
       - 2_crosswalk_munge/out/centroid_lakes_sf.rds.ind
@@ -136,7 +135,7 @@ targets:
     command: centroid_sf_lakes(
       out_ind = target_name,
       lake_ind = "1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind")
-  2_crosswalk_munge/out/centroid_lakes_sf.rds.rds:
+  2_crosswalk_munge/out/centroid_lakes_sf.rds:
     command: gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind')
 
   2_crosswalk_munge/out/names_nhdhr_xwalk.rds.ind:

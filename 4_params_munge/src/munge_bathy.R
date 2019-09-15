@@ -1,7 +1,9 @@
 
-munge_bathy <- function(out_ind, bathy_list_ind){
+munge_mndow_bathy <- function(out_ind, bathy_list_ind, mndow_xwalk_ind){
 
-  bathy_list <- readRDS(sc_retrieve('3_params_fetch/out/bathy_files.rds.ind'))
+  bathy_list <- readRDS(sc_retrieve(bathy_list_ind))
+
+  mndow_xwalk <- readRDS(sc_retrieve(mndow_xwalk_ind))
 
   bathy_dat <- NULL
 
@@ -33,12 +35,15 @@ munge_bathy <- function(out_ind, bathy_list_ind){
 
     lake_hypso <- read.csv(paste0("3_params_fetch/in/hypsos_m/",csv_name), header=T)
     # Add lake DOW
-    lake_hypso$DOW <- lake_dow
+    lake_hypso$MNDOW_ID <- paste0('mndow_', lake_dow)
 
     # Bind lakes together - there is a slicker way to do this
     bathy_dat <- rbind(bathy_dat, lake_hypso)
 
   }
+
+  bathy_dat <- bathy_dat %>% left_join(mndow_xwalk, by = 'MNDOW_ID') %>%
+    dplyr::select(site_id, depths, areas)
 
 
   data_file <- scipiper::as_data_file(out_ind)

@@ -25,7 +25,7 @@ targets:
   4_params_munge:
     depends:
       - 4_params_munge/out/nhd2states.rds.ind
-      - 4_params_munge/out/MN_bathy.rds.ind
+      - 4_params_munge/out/mndow_bathy.rds.ind
       - 4_params_munge/out/nml_cd_values.rds.ind
 
 
@@ -48,6 +48,14 @@ targets:
       nlcd_ind = '4_params_munge/out/nlcd_2011_buffers.rds.ind',
       nlcd_hc_file = '4_params_munge/in/nlcd_class_heights.tsv',
       areas_ind = '4_params_munge/out/canonical_lakes_area.rds.ind')
+  4_params_munge/out/nml_cd_values.rds:
+    command: gd_get('4_params_munge/out/nml_cd_values.rds.ind')
+
+  4_params_munge/out/nml_lat_lon_values.rds.ind:
+    command: munge_lat_lon(target_name,
+      centroids_ind = '2_crosswalk_munge/out/centroid_lakes_sf.rds.ind')
+  4_params_munge/out/nml_lat_lon_values.rds:
+    command: gd_get('4_params_munge/out/nml_lat_lon_values.rds.ind')
 
   4_params_munge/out/mglp_depths.rds.ind:
     command: mglp_depths_from_TDOx(target_name,
@@ -72,11 +80,12 @@ targets:
     command: gd_get('4_params_munge/out/lagos_depths.rds.ind')
 
   # Combine MN bathy files and add DOW ID
-  4_params_munge/out/MN_bathy.rds.ind:
-    command: munge_bathy(
+  4_params_munge/out/mndow_bathy.rds.ind:
+    command: munge_mndow_bathy(
       out_ind = target_name,
-      bathy_list_ind = '3_params_fetch/out/bathy_files.rds.ind')
-  4_params_munge/out/MN_bathy.rds:
-    command: gd_get('4_params_munge/out/MN_bathy.rds.ind')
+      bathy_list_ind = '3_params_fetch/out/bathy_files.rds.ind',
+      mndow_xwalk_ind = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
+  4_params_munge/out/mndow_bathy.rds:
+    command: gd_get('4_params_munge/out/mndow_bathy.rds.ind')
 
 
