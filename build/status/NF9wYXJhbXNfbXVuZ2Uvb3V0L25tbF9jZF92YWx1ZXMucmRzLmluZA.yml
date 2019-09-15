@@ -1,0 +1,14 @@
+version: 0.3.0
+name: 4_params_munge/out/nml_cd_values.rds.ind
+type: file
+hash: 6b9a0a2d220260b450b52d9223be9496
+time: 2019-09-15 01:36:34 UTC
+depends:
+  4_params_munge/out/nlcd_2011_buffers.rds.ind: 6f63e8f0fe2b7c8af3e917e71e642de4
+  4_params_munge/in/nlcd_class_heights.tsv: 9657e285256242b2be58aaf7e54c023c
+  4_params_munge/out/canonical_lakes_area.rds.ind: 6e31395133402551bdc7d2035622fa24
+fixed: 7063d4f1dbfed88f0a4727197f058ffe
+code:
+  functions:
+    munge_cd_from_nlcd: 7a5fcc89017d46540feeafd801161a5b
+

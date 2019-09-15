@@ -5,8 +5,10 @@ packages:
   - scipiper
   - feather
   - readr
+  - rlang
   - raster
   - sf
+  - lwgeom
   - maps
 
 sources:
@@ -16,17 +18,22 @@ sources:
   - 4_params_munge/src/munge_for_lakeattributes.R
   - 4_params_munge/src/munge_bathy.R
   - 4_params_munge/src/munge_secchi_model_data.R
+  - 4_params_munge/src/munge_cd_from_nlcd.R
+  - 4_params_munge/src/munge_lake_info.R
 
 targets:
   4_params_munge:
     depends:
-      - '4_params_munge/out/lakeattributes_depth.rds.ind'
-      - '4_params_munge/out/lakeattributes_area.rds.ind'
-      - '4_params_munge/out/lakeattributes_secchi.rds.ind'
-      - '4_params_munge/out/lakeattributes_canopyheight.rds.ind'
-      - '4_params_munge/out/lakeattributes_location.rds.ind'
-      - '4_params_munge/out/nhd2states.rds.ind'
-      - '4_params_munge/out/MN_bathy.rds.ind'
+      - 4_params_munge/out/nhd2states.rds.ind
+      - 4_params_munge/out/MN_bathy.rds.ind
+      - 4_params_munge/out/nml_cd_values.rds.ind
+
+
+  4_params_munge/out/canonical_lakes_area.rds.ind:
+    command: munge_lake_area(target_name,
+      lakes_ind = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
+  4_params_munge/out/canonical_lakes_area.rds:
+    command: gd_get('4_params_munge/out/canonical_lakes_area.rds.ind')
 
   4_params_munge/out/nlcd_2011_buffers.rds.ind:
     command: munge_nlcd_buffers(target_name,
@@ -35,6 +42,12 @@ targets:
       nlcd_classes_ind = '3_params_fetch/out/nlcd_classes.rds.ind')
   4_params_munge/out/nlcd_2011_buffers.rds:
     command: gd_get('4_params_munge/out/nlcd_2011_buffers.rds.ind')
+
+  4_params_munge/out/nml_cd_values.rds.ind:
+    command: munge_cd_from_nlcd(target_name,
+      nlcd_ind = '4_params_munge/out/nlcd_2011_buffers.rds.ind',
+      nlcd_hc_file = '4_params_munge/in/nlcd_class_heights.tsv',
+      areas_ind = '4_params_munge/out/canonical_lakes_area.rds.ind')
 
   4_params_munge/out/mglp_depths.rds.ind:
     command: mglp_depths_from_TDOx(target_name,
@@ -66,22 +79,4 @@ targets:
   4_params_munge/out/MN_bathy.rds:
     command: gd_get('4_params_munge/out/MN_bathy.rds.ind')
 
-
-# should this be in 2_crosswalk_munge?:
-  4_params_munge/out/nhd2states.rds.ind:
-    command: crosswalk_lakes_to_states(
-      out_ind = target_name,
-      lakes_ind = '2_crosswalk_munge/out/lakes_sf.rds.ind',
-      states = I(c('minnesota', 'wisconsin', 'north dakota', 'south dakota', 'michigan', 'indiana', 'iowa')))
-
-  4_params_munge/out/nhd2states.rds:
-    command: gd_get('4_params_munge/out/nhd2states.rds.ind')
-
-  4_params_munge/out/daily_secchi.feather.ind:
-    command: munge_daily_secchi(
-      in_ind = '3_params_fetch/in/86027900_daily_secchi.csv.ind',
-      dow_crosswalk_ind = '1_crosswalk_fetch/out/nhd2dowlknum.RData.ind',
-      out_ind = target_name)
-  4_params_munge/out/daily_secchi.feather:
-    command: gd_get('4_params_munge/out/daily_secchi.feather.ind')
 
