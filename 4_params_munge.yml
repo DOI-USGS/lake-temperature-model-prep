@@ -15,7 +15,6 @@ sources:
   - 4_params_munge/src/munge_nlcd.R
   - 4_params_munge/src/munge_mglp.R
   - 4_params_munge/src/munge_lagos.R
-  - 4_params_munge/src/munge_for_lakeattributes.R
   - 4_params_munge/src/munge_bathy.R
   - 4_params_munge/src/munge_secchi_model_data.R
   - 4_params_munge/src/munge_cd_from_nlcd.R
@@ -26,8 +25,6 @@ targets:
     depends:
       - 4_params_munge/out/nhd2states.rds.ind
       - 4_params_munge/out/mndow_bathy.rds.ind
-      - 4_params_munge/out/nml_cd_values.rds.ind
-
 
   4_params_munge/out/canonical_lakes_area.rds.ind:
     command: munge_lake_area(target_name,
@@ -42,20 +39,6 @@ targets:
       nlcd_classes_ind = '3_params_fetch/out/nlcd_classes.rds.ind')
   4_params_munge/out/nlcd_2011_buffers.rds:
     command: gd_get('4_params_munge/out/nlcd_2011_buffers.rds.ind')
-
-  4_params_munge/out/nml_cd_values.rds.ind:
-    command: munge_cd_from_nlcd(target_name,
-      nlcd_ind = '4_params_munge/out/nlcd_2011_buffers.rds.ind',
-      nlcd_hc_file = '4_params_munge/in/nlcd_class_heights.tsv',
-      areas_ind = '4_params_munge/out/canonical_lakes_area.rds.ind')
-  4_params_munge/out/nml_cd_values.rds:
-    command: gd_get('4_params_munge/out/nml_cd_values.rds.ind')
-
-  4_params_munge/out/nml_lat_lon_values.rds.ind:
-    command: munge_lat_lon(target_name,
-      centroids_ind = '2_crosswalk_munge/out/centroid_lakes_sf.rds.ind')
-  4_params_munge/out/nml_lat_lon_values.rds:
-    command: gd_get('4_params_munge/out/nml_lat_lon_values.rds.ind')
 
   4_params_munge/out/mglp_depths.rds.ind:
     command: mglp_depths_from_TDOx(target_name,

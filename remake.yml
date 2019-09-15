@@ -9,6 +9,7 @@ include:
   - 7a_temp_coop_munge.yml
   - 7a_temp_wqp_munge.yml
   - 7b_temp_merge.yml
+  - 7_config_merge.yml
   - 8_viz.yml
 
 targets:
