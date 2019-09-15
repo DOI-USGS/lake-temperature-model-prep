@@ -21,11 +21,17 @@ targets:
       - 7_config_merge/out/nml_lat_lon_values.rds.ind
 
 
+  7_config_merge/out/canonical_lakes_area.rds.ind:
+    command: munge_lake_area(target_name,
+      lakes_ind = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
+  7_config_merge/out/canonical_lakes_area.rds:
+    command: gd_get('7_config_merge/out/canonical_lakes_area.rds.ind')
+
   7_config_merge/out/nml_cd_values.rds.ind:
     command: munge_cd_from_nlcd(target_name,
       nlcd_ind = '4_params_munge/out/nlcd_2011_buffers.rds.ind',
       nlcd_hc_file = '4_params_munge/in/nlcd_class_heights.tsv',
-      areas_ind = '4_params_munge/out/canonical_lakes_area.rds.ind')
+      areas_ind = '7_config_merge/out/canonical_lakes_area.rds.ind')
   7_config_merge/out/nml_cd_values.rds:
     command: gd_get('7_config_merge/out/nml_cd_values.rds.ind')
 
