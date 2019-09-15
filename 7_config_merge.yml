@@ -12,14 +12,16 @@ packages:
   - maps
 
 sources:
-  - 7_config_merge/src/munge_for_lakeattributes.R
+  - 7_config_merge/src/munge_lake_info.R
 
 targets:
   7_config_merge:
     depends:
       - 7_config_merge/out/nml_cd_values.rds.ind
       - 7_config_merge/out/nml_lat_lon_values.rds.ind
-
+      - 7_config_merge/out/nml_H_A_values.rds.ind
+      - 7_config_merge/out/nml_len_wid_values.rds.ind
+      - 7_config_merge/out/nml_lake_depth_values.rds.ind
 
   7_config_merge/out/canonical_lakes_area.rds.ind:
     command: munge_lake_area(target_name,
@@ -40,3 +42,24 @@ targets:
       centroids_ind = '2_crosswalk_munge/out/centroid_lakes_sf.rds.ind')
   7_config_merge/out/nml_lat_lon_values.rds:
     command: gd_get('7_config_merge/out/nml_lat_lon_values.rds.ind')
+
+  7_config_merge/out/nml_H_A_values.rds.ind:
+    command: munge_H_A(target_name,
+      areas_ind = '7_config_merge/out/canonical_lakes_area.rds.ind',
+      '4_params_munge/out/mndow_bathy.rds.ind',
+      '4_params_munge/out/lagos_depths.rds.ind',
+      '4_params_munge/out/mglp_depths.rds.ind')
+  7_config_merge/out/nml_H_A_values.rds:
+    command: gd_get('7_config_merge/out/nml_H_A_values.rds.ind')
+
+  7_config_merge/out/nml_len_wid_values.rds.ind:
+    command: munge_wid_len(target_name,
+      areas_ind = '7_config_merge/out/canonical_lakes_area.rds.ind')
+  7_config_merge/out/nml_len_wid_values.rds:
+    command: gd_get('7_config_merge/out/nml_len_wid_values.rds.ind')
+
+  7_config_merge/out/nml_lake_depth_values.rds.ind:
+    command: munge_lake_depth(target_name,
+      '7_config_merge/out/nml_H_A_values.rds.ind')
+  7_config_merge/out/nml_lake_depth_values.rds:
+    command: gd_get('7_config_merge/out/nml_lake_depth_values.rds.ind')

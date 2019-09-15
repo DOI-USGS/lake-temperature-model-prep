@@ -18,7 +18,6 @@ sources:
   - 4_params_munge/src/munge_bathy.R
   - 4_params_munge/src/munge_secchi_model_data.R
   - 4_params_munge/src/munge_cd_from_nlcd.R
-  - 4_params_munge/src/munge_lake_info.R
 
 targets:
   4_params_munge:
