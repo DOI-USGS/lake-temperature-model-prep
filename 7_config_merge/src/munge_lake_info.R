@@ -83,6 +83,28 @@ munge_lake_depth <- function(out_ind, H_A_ind){
   gd_put(out_ind, data_file)
 }
 
+munge_layer_thick <- function(out_ind, lake_depth_ind){
+  layer_thick <- scipiper::sc_retrieve(lake_depth_ind) %>% readRDS() %>%
+    mutate(
+      max_layer_thick = case_when(
+        lake_depth >= 20 ~ 1.5,
+        lake_depth >= 8 & lake_depth < 20 ~ 1,
+        lake_depth >= 5 & lake_depth < 8 ~ 0.8,
+        lake_depth >= 3 & lake_depth < 5 ~ 0.5,
+        TRUE ~ 0.3
+      ),
+      min_layer_thick = case_when(
+        lake_depth >= 3 ~ 0.2,
+        TRUE ~ 0.1
+      )
+    ) %>%
+    dplyr::select(-lake_depth)
+
+  data_file <- scipiper::as_data_file(out_ind)
+  saveRDS(layer_thick, data_file)
+  gd_put(out_ind, data_file)
+}
+
 munge_lat_lon <- function(out_ind, centroids_ind){
   centroids_sf <- scipiper::sc_retrieve(centroids_ind) %>% readRDS()
 

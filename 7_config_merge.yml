@@ -22,6 +22,7 @@ targets:
       - 7_config_merge/out/nml_H_A_values.rds.ind
       - 7_config_merge/out/nml_len_wid_values.rds.ind
       - 7_config_merge/out/nml_lake_depth_values.rds.ind
+      - 7_config_merge/out/nml_layer_thick_values.rds.ind
 
   7_config_merge/out/canonical_lakes_area.rds.ind:
     command: munge_lake_area(target_name,
@@ -63,3 +64,9 @@ targets:
       '7_config_merge/out/nml_H_A_values.rds.ind')
   7_config_merge/out/nml_lake_depth_values.rds:
     command: gd_get('7_config_merge/out/nml_lake_depth_values.rds.ind')
+
+  7_config_merge/out/nml_layer_thick_values.rds.ind:
+    command: munge_layer_thick(target_name,
+      lake_depth_ind = '7_config_merge/out/nml_lake_depth_values.rds.ind')
+  7_config_merge/out/nml_layer_thick_values.rds:
+    command: gd_get('7_config_merge/out/nml_layer_thick_values.rds.ind')
