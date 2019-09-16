@@ -42,6 +42,7 @@ targets:
   cell_ind_dir:
     command: c(I("6_drivers/log/feather"))
 
+  # is this now in 2_xwalk-centroids?
   feature_centroids:
     command: sf_file_centroids("2_crosswalk_munge/out/lakes_sf.rds")
 

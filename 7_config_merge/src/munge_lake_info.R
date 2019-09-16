@@ -117,3 +117,26 @@ munge_lat_lon <- function(out_ind, centroids_ind){
   saveRDS(lat_lon, data_file)
   gd_put(out_ind, data_file)
 }
+
+munge_meteo_fl <- function(out_ind, centroids_ind, lake_depth_ind, sf_grid, time_range){
+
+  lake_depth <- scipiper::sc_retrieve(lake_depth_ind) %>% readRDS()
+  centroids_sf <- scipiper::sc_retrieve(centroids_ind) %>% readRDS() %>%
+    filter(site_id %in% lake_depth$site_id) # get rid of lakes we aren't going to model...
+
+
+  t0 <- time_range[1]
+  t1 <- time_range[2]
+
+  meteo_fl <- do(centroids_sf, data.frame(match_collection = st_intersects(sf_grid, st_geometry(.), sparse = FALSE))) %>%
+    mutate_all(which) %>% summarise_all(unique) %>%
+    tidyr::gather(key = cent_idx, value = grid_idx) %>%
+    mutate(x = sf_grid[grid_idx,]$x, y = sf_grid[grid_idx,]$y) %>%
+    mutate(site_id = centroids_sf$site_id) %>%
+    mutate(meteo_fl = create_meteo_filepath(t0, t1, x, y, dirname = 'drivers')) %>%
+    dplyr::select(site_id, meteo_fl)
+
+  data_file <- scipiper::as_data_file(out_ind)
+  saveRDS(meteo_fl, data_file)
+  gd_put(out_ind, data_file)
+}
