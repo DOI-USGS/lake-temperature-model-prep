@@ -84,6 +84,8 @@ munge_lake_depth <- function(out_ind, H_A_ind){
 }
 
 munge_layer_thick <- function(out_ind, lake_depth_ind){
+
+  # from mda.lakes::populate_base_lake_nml()
   layer_thick <- scipiper::sc_retrieve(lake_depth_ind) %>% readRDS() %>%
     mutate(
       max_layer_thick = case_when(
