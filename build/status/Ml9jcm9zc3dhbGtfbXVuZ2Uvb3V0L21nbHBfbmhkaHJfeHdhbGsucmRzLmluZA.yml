@@ -1,13 +1,12 @@
 version: 0.3.0
 name: 2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind
 type: file
-hash: 66cb77992dc6e0706c3b8acd70d04eaf
-time: 2019-07-27 08:59:22 UTC
+hash: 7338f5691e62648bfbe369d2f4e76143
+time: 2019-09-14 00:33:38 UTC
 depends:
-  1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind: 0c75de65be83e180252c90863fd5a329
-  1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind: d80682671f9f73df8fc16a2ce83a4c3a
+  2_crosswalk_munge/out/mglp_nhdhr_intersect.rds.ind: 8be43910a918e0cedb49cbc31da5a632
 fixed: 7db19853f78143e8e5e18ab768986b0a
 code:
   functions:
-    crosswalk_poly_over_poly: 469fb6a43b8944238e8c6a4f9fbf6b80
+    choose1_poly_intersect_poly: 5ec2c5ba954b4e7c262b9352b8b466d9
 

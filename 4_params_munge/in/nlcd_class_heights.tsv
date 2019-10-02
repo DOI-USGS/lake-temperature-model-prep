@@ -1,0 +1,21 @@
+nlcd.class	hc.value	common.name
+11	0	Open Water
+12	0	Perennial Ice/Snow
+21	1	Developed, Open Space
+22	5	Developed, Low Intensity
+23	13	Developed, Medium Intensity
+24	20	Developed, High Intensity
+31	0.2	Barren Land (Rock/Sand/Clay)
+41	15	Deciduous Forest
+42	25	Evergreen Forest
+43	20	Mixed Forest
+51	1.5	Dwarf Scrub
+52	2	Scrub/Shrub
+71	0.8	Grassland/Herbaceous
+72	0.5	Sedge/Herbaceuous
+73	0.1	Lichens
+74	0.1	Moss
+81	1	Pasture/Hay
+82	2	Cultivated Crops
+90	3	Woody Wetlands
+95	2.5	Emergent Herbaceous Wetlands

@@ -5,28 +5,25 @@ packages:
   - scipiper
   - feather
   - readr
+  - rlang
   - raster
   - sf
+  - lwgeom
   - maps
 
 sources:
   - 4_params_munge/src/munge_nlcd.R
   - 4_params_munge/src/munge_mglp.R
   - 4_params_munge/src/munge_lagos.R
-  - 4_params_munge/src/munge_for_lakeattributes.R
   - 4_params_munge/src/munge_bathy.R
   - 4_params_munge/src/munge_secchi_model_data.R
+  - 4_params_munge/src/munge_cd_from_nlcd.R
 
 targets:
   4_params_munge:
     depends:
-      - '4_params_munge/out/lakeattributes_depth.rds.ind'
-      - '4_params_munge/out/lakeattributes_area.rds.ind'
-      - '4_params_munge/out/lakeattributes_secchi.rds.ind'
-      - '4_params_munge/out/lakeattributes_canopyheight.rds.ind'
-      - '4_params_munge/out/lakeattributes_location.rds.ind'
-      - '4_params_munge/out/nhd2states.rds.ind'
-      - '4_params_munge/out/MN_bathy.rds.ind'
+      - 4_params_munge/out/nhd2states.rds.ind
+      - 4_params_munge/out/mndow_bathy.rds.ind
 
   4_params_munge/out/nlcd_2011_buffers.rds.ind:
     command: munge_nlcd_buffers(target_name,
@@ -59,29 +56,12 @@ targets:
     command: gd_get('4_params_munge/out/lagos_depths.rds.ind')
 
   # Combine MN bathy files and add DOW ID
-  4_params_munge/out/MN_bathy.rds.ind:
-    command: munge_bathy(
+  4_params_munge/out/mndow_bathy.rds.ind:
+    command: munge_mndow_bathy(
       out_ind = target_name,
-      bathy_list_ind = '3_params_fetch/out/bathy_files.rds.ind')
-  4_params_munge/out/MN_bathy.rds:
-    command: gd_get('4_params_munge/out/MN_bathy.rds.ind')
+      bathy_list_ind = '3_params_fetch/out/bathy_files.rds.ind',
+      mndow_xwalk_ind = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
+  4_params_munge/out/mndow_bathy.rds:
+    command: gd_get('4_params_munge/out/mndow_bathy.rds.ind')
 
-
-# should this be in 2_crosswalk_munge?:
-  4_params_munge/out/nhd2states.rds.ind:
-    command: crosswalk_lakes_to_states(
-      out_ind = target_name,
-      lakes_ind = '2_crosswalk_munge/out/lakes_sf.rds.ind',
-      states = I(c('minnesota', 'wisconsin', 'north dakota', 'south dakota', 'michigan', 'indiana', 'iowa')))
-
-  4_params_munge/out/nhd2states.rds:
-    command: gd_get('4_params_munge/out/nhd2states.rds.ind')
-
-  4_params_munge/out/daily_secchi.feather.ind:
-    command: munge_daily_secchi(
-      in_ind = '3_params_fetch/in/86027900_daily_secchi.csv.ind',
-      dow_crosswalk_ind = '1_crosswalk_fetch/out/nhd2dowlknum.RData.ind',
-      out_ind = target_name)
-  4_params_munge/out/daily_secchi.feather:
-    command: gd_get('4_params_munge/out/daily_secchi.feather.ind')
 

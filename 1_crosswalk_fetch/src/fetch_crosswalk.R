@@ -38,6 +38,7 @@ process_wbic_lakes <- function(file_out = '1_crosswalk_fetch/out/wbic_lakes_sf.r
   wbic_lakes <- sf::st_read('~/Downloads/24K_Hydro.gdb/', layer = 'WD_HYDRO_WATERBODY_WBIC_AR_24K') %>%
     mutate(site_id = paste0('WBIC_', WATERBODY_WBIC)) %>% dplyr::select(site_id, SHAPE) %>%
     rename(geometry = SHAPE) %>% # why do I need to rename SHAPE to geometry??
+    sf::st_zm() %>%
     sf::st_transform(x, crs = 4326)
 
   saveRDS(wbic_lakes, file = file_out)

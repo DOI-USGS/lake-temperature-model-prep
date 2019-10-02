@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 7_config_merge/out/canonical_lakes_area.rds.ind
+type: file
+hash: 6e31395133402551bdc7d2035622fa24
+time: 2019-09-15 17:12:30 UTC
+depends:
+  1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind: d80682671f9f73df8fc16a2ce83a4c3a
+fixed: 075626eb1ee2e4dc186db2cbe7b1d6eb
+code:
+  functions:
+    munge_lake_area: 9d7c03b1d5b2d6acb19c525f0ab8f76c
+

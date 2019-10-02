@@ -1,0 +1,15 @@
+version: 0.3.0
+name: 7_config_merge/out/nml_H_A_values.rds.ind
+type: file
+hash: 300821be6eabc9cc809395a20d6ca8db
+time: 2019-09-15 18:41:33 UTC
+depends:
+  7_config_merge/out/canonical_lakes_area.rds.ind: 6e31395133402551bdc7d2035622fa24
+  4_params_munge/out/mndow_bathy.rds.ind: 2fff73caec6d90abf9c339200c691fec
+  4_params_munge/out/lagos_depths.rds.ind: 61df9b5c02aad91f8f20710b403867d0
+  4_params_munge/out/mglp_depths.rds.ind: e32f15371b241a3bd7b223c87e996387
+fixed: 37bf3ba36be40671d1febad554c5aece
+code:
+  functions:
+    munge_H_A: 0866d113dd09fca5236e5ebe08f0b276
+

@@ -20,30 +20,47 @@ targets:
       - 2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind
-      - 2_crosswalk_munge/out/mndow_nhdhr_intersect.rds.ind
       - 2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
       - 2_crosswalk_munge/out/centroid_lakes_sf.rds.ind
 
-  2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind:
-    command: crosswalk_poly_over_poly(
+  2_crosswalk_munge/out/mglp_nhdhr_intersect.rds.ind:
+    command: crosswalk_poly_intersect_poly(
       target_name,
       poly1_ind_file = '1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind',
       poly2_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      poly1_ID_name = I("MGLP_ID"),
+      crs=I(26915))
+  2_crosswalk_munge/out/mglp_nhdhr_intersect.rds:
+    command: gd_get('2_crosswalk_munge/out/mglp_nhdhr_intersect.rds.ind')
+
+  2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind:
+    command: choose1_poly_intersect_poly(
+      target_name,
+      intersect_ind_file = '2_crosswalk_munge/out/mglp_nhdhr_intersect.rds.ind',
       poly1_ID_name = I("MGLP_ID"))
   2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind')
 
-
-  2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind:
-    command: crosswalk_poly_over_poly(
+  2_crosswalk_munge/out/lagosne_nhdhr_intersect.rds.ind:
+    command: crosswalk_poly_intersect_poly(
       target_name,
       poly1_ind_file = '1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind',
       poly2_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      poly1_ID_name = I("LAGOS_ID"),
+      crs=I(26915))
+  2_crosswalk_munge/out/lagosne_nhdhr_intersect.rds:
+    command: gd_get('2_crosswalk_munge/out/lagosne_nhdhr_intersect.rds.ind')
+
+  2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind:
+    command: choose1_poly_intersect_poly(
+      target_name,
+      intersect_ind_file = '2_crosswalk_munge/out/lagosne_nhdhr_intersect.rds.ind',
       poly1_ID_name = I("LAGOS_ID"))
   2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds:
-    command: gd_get('2_crosswalk_munge/out/lagosne_nhdLookup.rds.ind')
+    command: gd_get('2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind')
 
   2_crosswalk_munge/out/mndow_nhdhr_intersect.rds.ind:
     command: crosswalk_poly_intersect_poly(
@@ -62,6 +79,24 @@ targets:
       poly1_ID_name = I("MNDOW_ID"))
   2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
+
+  2_crosswalk_munge/out/wbic_nhdhr_intersect.rds.ind:
+    command: crosswalk_poly_intersect_poly(
+      target_name,
+      poly1_ind_file = '1_crosswalk_fetch/out/wbic_lakes_sf.rds.ind',
+      poly2_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      poly1_ID_name = I("WBIC_ID"),
+      crs=I(26915))
+  2_crosswalk_munge/out/wbic_nhdhr_intersect.rds:
+    command: gd_get('2_crosswalk_munge/out/wbic_nhdhr_intersect.rds.ind')
+
+  2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind:
+    command: choose1_poly_intersect_poly(
+      target_name,
+      intersect_ind_file = '2_crosswalk_munge/out/wbic_nhdhr_intersect.rds.ind',
+      poly1_ID_name = I("WBIC_ID"))
+  2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind')
 
   2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind:
     command: crosswalk_points_in_poly(target_name,
@@ -100,7 +135,7 @@ targets:
     command: centroid_sf_lakes(
       out_ind = target_name,
       lake_ind = "1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind")
-  2_crosswalk_munge/out/centroid_lakes_sf.rds.rds:
+  2_crosswalk_munge/out/centroid_lakes_sf.rds:
     command: gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind')
 
   2_crosswalk_munge/out/names_nhdhr_xwalk.rds.ind:

@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind
+type: file
+hash: f8eeb51dede7c1453ef5b74fc6f5f0ad
+time: 2019-09-14 01:01:07 UTC
+depends:
+  2_crosswalk_munge/out/wbic_nhdhr_intersect.rds.ind: e9681f55bb6dd1da1c8b890c870575ba
+fixed: f6efc5e9d3b6359b075c913a4dec051e
+code:
+  functions:
+    choose1_poly_intersect_poly: 5ec2c5ba954b4e7c262b9352b8b466d9
+
