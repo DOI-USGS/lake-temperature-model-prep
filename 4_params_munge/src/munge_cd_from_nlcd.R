@@ -29,7 +29,7 @@ munge_cd_from_nlcd <- function(out_ind, nlcd_ind, nlcd_hc_file, areas_ind){
            shelter = case_when(D < Xt ~ min_wstr,
                                TRUE ~ 2/pi*acos(Xt/D)-(2*Xt/(pi*D^2))*sqrt(D^2-Xt^2)),
            cd = coef_wind_drag.ref*shelter^0.33) %>%
-    dplyr::select(site_id, cd)
+    dplyr::select(site_id, cd) %>% ungroup()
 
   # write, post, and promise the file is posted
   data_file <- scipiper::as_data_file(out_ind)
