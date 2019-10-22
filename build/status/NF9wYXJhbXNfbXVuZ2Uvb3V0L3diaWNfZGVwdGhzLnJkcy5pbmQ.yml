@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 4_params_munge/out/wbic_depths.rds.ind
+type: file
+hash: 2d5282815fb587b9cd0ff137485e924a
+time: 2019-10-22 23:08:10 UTC
+depends:
+  3_params_fetch/in/WI_Waterbodies.tsv.ind: f45187987a49becc377c15a4e569669d
+  2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind: f8eeb51dede7c1453ef5b74fc6f5f0ad
+fixed: d6c7da6a1809e05d53ffeabfe0838f86
+code:
+  functions:
+    munge_wbic_depths: 5cc82f198f9bd850bd33dc52160f29a2
+
