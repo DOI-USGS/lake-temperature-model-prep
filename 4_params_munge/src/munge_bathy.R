@@ -1,4 +1,20 @@
 
+munge_wbic_bathy <- function(out_ind, bathy_zip_ind, wbic_xwalk_ind){
+
+  wbic_xwalk <- sc_retrieve(wbic_xwalk_ind) %>% readRDS()
+  bth_dir <- tempdir()
+  bathy_data <- sc_retrieve(bathy_zip_ind) %>% unzip(exdir = bth_dir) %>%
+    purrr::map(function(x) {
+      WBIC_ID <- basename(x) %>% str_extract('WBIC_[0-9]+')
+      read_tsv(x, col_types = 'dd') %>% mutate(WBIC_ID = WBIC_ID)
+    }) %>% purrr::reduce(rbind) %>%
+    inner_join(wbic_xwalk, by = 'WBIC_ID') %>% dplyr::select(site_id, depths = depth, areas = area)
+
+  data_file <- scipiper::as_data_file(out_ind)
+  saveRDS(bathy_data, data_file)
+  gd_put(out_ind, data_file)
+}
+
 munge_mndow_bathy <- function(out_ind, bathy_list_ind, mndow_xwalk_ind){
 
   bathy_list <- readRDS(sc_retrieve(bathy_list_ind))
