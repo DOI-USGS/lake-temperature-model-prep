@@ -36,6 +36,9 @@ targets:
   3_params_fetch/in/WI_Waterbodies.tsv:
     command: gd_get('3_params_fetch/in/WI_Waterbodies.tsv.ind')
 
+  3_params_fetch/in/WBIC_hypsos_lakeattributes.zip:
+    command: gd_get('3_params_fetch/in/WBIC_hypsos_lakeattributes.zip.ind')
+
   3_params_fetch/out/LAGOS_NE_depths.csv.ind:
     command: fetch_LAGOS_NE_depths(target_name)
   3_params_fetch/out/LAGOS_NE_depths.csv:
