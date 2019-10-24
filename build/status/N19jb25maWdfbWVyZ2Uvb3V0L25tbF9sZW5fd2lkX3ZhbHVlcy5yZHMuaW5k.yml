@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 7_config_merge/out/nml_len_wid_values.rds.ind
+type: file
+hash: 24d5bffdb93206cbf450eeb33a04efb9
+time: 2019-10-24 19:42:10 UTC
+depends:
+  7_config_merge/out/canonical_lakes_area.rds.ind: 95047b3a824a3dc5ce80b56195554cf8
+fixed: 3c753f9c463f9782ca191a61b107bfb1
+code:
+  functions:
+    munge_wid_len: 22f68fff57f34ee4f6352e5fd7a30f82
+

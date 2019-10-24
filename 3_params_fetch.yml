@@ -31,8 +31,11 @@ targets:
   3_params_fetch/in/mndow_percentage_hypsos.zip:
     command: gd_get('3_params_fetch/in/mndow_percentage_hypsos.zip.ind')
 
-  3_params_fetch/in/mndow_hypsos_m-20191023.zip:
-    command: gd_get('3_params_fetch/in/mndow_hypsos_m-20191023.zip.ind')
+  3_params_fetch/in/mndow_hypsos_m-20191024.zip:
+    command: gd_get('3_params_fetch/in/mndow_hypsos_m-20191024.zip.ind')
+
+  3_params_fetch/in/new_mndow_hypsos_m.zip:
+    command: gd_get('3_params_fetch/in/new_mndow_hypsos_m.zip.ind')
 
   3_params_fetch/in/WBIC_hypsos_lakeattributes.zip:
     command: gd_get('3_params_fetch/in/WBIC_hypsos_lakeattributes.zip.ind')

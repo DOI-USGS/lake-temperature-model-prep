@@ -6,7 +6,8 @@ munge_lake_area <- function(out_ind, lakes_ind){
   areas <- lakes %>% # should probably do this as a mutate to keep it w/ site_id??
     st_area()
 
-  lake_areas <- data.frame(site_id = lakes$site_id, areas_m2 = as.numeric(areas)) # Units: [m^2]
+  lake_areas <- data.frame(site_id = lakes$site_id, areas_m2 = as.numeric(areas)) %>%
+    group_by(site_id) %>% summarize(areas_m2 = sum(areas_m2)) # Units: [m^2]
 
   # write, post, and promise the file is posted
   data_file <- scipiper::as_data_file(out_ind)

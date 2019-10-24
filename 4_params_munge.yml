@@ -25,7 +25,8 @@ targets:
   4_params_munge:
     depends:
       - 4_params_munge/out/nhd2states.rds.ind
-      - 4_params_munge/out/mndow_bathy.rds.ind
+      - 4_params_munge/out/mndow_01_bathy.rds.ind
+      - 4_params_munge/out/mndow_02_bathy.rds.ind
       - 4_params_munge/out/mndow_perc_bathy.rds.ind
       - 4_params_munge/out/wbic_bathy.rds.ind
       - 4_params_munge/out/mglp_depths.rds.ind
@@ -77,13 +78,23 @@ targets:
     command: gd_get('4_params_munge/out/mndow_perc_bathy.rds.ind')
 
   # Combine MN bathy files and add DOW ID
-  4_params_munge/out/mndow_bathy.rds.ind:
+  4_params_munge/out/mndow_01_bathy.rds.ind:
     command: munge_mndow_bathy(
       out_ind = target_name,
-      bathy_zip_ind = '3_params_fetch/in/mndow_hypsos_m-20191023.zip.ind',
+      bathy_zip_ind = '3_params_fetch/in/mndow_hypsos_m-20191024.zip.ind',
       mndow_xwalk_ind = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
-  4_params_munge/out/mndow_bathy.rds:
-    command: gd_get('4_params_munge/out/mndow_bathy.rds.ind')
+  4_params_munge/out/mndow_01_bathy.rds:
+    command: gd_get('4_params_munge/out/mndow_01_bathy.rds.ind')
+
+  4_params_munge/out/mndow_02_bathy.rds.ind:
+    command: munge_mndow_bathy(
+      out_ind = target_name,
+      bathy_zip_ind = '3_params_fetch/in/new_mndow_hypsos_m.zip.ind',
+      mndow_xwalk_ind = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
+  4_params_munge/out/mndow_02_bathy.rds:
+    command: gd_get('4_params_munge/out/mndow_02_bathy.rds.ind')
+
+
 
   4_params_munge/out/wbic_bathy.rds.ind:
     command: munge_wbic_bathy(target_name,
