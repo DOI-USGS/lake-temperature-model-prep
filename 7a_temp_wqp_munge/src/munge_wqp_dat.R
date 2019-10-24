@@ -15,19 +15,19 @@ munge_temperature <- function(data.in){
                          stringsAsFactors = FALSE)
 
   activity.sites <- group_by(data.in, OrganizationIdentifier) %>%
-    summarize(act.n = sum(!is.na(ActivityDepthHeightMeasure.MeasureValue)), res.n=sum(!is.na((ResultDepthHeightMeasure.MeasureValue)))) %>%
+    summarize(act.n = sum(!is.na(`ActivityDepthHeightMeasure/MeasureValue`)), res.n=sum(!is.na((`ResultDepthHeightMeasure/MeasureValue`)))) %>%
     mutate(use.depth.code = ifelse(act.n>res.n, 'act','res')) %>%
     dplyr::select(OrganizationIdentifier, use.depth.code)
 
   left_join(data.in, activity.sites, by='OrganizationIdentifier') %>%
-    mutate(raw.depth = as.numeric(ifelse(use.depth.code == 'act', ActivityDepthHeightMeasure.MeasureValue, ResultDepthHeightMeasure.MeasureValue)),
-           depth.units = ifelse(use.depth.code == 'act', ActivityDepthHeightMeasure.MeasureUnitCode, ResultDepthHeightMeasure.MeasureUnitCode)) %>%
+    mutate(raw.depth = as.numeric(ifelse(use.depth.code == 'act', `ActivityDepthHeightMeasure/MeasureValue`, `ResultDepthHeightMeasure/MeasureValue`)),
+           depth.units = ifelse(use.depth.code == 'act', `ActivityDepthHeightMeasure/MeasureUnitCode`, `ResultDepthHeightMeasure/MeasureUnitCode`)) %>%
     rename(Date=ActivityStartDate,
            raw.value=ResultMeasureValue,
-           units=ResultMeasure.MeasureUnitCode,
+           units=`ResultMeasure/MeasureUnitCode`,
            wqx.id=MonitoringLocationIdentifier,
-           timezone = ActivityStartTime.TimeZoneCode) %>%
-    mutate(time = substr(ActivityStartTime.Time, 0, 5)) %>%
+           timezone = `ActivityStartTime/TimeZoneCode`) %>%
+    mutate(time = substr(`ActivityStartTime/Time`, 0, 5)) %>%
     dplyr::select(Date, time, timezone, raw.value, units, raw.depth, depth.units, wqx.id) %>%
     left_join(unit.map, by='units') %>%
     left_join(depth.unit.map, by='depth.units') %>%

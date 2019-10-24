@@ -42,7 +42,8 @@ munge_H_A <- function(out_ind, areas_ind, ...){
     if (basename(ind_file) %>% stringr::str_detect('bathy')){
       H_A[use_ids] <- lapply(X = use_ids, FUN = function(x) {
         filter(depth_data, site_id == x) %>% arrange(desc(depths)) %>%
-          mutate(H = crest_height - depths) %>% dplyr::select(H, A = areas)
+          mutate(H = crest_height - depths) %>% dplyr::select(H, A = areas) %>% # duplicate values of H
+          group_by(H) %>% summarize(A = mean(A)) %>% ungroup()
       })
     } else { # is max depth
       H_A[use_ids] <- lapply(X = use_ids, FUN = function(x) {

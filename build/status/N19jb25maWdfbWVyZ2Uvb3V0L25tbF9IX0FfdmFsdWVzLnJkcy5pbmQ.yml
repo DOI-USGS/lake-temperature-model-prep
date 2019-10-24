@@ -1,17 +1,18 @@
 version: 0.3.0
 name: 7_config_merge/out/nml_H_A_values.rds.ind
 type: file
-hash: 2d10456fd3a603d3bf965cb7e320742d
-time: 2019-10-23 02:05:31 UTC
+hash: 27d578e1b45172aa7e6319c6f0e20afe
+time: 2019-10-24 02:28:37 UTC
 depends:
   7_config_merge/out/canonical_lakes_area.rds.ind: 6e31395133402551bdc7d2035622fa24
-  4_params_munge/out/mndow_bathy.rds.ind: 2fff73caec6d90abf9c339200c691fec
-  4_params_munge/out/wbic_bathy.rds.ind: 3c45e5a9465b9b3b085a51731ca94ad8
+  4_params_munge/out/mndow_bathy.rds.ind: c654600f2d2e01ce1f19f1268b1fcd74
+  4_params_munge/out/mndow_perc_bathy.rds.ind: 05405783357da90664dbcd810c676fd0
+  4_params_munge/out/wbic_bathy.rds.ind: 7b8babf06bc9f5ce35bedc2b79c53288
   4_params_munge/out/lagos_depths.rds.ind: 61df9b5c02aad91f8f20710b403867d0
   4_params_munge/out/wbic_depths.rds.ind: d37bc8ff4fa90e6c4ee49e2489548322
   4_params_munge/out/mglp_depths.rds.ind: e32f15371b241a3bd7b223c87e996387
 fixed: 37bf3ba36be40671d1febad554c5aece
 code:
   functions:
-    munge_H_A: 0866d113dd09fca5236e5ebe08f0b276
+    munge_H_A: ffd77dbee2a621d3e7810582d9ccdbe3
 

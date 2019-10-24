@@ -1,13 +1,14 @@
 version: 0.3.0
 name: 4_params_munge/out/wbic_bathy.rds.ind
 type: file
-hash: 3c45e5a9465b9b3b085a51731ca94ad8
-time: 2019-10-23 01:52:20 UTC
+hash: 7b8babf06bc9f5ce35bedc2b79c53288
+time: 2019-10-24 01:11:49 UTC
 depends:
   3_params_fetch/in/WBIC_hypsos_lakeattributes.zip.ind: 75e57e3e26106a5dd3824d72b2500fad
   2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind: f8eeb51dede7c1453ef5b74fc6f5f0ad
 fixed: 1b0f21eaf1774ba70f524e2c1d2ea23b
 code:
   functions:
-    munge_wbic_bathy: e5462d24a0cf3f4ccd5c7b778eecae94
+    collapse_multi_bathy: 9e7c2b3e48c7a54c6133a2707cac622f
+    munge_wbic_bathy: 5e00734bbc3465d6fc0ee5895d525993
 
