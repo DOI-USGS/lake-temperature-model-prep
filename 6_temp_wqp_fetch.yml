@@ -64,6 +64,8 @@ targets:
   6_temp_wqp_fetch/out/wqp_temperature_data.rds.ind:
     command: loop_tasks(task_plan=wqp_temp_pull_plan, task_makefile='6_temp_wqp_fetch_tasks.yml',
       num_tries=I(30), sleep_on_error=I(20))
+  6_temp_wqp_fetch/out/wqp_temperature_data.rds:
+    command: gd_get('6_temp_wqp_fetch/out/wqp_temperature_data.rds.ind')
 
   wqp_secchi_pull_plan:
     command: plan_wqp_pull(partitions_ind='6_temp_wqp_fetch/inout/wqpsecchi_partitions.feather.ind',
@@ -77,4 +79,5 @@ targets:
   6_temp_wqp_fetch/out/wqp_secchi_data.rds.ind:
     command: loop_tasks(task_plan=wqp_secchi_pull_plan, task_makefile='6_secchi_wqp_fetch_tasks.yml',
       num_tries=I(30), sleep_on_error=I(20))
-
+  6_temp_wqp_fetch/out/wqp_secchi_data.rds:
+    command: gd_get('6_temp_wqp_fetch/out/wqp_secchi_data.rds.ind')

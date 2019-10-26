@@ -13,24 +13,13 @@ targets:
 
   7a_temp_wqp_munge:
     depends:
-     - 7a_temp_wqp_munge/out/all_wqp_dat_linked.feather.ind
+     - 7a_temp_wqp_munge/out/temp_wqp_munged.feather.ind
 
   # -- download, munge, and bind individual wqp pulls/files -- #
-  7a_temp_wqp_munge/tmp/all_wqp_dat.rds.ind:
-    command: munge_wqp_dat(
+  7a_temp_wqp_munge/out/temp_wqp_munged.feather.ind:
+    command: munge_wqp_temperature(
       outind = target_name,
-      wqp_ind = '6_temp_wqp_fetch/inout/wqp_haves.feather.ind')
+      wqp_temp_ind = '6_temp_wqp_fetch/out/wqp_temperature_data.rds.ind')
+  7a_temp_wqp_munge/out/temp_wqp_munged.feather:
+    command: require_local('7a_temp_wqp_munge/out/temp_wqp_munged.feather.ind')
 
-  7a_temp_wqp_munge/tmp/all_wqp_dat.rds:
-    command: require_local('7a_temp_wqp_munge/tmp/all_wqp_dat.rds.ind')
-
-  # -- crosswalk between wqp sites and NHD lake IDs. Push to GD. -- #
-  7a_temp_wqp_munge/out/all_wqp_dat_linked.feather.ind:
-    command: crosswalk_wqp_dat(
-      outind = target_name,
-      wqp_munged = '7a_temp_wqp_munge/tmp/all_wqp_dat.rds.ind',
-      wqp_crosswalk = '2_crosswalk_munge/out/wqp_nhdLookup.rds.ind',
-      wqp_latlong_ind = '1_crosswalk_fetch/out/wqp_lake_sites_sf.rds.ind')
-
-  7a_temp_wqp_munge/out/all_wqp_dat_linked.feather:
-    command: gd_get('7a_temp_wqp_munge/out/all_wqp_dat_linked.feather.ind')

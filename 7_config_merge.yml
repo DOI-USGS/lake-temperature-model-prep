@@ -50,7 +50,9 @@ targets:
   7_config_merge/out/nml_H_A_values.rds.ind:
     command: munge_H_A(target_name,
       areas_ind = '7_config_merge/out/canonical_lakes_area.rds.ind',
-      '4_params_munge/out/mndow_bathy.rds.ind',
+      '4_params_munge/out/mndow_02_bathy.rds.ind',
+      '4_params_munge/out/mndow_01_bathy.rds.ind',
+      '4_params_munge/out/mndow_perc_bathy.rds.ind',
       '4_params_munge/out/wbic_bathy.rds.ind',
       '4_params_munge/out/lagos_depths.rds.ind',
       '4_params_munge/out/wbic_depths.rds.ind',

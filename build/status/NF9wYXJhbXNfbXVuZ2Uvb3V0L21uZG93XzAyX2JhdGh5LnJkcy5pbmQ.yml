@@ -1,0 +1,14 @@
+version: 0.3.0
+name: 4_params_munge/out/mndow_02_bathy.rds.ind
+type: file
+hash: 80dddbecf2d9e297c1e492281014a1ce
+time: 2019-10-24 19:57:37 UTC
+depends:
+  3_params_fetch/in/new_mndow_hypsos_m.zip.ind: 759a218e3951b609b40a198b1e7f67f8
+  2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind: bb78e92f81a3864a8a9d547fafddb82c
+fixed: 0cfa32f448f0a99da20d468a435ba312
+code:
+  functions:
+    collapse_multi_bathy: 5bc1b5b0f04bbe175472b7c7cbd84570
+    munge_mndow_bathy: ada0d90aa621b79d0b42eb144ad72f37
+

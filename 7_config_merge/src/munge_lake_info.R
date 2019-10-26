@@ -6,7 +6,8 @@ munge_lake_area <- function(out_ind, lakes_ind){
   areas <- lakes %>% # should probably do this as a mutate to keep it w/ site_id??
     st_area()
 
-  lake_areas <- data.frame(site_id = lakes$site_id, areas_m2 = as.numeric(areas)) # Units: [m^2]
+  lake_areas <- data.frame(site_id = lakes$site_id, areas_m2 = as.numeric(areas)) %>%
+    group_by(site_id) %>% summarize(areas_m2 = sum(areas_m2)) # Units: [m^2]
 
   # write, post, and promise the file is posted
   data_file <- scipiper::as_data_file(out_ind)
@@ -42,7 +43,8 @@ munge_H_A <- function(out_ind, areas_ind, ...){
     if (basename(ind_file) %>% stringr::str_detect('bathy')){
       H_A[use_ids] <- lapply(X = use_ids, FUN = function(x) {
         filter(depth_data, site_id == x) %>% arrange(desc(depths)) %>%
-          mutate(H = crest_height - depths) %>% dplyr::select(H, A = areas)
+          mutate(H = crest_height - depths) %>% dplyr::select(H, A = areas) %>% # duplicate values of H
+          group_by(H) %>% summarize(A = mean(A)) %>% ungroup()
       })
     } else { # is max depth
       H_A[use_ids] <- lapply(X = use_ids, FUN = function(x) {
