@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 6_wqp_fetch/out/wqp_temperature_data.rds.ind
+type: file
+hash: 9d70c5859d22f0d1a81175c24cef6c77
+time: 2019-10-27 21:21:46 UTC
+depends:
+  wqp_temp_pull_plan: dd50ddef6cd01a2886c9eda4f43270a4
+  6_wqp_fetch_temperature_tasks.yml: a38bde1942da0f2c31f7574e62aae587
+fixed: c5cfdfacf90cb942deb045710cb0842c
+code:
+  functions: {}
+

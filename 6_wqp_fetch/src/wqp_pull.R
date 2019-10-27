@@ -13,10 +13,10 @@
 plan_wqp_pull <- function(partitions_ind, wqp_charnames_obj) {
 
   folders <- list(
-    tmp='6_temp_wqp_fetch/tmp',
-    out='6_temp_wqp_fetch/out',
-    log='6_temp_wqp_fetch/log')
-  partitions <- feather::read_feather(scipiper::sc_retrieve(partitions_ind, remake_file = '6_temp_wqp_fetch.yml'))
+    tmp='6_wqp_fetch/tmp',
+    out='6_wqp_fetch/out',
+    log='6_wqp_fetch/log')
+  partitions <- feather::read_feather(scipiper::sc_retrieve(partitions_ind, remake_file = '6_wqp_fetch.yml'))
 
   # after all wanted data have been pulled, this function will be called but
   # doesn't need to create anything much, so just return NULL
@@ -67,7 +67,7 @@ create_wqp_pull_makefile <- function(makefile, task_plan, final_targets) {
 
   create_task_makefile(
     makefile=makefile, task_plan=task_plan,
-    include = c('6_temp_wqp_fetch.yml'),
+    include = c('6_wqp_fetch.yml'),
     packages=c('dplyr', 'dataRetrieval', 'feather', 'scipiper', 'yaml', 'stringr', 'jsonlite', 'httr'),
     file_extensions=c('ind','feather'), finalize_funs = 'combine_wqp_data', final_targets = final_targets)
 }

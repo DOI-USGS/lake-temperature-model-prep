@@ -1,9 +1,9 @@
 # munge wqp data
-munge_wqp_temperature <- function(outind, wqp_temp_ind){
+munge_wqp_temperature <- function(outind, wqp_ind){
 
   outfile <- as_data_file(outind)
 
-  wqp_temp_data <- scipiper::sc_retrieve(wqp_temp_ind) %>% readRDS()
+  wqp_temp_data <- scipiper::sc_retrieve(wqp_ind) %>% readRDS()
   # from original lake temp repo: https://github.com/USGS-R/necsc-lake-modeling/blob/master/scripts/download_munge_wqp.R
   max.temp <- 40 # threshold!
   min.temp <- 0
@@ -47,6 +47,25 @@ munge_wqp_temperature <- function(outind, wqp_temp_ind){
   gd_put(outind, outfile)
 }
 
+munge_wqp_secchi <- function(outind, wqp_ind){
+
+  outfile <- as_data_file(outind)
+
+  wqp_data <- scipiper::sc_retrieve(wqp_ind) %>% readRDS()
+
+  unit_map <- data.frame(units=c('m','in','ft','cm', NA),
+                         convert = c(1,0.0254,0.3048,0.01, NA),
+                         stringsAsFactors = FALSE)
+
+  rename(wqp_data, Date=ActivityStartDate, value=ResultMeasureValue, units=`ResultMeasure/MeasureUnitCode`) %>%
+    dplyr::select(Date, value, units, MonitoringLocationIdentifier) %>%
+    left_join(unit_map, by='units') %>%
+    mutate(secchi=value*convert) %>%
+    filter(!is.na(secchi)) %>%
+    dplyr::select(Date, MonitoringLocationIdentifier, secchi) %>%
+    feather::write_feather(outfile)
+  gd_put(outind, outfile)
+}
 
 crosswalk_wqp_dat <- function(outind, wqp_munged, wqp_crosswalk, wqp_latlong_ind) {
 
