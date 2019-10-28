@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/winslow_nhdhr_xwalk.rds.ind
+type: file
+hash: 0035cadb012ace68a396972b731bdd7a
+time: 2019-10-28 14:18:48 UTC
+depends:
+  2_crosswalk_munge/out/winslow_nhdhr_intersect.rds.ind: 9d2c18a1e7a6904d9b3454dde36ff097
+fixed: ae2891e027adf0c2e116ac60470c682f
+code:
+  functions:
+    choose1_poly_intersect_poly: 5ec2c5ba954b4e7c262b9352b8b466d9
+
