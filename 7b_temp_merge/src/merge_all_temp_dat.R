@@ -11,9 +11,9 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
   total_obs <- nrow(wqp_dat) + nrow(coop_dat)
 
   # merge and remove duplicate observations - defined by rounding to 1 decimal point for depth and temp
-  all_dat <- dplyr::select(wqp_dat, date = Date, time, timezone, depth, temp = wtemp, nhd_id = id, source_id = wqx.id, source_site_id = wqx.id) %>%
+  all_dat <- dplyr::select(wqp_dat, date = Date, time, timezone, depth, temp = wtemp, nhdhr_id = id, source_id = MonitoringLocationIdentifier, source_site_id = MonitoringLocationIdentifier) %>%
     mutate(source = 'wqp') %>%
-    bind_rows(dplyr::select(coop_dat, date = DateTime, time, timezone, depth, temp, nhd_id = site_id, source_id = state_id, source_site_id = site, source)) %>%
+    bind_rows(dplyr::select(coop_dat, date = DateTime, time, timezone, depth, temp, nhdhr_id = site_id, source_id = state_id, source_site_id = site, source)) %>%
     mutate(depth = round(depth, 2),
            depth1 = round(depth, 1),
            temp = round(temp, 2),
@@ -22,7 +22,7 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
 
   all_dat_distinct <- all_dat %>%
     mutate(timezone = ifelse(is.na(time), NA, timezone)) %>%
-    distinct(nhd_id, date, time, depth1, temp1, .keep_all = TRUE) %>%
+    distinct(nhdhr_id, date, time, depth1, temp1, .keep_all = TRUE) %>%
     dplyr::select(-depth1, -temp1)
 
   # note - could still have lake/date/depth duplicates here
@@ -58,14 +58,14 @@ reduce_temp_data <- function(outind, inind) {
   # have repeated values
 
   dat_notimes <- filter(all_dat, is.na(time)) %>%
-    distinct(nhd_id, date, depth, temp, .keep_all = TRUE)
+    distinct(nhdhr_id, date, depth, temp, .keep_all = TRUE)
 
-  # if we have multiple observations per nhd_id/site/date/depth with no time stamp,
+  # if we have multiple observations per nhdhr_id/site/date/depth with no time stamp,
   # we assume these were
   # taken at different times and choose a single time
   # take the middle value -- e.g., if there are 3 obs, take 2nd - best chance to capture mid-day
   dat_notimes_timeresolved <- filter(dat_notimes, !is.na(source_site_id)) %>%
-    group_by(nhd_id, date, depth, source_site_id) %>%
+    group_by(nhdhr_id, date, depth, source_site_id) %>%
     mutate(n = n()) %>%
     summarize(temp = temp[floor(mean(n)/2) + 1]) %>%
     bind_rows(filter(dat_notimes, is.na(source_site_id))) #bind back together with data with no siteids
@@ -79,6 +79,10 @@ reduce_temp_data <- function(outind, inind) {
 
   # find local times closest to noon
   # adjust UTC to be central time by subtracting 7 hours instead of 12
+
+  # FIX THIS
+  # more time zones
+  # need to account for pos or neg diff from noon
   dat_times <- filter(all_dat, !is.na(time)) %>%
     mutate(time_hm = lubridate::hm(time)) %>%
     mutate(hours_diff_noon = case_when(timezone %in% 'UTC' ~ abs(time_hm$hour - 7) + (time_hm$minute/60),
@@ -86,13 +90,13 @@ reduce_temp_data <- function(outind, inind) {
 
   # group by lake, siteid, date, depth and take the time closest to noon
   dat_singletimes <- dat_times %>%
-    group_by(nhd_id, source_site_id,  date, depth) %>%
+    group_by(nhdhr_id, source_site_id,  date, depth) %>%
     summarize(temp = temp[which.min(hours_diff_noon)],
               time = time[which.min(hours_diff_noon)],
               ntimeobs = n()) %>%
-    distinct(nhd_id, date, depth, temp, .keep_all = TRUE) %>%
+    distinct(nhdhr_id, date, depth, temp, .keep_all = TRUE) %>%
     ungroup() %>%
-    arrange(nhd_id, date, depth)
+    arrange(nhdhr_id, date, depth)
 
   cat('There were', length(which(dat_singletimes$ntimeobs > 1)),
       "unique lake-site-date-depths with repeated observations where the observation with the timestamp closest to noon was retained.")
@@ -104,9 +108,10 @@ reduce_temp_data <- function(outind, inind) {
   # dropping values that are the same which would be averaged later
   all_dat_singletimes <- bind_rows(dplyr::select(dat_notimes_timeresolved, -time, -timezone),
                                    dplyr::select(dat_singletimes, -time, -ntimeobs)) %>%
-    distinct(nhd_id, date, depth, temp, .keep_all = TRUE) %>%
-    group_by(nhd_id, date, depth) %>%
-    summarize(temp = mean(temp))
+    distinct(nhdhr_id, date, depth, temp, .keep_all = TRUE) %>%
+    group_by(nhdhr_id, date, depth) %>%
+    summarize(temp = mean(temp)) %>%
+    ungroup()
 
   all_dat_singletimes_recent <- filter(all_dat_singletimes, date >= as.Date('1979-01-01'))
 
