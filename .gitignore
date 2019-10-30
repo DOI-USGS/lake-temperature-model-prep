@@ -75,7 +75,6 @@ rsconnect/
 
 # tmp wqp indicators
 6_temp_wqp_fetch/tmp/*
-build/status/Nl90ZW1wX3dxcF9mZXRjaC90bX*
 
 # tmp coop munged files/indicators
 7a_temp_coop_munge/tmp/*
@@ -83,7 +82,7 @@ build/status/N2FfdGVtcF9jb29wX211bmdlL3RtcC9*
 
 # tmp wqp munge indicators
 7a_temp_wqp_munge/tmp/*
-build/status/N2FfdGVtcF93cXBfbXVuZ2UvdG1wL2FsbF93cXBfZGF0LnJkcy5pbmQ*
+
 
 # ignore bathy downloads
 3_params_fetch/in/hypsos_m/*
