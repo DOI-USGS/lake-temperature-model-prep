@@ -8,6 +8,7 @@ packages:
   - sf
   - lwgeom
   - tidyr
+  - feather
   - maps
 
 
@@ -26,6 +27,7 @@ targets:
       - 7_config_merge/out/nml_lake_depth_values.rds.ind
       - 7_config_merge/out/nml_layer_thick_values.rds.ind
       - 7_config_merge/out/nml_meteo_fl_values.rds.ind
+      - 7_config_merge/out/nml_Kw_values.rds.ind
 
   7_config_merge/out/canonical_lakes_area.rds.ind:
     command: munge_lake_area(target_name,
@@ -86,3 +88,10 @@ targets:
       time_range = replete_time_range)
   7_config_merge/out/nml_meteo_fl_values.rds:
     command: gd_get('7_config_merge/out/nml_meteo_fl_values.rds.ind')
+
+  7_config_merge/out/nml_Kw_values.rds.ind:
+    command: munge_Kw(target_name,
+      secchi_ind = '7a_wqp_munge/out/secchi_wqp_munged.feather.ind',
+      wqp_xwalk_ind = '2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind')
+  7_config_merge/out/nml_Kw_values.rds:
+    command: gd_get('7_config_merge/out/nml_Kw_values.rds.ind')

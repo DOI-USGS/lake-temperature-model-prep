@@ -15,6 +15,19 @@ munge_lake_area <- function(out_ind, lakes_ind){
   gd_put(out_ind, data_file)
 }
 
+munge_Kw <- function(out_ind, secchi_ind, wqp_xwalk_ind){
+
+  wqp_xwalk <- scipiper::sc_retrieve(wqp_xwalk_ind) %>% readRDS()
+  Kw_data <- scipiper::sc_retrieve(secchi_ind) %>% feather::read_feather() %>%
+    inner_join(wqp_xwalk, by = "MonitoringLocationIdentifier") %>% group_by(site_id) %>%
+    summarise(Kw = mean(secchi, na.rm = TRUE)) %>% filter(!is.na(Kw)) %>%
+    dplyr::select(site_id, Kw)
+  # write, post, and promise the file is posted
+  data_file <- scipiper::as_data_file(out_ind)
+  saveRDS(Kw_data, data_file)
+  gd_put(out_ind, data_file)
+}
+
 #' combines hypsographic data w/ max depth data.
 #' @param out_ind out indicator file
 #' @param areas_ind indicator file for data.frame that includes site_id and areas_m2
@@ -137,7 +150,7 @@ munge_meteo_fl <- function(out_ind, centroids_ind, lake_depth_ind, sf_grid, time
     tidyr::gather(key = cent_idx, value = grid_idx) %>%
     mutate(x = sf_grid[grid_idx,]$x, y = sf_grid[grid_idx,]$y) %>%
     mutate(site_id = centroids_sf$site_id) %>%
-    mutate(meteo_fl = create_meteo_filepath(t0, t1, x, y, dirname = 'drivers')) %>%
+    mutate(meteo_fl = create_meteo_filepath(t0, t1, x, y, dirname = 'drivers') %>% basename()) %>% #using basename to get rid of dir
     dplyr::select(site_id, meteo_fl)
 
   data_file <- scipiper::as_data_file(out_ind)

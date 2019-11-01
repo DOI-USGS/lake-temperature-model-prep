@@ -24,7 +24,8 @@ munge_cd_from_nlcd <- function(out_ind, nlcd_ind, nlcd_hc_file, areas_ind){
     dplyr::select(site_id = id, nlcd_class) %>%
     left_join(nlcd_hc) %>%
     left_join(lake_areas) %>%
-    mutate(Xt = 50 * hc_value, # equations from Markford et al. 2010
+    mutate(site_id = as.character(site_id),
+           Xt = 50 * hc_value, # equations from Markfort et al. 2010
            D = 2*sqrt(areas_m2/pi),
            shelter = case_when(D < Xt ~ min_wstr,
                                TRUE ~ 2/pi*acos(Xt/D)-(2*Xt/(pi*D^2))*sqrt(D^2-Xt^2)),
