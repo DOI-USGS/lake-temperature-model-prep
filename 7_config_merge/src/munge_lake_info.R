@@ -15,6 +15,24 @@ munge_lake_area <- function(out_ind, lakes_ind){
   gd_put(out_ind, data_file)
 }
 
+munge_cd_from_area <- function(out_ind, areas_ind){
+
+  min_wstr <- 0.0001 # this is the minimum wind sheltering value we'll use
+  coef_wind_drag.ref <- 0.00140 # reference cd value which will be scaled
+  data_file <- scipiper::as_data_file(out_ind)
+
+  cds <- scipiper::sc_retrieve(areas_ind) %>% readRDS() %>%
+    mutate(wstr = 1.0 - exp(-0.3*(areas_m2*1.0e-6))) %>%
+    mutate(cd = case_when(
+      wstr < min_wstr ~ coef_wind_drag.ref*min_wstr^0.33,
+      TRUE ~ coef_wind_drag.ref*wstr^0.33)
+
+    ) %>% dplyr::select(site_id, cd) %>%
+    saveRDS(data_file)
+
+  gd_put(out_ind, data_file)
+}
+
 munge_Kw <- function(out_ind, secchi_ind, wqp_xwalk_ind){
 
   wqp_xwalk <- scipiper::sc_retrieve(wqp_xwalk_ind) %>% readRDS()

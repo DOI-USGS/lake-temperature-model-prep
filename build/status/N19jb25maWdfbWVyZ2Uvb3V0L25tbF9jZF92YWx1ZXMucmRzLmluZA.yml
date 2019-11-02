@@ -1,14 +1,12 @@
 version: 0.3.0
 name: 7_config_merge/out/nml_cd_values.rds.ind
 type: file
-hash: 8f47baab98dc9eb8bb2ff9da43c20c42
-time: 2019-10-30 17:10:53 UTC
+hash: 8d551f707cbd2a013592a252839a0784
+time: 2019-11-02 09:39:13 UTC
 depends:
-  4_params_munge/out/nlcd_2011_buffers.rds.ind: 6f63e8f0fe2b7c8af3e917e71e642de4
-  4_params_munge/in/nlcd_class_heights.tsv: 9657e285256242b2be58aaf7e54c023c
   7_config_merge/out/canonical_lakes_area.rds.ind: 95047b3a824a3dc5ce80b56195554cf8
 fixed: 8b0cba056f3131112d1db0da02000370
 code:
   functions:
-    munge_cd_from_nlcd: 88b0b213067791016115a802d8121f46
+    munge_cd_from_area: c655eeeb89bbdfe2b7ae6aac6adfa360
 
