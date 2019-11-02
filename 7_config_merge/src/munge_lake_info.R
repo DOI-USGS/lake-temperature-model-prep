@@ -20,7 +20,7 @@ munge_Kw <- function(out_ind, secchi_ind, wqp_xwalk_ind){
   wqp_xwalk <- scipiper::sc_retrieve(wqp_xwalk_ind) %>% readRDS()
   Kw_data <- scipiper::sc_retrieve(secchi_ind) %>% feather::read_feather() %>%
     inner_join(wqp_xwalk, by = "MonitoringLocationIdentifier") %>% group_by(site_id) %>%
-    summarise(Kw = mean(secchi, na.rm = TRUE)) %>% filter(!is.na(Kw)) %>%
+    summarise(Kw = 1.7/mean(secchi, na.rm = TRUE)) %>% filter(!is.na(Kw)) %>%
     dplyr::select(site_id, Kw)
   # write, post, and promise the file is posted
   data_file <- scipiper::as_data_file(out_ind)
