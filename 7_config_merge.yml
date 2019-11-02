@@ -36,9 +36,7 @@ targets:
     command: gd_get('7_config_merge/out/canonical_lakes_area.rds.ind')
 
   7_config_merge/out/nml_cd_values.rds.ind:
-    command: munge_cd_from_nlcd(target_name,
-      nlcd_ind = '4_params_munge/out/nlcd_2011_buffers.rds.ind',
-      nlcd_hc_file = '4_params_munge/in/nlcd_class_heights.tsv',
+    command: munge_cd_from_area(target_name,
       areas_ind = '7_config_merge/out/canonical_lakes_area.rds.ind')
   7_config_merge/out/nml_cd_values.rds:
     command: gd_get('7_config_merge/out/nml_cd_values.rds.ind')
