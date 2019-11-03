@@ -17,6 +17,7 @@ targets:
   2_crosswalk_munge:
     depends:
       - 2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind
@@ -26,6 +27,11 @@ targets:
       - 2_crosswalk_munge/out/winslow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/buffered_lakes_sf.rds.ind
       - 2_crosswalk_munge/out/centroid_lakes_sf.rds.ind
+
+  2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind:
+    command: scmake(I('gnisname_nhdhr_xwalk.rds.ind_promise'), '1_crosswalk_fetch_nhd_tasks.yml')
+  2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind')
 
   2_crosswalk_munge/out/mglp_nhdhr_intersect.rds.ind:
     command: crosswalk_poly_intersect_poly(

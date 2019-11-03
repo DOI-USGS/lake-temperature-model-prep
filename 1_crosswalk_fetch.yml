@@ -43,7 +43,9 @@ targets:
       min_size = I(40000))
 
   1_crosswalk_fetch_nhd_tasks.yml:
-    command: create_nhd_HR_download_makefile(target_name, nhd_HR_download_plan, final_targets = I('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind'))
+    command: create_nhd_HR_download_makefile(target_name, nhd_HR_download_plan,
+      final_targets = I(c('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      '2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind')))
 
   1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind:
     command: loop_tasks(nhd_HR_download_plan, '1_crosswalk_fetch_nhd_tasks.yml')
