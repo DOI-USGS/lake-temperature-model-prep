@@ -10,20 +10,50 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
 
   total_obs <- nrow(wqp_dat) + nrow(coop_dat)
 
-  # merge and remove duplicate observations - defined by rounding to 1 decimal point for depth and temp
-  all_dat <- dplyr::select(wqp_dat, date = Date, time, timezone, depth, temp = wtemp, nhdhr_id = id, source_id = MonitoringLocationIdentifier, source_site_id = MonitoringLocationIdentifier) %>%
+  # bind data together
+  # get rid of egregious values by jan/feb and july/aug
+  # get rid of negative depths
+  # get rid of data before 1979
+  # before doing anything else
+
+  f_all_dat <- dplyr::select(wqp_dat, date = Date, time, timezone, depth, temp = wtemp, nhdhr_id = id, source_id = MonitoringLocationIdentifier, source_site_id = MonitoringLocationIdentifier) %>%
     mutate(source = 'wqp') %>%
-    bind_rows(dplyr::select(coop_dat, date = DateTime, time, timezone, depth, temp, nhdhr_id = site_id, source_id = state_id, source_site_id = site, source)) %>%
+    bind_rows(dplyr::select(coop_dat, date = DateTime, time,
+                            timezone, depth, temp, nhdhr_id = site_id, source_id = state_id,
+                            source_site_id = site, source)) %>%
+    mutate(month = lubridate::month(date)) %>%
+    filter(!(month %in% c(1, 2) & temp > 10)) %>%
+    filter(!(month %in% c(7, 8) & depth < 0.5 & temp < 10)) %>%
+    mutate(timezone = ifelse(is.na(time), NA, timezone))
+
+  recent_f_dat <- filter(f_all_dat, date >= as.Date('1979-01-01'))
+
+  cat(total_obs - nrow(f_all_dat), 'temperature observations were flagged as egregious (>10 deg C in Jan/Feb or <10 deg C at surface in July/Aug) or had negative depths and were removed.')
+  cat('\n', nrow(f_all_dat) - nrow(recent_f_dat), 'historical (pre-1979) temperature records were removed because they were outside of the modeling time frame.')
+
+
+  # merge and remove duplicate observations
+  # first check for duplicates from the same sources
+  # depth and temp
+
+  no_dupes_dat <-  recent_f_dat %>%
     mutate(depth = round(depth, 2),
            depth1 = round(depth, 1),
            temp = round(temp, 2),
            temp1 = round(temp, 1)) %>%
     distinct()
 
-  all_dat_distinct <- all_dat %>%
-    mutate(timezone = ifelse(is.na(time), NA, timezone)) %>%
-    distinct(nhdhr_id, date, time, depth1, temp1, .keep_all = TRUE) %>%
+
+  # remove duplicates again
+  # now defined as the same temperature observation
+  # for any given lake-site-date-depth
+  # (temp and depth rounded to 1 decimal for matching purposes)
+  # this will take the first source metadata with it
+  all_dat_distinct <- no_dupes_dat %>%
+    distinct(nhdhr_id, source_site_id, date, time, depth1, temp1, .keep_all = TRUE) %>%
     dplyr::select(-depth1, -temp1)
+
+  cat('\n', nrow(recent_f_dat) - nrow(all_dat_distinct), "duplicated lake-site-date-depth-temp observations were removed. The first record's metadata (e.g., source) were preserved.")
 
   # note - could still have lake/date/depth duplicates here
   # the risk of removing time from the above distinct() is that if you have
@@ -32,15 +62,6 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
   # the same temperature). The risk of not removing them is that you have multiple data sources
   # repeating the same data - but may not have a time stamp, for example. Will keep for now, sort out
   # in next step where we resolve time.
-
-  cat(total_obs - nrow(all_dat_distinct), 'temperature observations were duplicated across WQP and cooperator data files and removed.')
-
-  # get rid of egregious values before posting data or choosing time stamps
-  all_dat_distinct_noout <- mutate(all_dat_distinct, month = lubridate::month(date)) %>%
-    filter(!(month %in% c(1, 2) & temp > 10)) %>%
-    filter(!(month %in% c(7, 8) & depth < 0.5 & temp < 10))
-
-  cat(nrow(all_dat_distinct) - nrow(all_dat_distinct_noout), 'temperature observations were flagged as egregious (>10 deg C in Jan/Feb or <10 deg C at surface in July/Aug) and removed.')
 
   feather::write_feather(all_dat_distinct_noout, outfile)
   gd_put(outind, outfile)
