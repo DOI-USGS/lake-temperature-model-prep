@@ -28,15 +28,18 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
 
   recent_f_dat <- filter(f_all_dat, date >= as.Date('1979-01-01'))
 
-  cat(total_obs - nrow(f_all_dat), 'temperature observations were flagged as egregious (>10 deg C in Jan/Feb or <10 deg C at surface in July/Aug) or had negative depths and were removed.')
+  recent_f_dat_noneg <- filter(recent_f_dat, depth >= 0)
+
+  cat(total_obs - nrow(f_all_dat), 'temperature observations were flagged as egregious (>10 deg C in Jan/Feb or <10 deg C at surface in July/Aug) and removed.')
   cat('\n', nrow(f_all_dat) - nrow(recent_f_dat), 'historical (pre-1979) temperature records were removed because they were outside of the modeling time frame.')
+  cat('\n', nrow(recent_f_dat) - nrow(recent_f_dat_noneg), 'temperature records were removed because they had negative depth values.')
 
 
   # merge and remove duplicate observations
-  # first check for duplicates from the same sources
+  # first check for duplicates from the same sources and sites
   # depth and temp
 
-  no_dupes_dat <-  recent_f_dat %>%
+  no_dupes_dat <-  recent_f_dat_noneg %>%
     mutate(depth = round(depth, 2),
            depth1 = round(depth, 1),
            temp = round(temp, 2),
@@ -53,7 +56,7 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
     distinct(nhdhr_id, source_site_id, date, time, depth1, temp1, .keep_all = TRUE) %>%
     dplyr::select(-depth1, -temp1)
 
-  cat('\n', nrow(recent_f_dat) - nrow(all_dat_distinct), "duplicated lake-site-date-depth-temp observations were removed. The first record's metadata (e.g., source) were preserved.")
+  cat('\n', nrow(recent_f_dat_noneg) - nrow(all_dat_distinct), "duplicated lake-site-date-depth-temp observations were removed. The first record's metadata (e.g., source) were preserved.")
 
   # note - could still have lake/date/depth duplicates here
   # the risk of removing time from the above distinct() is that if you have
@@ -63,7 +66,7 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
   # repeating the same data - but may not have a time stamp, for example. Will keep for now, sort out
   # in next step where we resolve time.
 
-  feather::write_feather(all_dat_distinct_noout, outfile)
+  feather::write_feather(all_dat_distinct, outfile)
   gd_put(outind, outfile)
 
 }
@@ -75,21 +78,221 @@ reduce_temp_data <- function(outind, inind) {
   all_in <- sc_retrieve(inind)
   all_dat <- feather::read_feather(all_in)
 
-  # handle data with no times reported - check assumption that this subset does not
-  # have repeated values
+  # find data with multiple obs per lake/site/date/time/depth
 
-  dat_notimes <- filter(all_dat, is.na(time)) %>%
-    distinct(nhdhr_id, date, depth, temp, .keep_all = TRUE)
+  # true single values, with only a single lake-date-depth
+  # we can leave these values alone
+  true_singles <- group_by(all_dat, nhdhr_id, date, depth) %>%
+    mutate(n_coarse = n()) %>%
+    filter(n_coarse == 1) %>%
+    ungroup()
+
+  # all other values
+  multiples <- group_by(all_dat, nhdhr_id, date, depth) %>%
+    mutate(n_coarse = n()) %>%
+    filter(n_coarse > 1) %>%
+    ungroup()
+
+  ###########################
+  # sort out multiple values
+  ###########################
+
+  # first, data we assume to be from multiple times at a single site
+  # will have the same lake-source-site-date-depth
+  # we will sort out these assumptions in more detail later on
+  time_multiples <- multiples %>%
+    group_by(nhdhr_id, source, source_site_id, date, depth) %>%
+    mutate(n_fine = n()) %>%
+    filter(n_fine > 1) %>%
+    ungroup()
+
+  # other multiples are resolved down to the source-site, but
+  # have multiples across source-sites
+  # this could be multiple sources with the same data, multiple sources
+  # with different data, single source with multiple sites
+  other_multiples <- multiples %>%
+    group_by(nhdhr_id, source, source_site_id, date, depth) %>%
+    mutate(n_fine = n()) %>%
+    filter(n_fine == 1) %>%
+    ungroup()
+
+  # create "global" best sources to choose from all multiples data
+  best_sources <- multiples %>%
+    group_by(nhdhr_id, source, date, depth) %>%
+    summarize(n_per_day_depth = n()) %>%
+    group_by(nhdhr_id, source, date) %>%
+    summarize(n_depths = n(),
+              n_total = sum(n_per_day_depth)) %>%
+    group_by(nhdhr_id, source) %>%
+    summarize(n_days = n(),
+              n_total = sum(n_total),
+              n_depths_avg = mean(n_depths)) %>%
+    group_by(nhdhr_id) %>%
+    summarize(overall_best_source = source[which.max(n_days)])
+
+  best_sites <- multiples %>%
+    group_by(nhdhr_id, source, source_site_id) %>%
+    summarize(n_site_days = length(unique(date))) %>%
+    group_by(nhdhr_id, source) %>%
+    summarize(overall_best_site = source_site_id[which.max(n_site_days)]) %>%
+    ungroup()
+
+
+  #################################
+  # sort out the "other" multiples
+
+  # provide more info about where the multiplication is happening
+  other_multiples <- group_by(other_multiples, nhdhr_id, date, depth) %>%
+    mutate(n_sites = length(unique(source_site_id)),
+           n_sources = length(unique(source))) %>%
+    arrange(nhdhr_id, date, depth) %>%
+    ungroup()
+
+  # now reduce to single value for lake-date-depth
+
+  # same source, multi sites -- # pick either site with most data
+  # or first reported site, depending on which is available
+  # this includes sites where you could have one declared and one undeclared
+  # site ID (e.g., "site 1" and "NA")
+
+  best_local_sites <- other_multiples %>%
+    filter(n_sources == 1 & n_sites > 1) %>%
+    group_by(nhdhr_id, source_site_id) %>%
+    summarize(n_site_days = length(unique(date))) %>%
+    group_by(nhdhr_id) %>%
+    summarize(local_best_site = source_site_id[which.max(n_site_days)]) %>%
+    ungroup()
+
+  single_vals1 <- other_multiples %>%
+    filter(n_sources == 1 & n_sites > 1) %>%
+    arrange(nhdhr_id, date, depth) %>%
+    left_join(best_sites) %>%
+    left_join(best_local_sites) %>%
+    mutate(use_site = source_site_id %in% overall_best_site,
+           use_site2 = source_site_id %in% local_best_site) %>%
+    group_by(nhdhr_id, date, depth) %>%
+    summarize(temp = ifelse(any(use_site), temp[use_site],
+                            ifelse(any(use_site2), temp[use_site2], first(temp))),
+              source = first(source),
+              source_site_id = ifelse(any(use_site), source_site_id[use_site],
+                                      ifelse(any(use_site2), source_site_id[use_site2], first(source_site_id))),
+              source_id = first(source_id))
+
+  # single lake-date-depth values, which have one site and one source
+  # these have multiples when merged back with the "time_multiples" data
+  single_vals2 <- other_multiples %>%
+    filter(n_sources == 1 & n_sites == 1)
+
+  # different sources, one to many sites
+  # many of these are likely the same observations in two+ databases
+  # so should first do a distinct()
+  # picks the "best" source data (source with greatest ndays)
+  # or the first source
+  best_local_sites <- other_multiples %>%
+    filter(n_sources > 1) %>%
+    group_by(nhdhr_id, source, source_site_id) %>%
+    summarize(n_site_days = length(unique(date))) %>%
+    group_by(nhdhr_id) %>%
+    summarize(local_best_site = source_site_id[which.max(n_site_days)]) %>%
+    ungroup()
+
+  best_local_sources <- other_multiples %>%
+    filter(n_sources > 1) %>%
+    group_by(nhdhr_id, source) %>%
+    summarize(n_source_days = length(unique(date))) %>%
+    group_by(nhdhr_id) %>%
+    summarize(local_best_source = source[which.max(n_source_days)]) %>%
+    ungroup()
+
+  single_vals3 <- other_multiples %>%
+    filter(n_sources > 1) %>%
+    distinct(nhdhr_id, date, depth, temp, .keep_all = TRUE) %>%
+    left_join(best_sources) %>%
+    left_join(best_local_sources) %>%
+    mutate(use_source = source %in% overall_best_source,
+           use_source2 = source %in% local_best_source) %>%
+    # first, pick the best source
+    group_by(nhdhr_id, date, depth, source) %>%
+    summarize(temp = ifelse(any(use_source), temp[use_source],
+                            ifelse(any(use_source2), temp[use_source2], first(temp))),
+              source_site_id = ifelse(any(use_source), source_site_id[use_source],
+                                      ifelse(any(use_source2), source_site_id[use_source2], first(source_site_id))),
+              source_id = first(source_id)) %>%
+    # now if there are multiple sites in that source, pick best site
+    ungroup() %>%
+    left_join(best_sites) %>%
+    left_join(best_local_sites) %>%
+    mutate(use_site = source_site_id %in% overall_best_site,
+           use_site2 = source_site_id %in% local_best_site) %>%
+    group_by(nhdhr_id, date, depth) %>%
+    summarize(temp = ifelse(any(use_site), temp[use_site],
+                            ifelse(any(use_site2), temp[use_site2], first(temp))),
+              source = first(source),
+              source_site_id = ifelse(any(use_site), source_site_id[use_site],
+                                      ifelse(any(use_site2), source_site_id[use_site2], first(source_site_id))),
+              source_id = first(source_id))
+
+
+  resolved_other_multiples <- bind_rows(single_vals1, single_vals2, single_vals3)
+
+  # insert message
+  cat(nrow(other_multiples) - nrow(resolved_other_multiples), "temperature records were dropped due to
+      multiple sources, multiple sites, multiple sources and sites, or duplicated records across sources
+      per lake-date-depth. The 'best' sites and sources were kept, and was based on highest number of daily records.")
+
+
+  ###################################
+  # sort out "time" multiples
+  # note that there may or may not be data in "times" column
+
+  # handle data with no times reported
+  # first, do we think these are multiple sites or multiple times or both?
+  # first, handle data with no times + site information
+
+  dat_notimes <- filter(time_multiples, is.na(time))
+  dat_times <- filter(time_multiples, !is.na(time))
 
   # if we have multiple observations per nhdhr_id/site/date/depth with no time stamp,
-  # we assume these were
-  # taken at different times and choose a single time
+  # we assume these were taken at different times and choose a single time
   # take the middle value -- e.g., if there are 3 obs, take 2nd - best chance to capture mid-day
-  dat_notimes_timeresolved <- filter(dat_notimes, !is.na(source_site_id)) %>%
-    group_by(nhdhr_id, date, depth, source_site_id) %>%
-    mutate(n = n()) %>%
-    summarize(temp = temp[floor(mean(n)/2) + 1]) %>%
-    bind_rows(filter(dat_notimes, is.na(source_site_id))) #bind back together with data with no siteids
+  # if this is true (multiple obs/day), the values shouldn't be that different from each other
+  # filter out that day's obs if there is >3 deg C range for that lake/site/date/depth
+  dat_notimes_sites <- filter(dat_notimes, !is.na(source_site_id)) %>%
+    group_by(nhdhr_id, source, source_site_id, date, depth) %>%
+    mutate(n = n(),
+           temp_range = max(temp) - min(temp)) %>%
+    filter(temp_range <= 3) %>%
+    summarize(temp = temp[floor(mean(n)/2) + 1],
+              source_id = first(source_id))
+
+  # if we have no site information, we assume the multiple values could
+  # be from either multiple times or multiple sites
+
+  # first, we know that data from the files that end in 'historicalfiles_manual'
+  # are likely multiple site data (from the notes column in those data, there is some site
+  # info but is not yet parsed)
+
+  # take the first observation, which is the first reported "site"
+
+  res1_dat_notimes <- filter(dat_notimes, is.na(source_site_id)) %>%
+    filter(grepl('manualentry', source)) %>%
+    group_by(nhdhr_id, source, date, depth) %>%
+    summarize(temp = first(temp),
+              source_id = first(source_id))
+
+  # all other data - if there are > 12 obs/lake-day-depth
+  # we assume these are high frequency obs and take the middle value
+  dat_notimes_npersource <- filter(dat_notimes, is.na(source_site_id)) %>%
+    filter(!grepl('manualentry', source)) %>%
+    group_by(nhdhr_id, source, date, depth) %>%
+    mutate(n_per_day = n()) %>%
+    arrange(nhdhr_id, date, depth)
+
+  res2_dat_notimes <- filter(dat_notimes_npersource, n_per_day >=12) %>%
+
+    summarize(temp = first(temp),
+              source = first(source),
+              source_id = first(source_id))
 
   # the reasons for the rest of the repeated observations are unknown
 
