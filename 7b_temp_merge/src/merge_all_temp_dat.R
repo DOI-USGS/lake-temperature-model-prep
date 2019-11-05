@@ -97,6 +97,39 @@ reduce_temp_data <- function(outind, inind) {
   # sort out multiple values
   ###########################
 
+  # first, if a lake-date-depth has multiple sources, choose the
+  # "best" source. This best source is based on which sources
+  # have the most days of observation across the entire dataset.
+  # If the best overall site is not available, then the source with the
+  # most data on that day is chosen.
+
+  # create "global" best sources to choose from all multiples data
+  best_sources <- all_dat %>%
+    group_by(nhdhr_id, source) %>%
+    summarize(n_days = length(unique(date))) %>%
+    group_by(nhdhr_id) %>%
+    summarize(overall_best_source = source[which.max(n_days)])
+
+  # reduce to a single source for each lake-date-depth
+  local_sources <- multiples %>%
+    group_by(nhdhr_id, source, date) %>%
+    summarize(n_per_sourcedate = n()) %>%
+    group_by(nhdhr_id, date) %>%
+    summarize(local_best_source = source[which.max(n_per_sourcedate)])
+
+
+  multiples_single_source <- multiples %>%
+    left_join(best_sources) %>%
+    left_join(local_sources) %>%
+    mutate(use_source = source %in% overall_best_source,
+           use_source2 = source %in% local_best_source) %>%
+    group_by(nhdhr_id, date, depth) %>%
+    mutate(keep = ifelse(any(use_source), source[use_source],
+                         ifelse(any(use_source2), source[use_source2], first(source)))) %>%
+    ungroup() %>%
+    filter(source == keep)
+
+
   # first, data we assume to be from multiple times at a single site
   # will have the same lake-source-site-date-depth
   # we will sort out these assumptions in more detail later on
@@ -116,19 +149,7 @@ reduce_temp_data <- function(outind, inind) {
     filter(n_fine == 1) %>%
     ungroup()
 
-  # create "global" best sources to choose from all multiples data
-  best_sources <- multiples %>%
-    group_by(nhdhr_id, source, date, depth) %>%
-    summarize(n_per_day_depth = n()) %>%
-    group_by(nhdhr_id, source, date) %>%
-    summarize(n_depths = n(),
-              n_total = sum(n_per_day_depth)) %>%
-    group_by(nhdhr_id, source) %>%
-    summarize(n_days = n(),
-              n_total = sum(n_total),
-              n_depths_avg = mean(n_depths)) %>%
-    group_by(nhdhr_id) %>%
-    summarize(overall_best_source = source[which.max(n_days)])
+
 
   best_sites <- multiples %>%
     group_by(nhdhr_id, source, source_site_id) %>%
@@ -252,12 +273,14 @@ reduce_temp_data <- function(outind, inind) {
   dat_notimes <- filter(time_multiples, is.na(time))
   dat_times <- filter(time_multiples, !is.na(time))
 
+  ###### sort out "time" multiples with no time stamp
+
   # if we have multiple observations per nhdhr_id/site/date/depth with no time stamp,
   # we assume these were taken at different times and choose a single time
   # take the middle value -- e.g., if there are 3 obs, take 2nd - best chance to capture mid-day
   # if this is true (multiple obs/day), the values shouldn't be that different from each other
   # filter out that day's obs if there is >3 deg C range for that lake/site/date/depth
-  dat_notimes_sites <- filter(dat_notimes, !is.na(source_site_id)) %>%
+  res1_dat_notimes <- filter(dat_notimes, !is.na(source_site_id)) %>%
     group_by(nhdhr_id, source, source_site_id, date, depth) %>%
     mutate(n = n(),
            temp_range = max(temp) - min(temp)) %>%
@@ -274,40 +297,71 @@ reduce_temp_data <- function(outind, inind) {
 
   # take the first observation, which is the first reported "site"
 
-  res1_dat_notimes <- filter(dat_notimes, is.na(source_site_id)) %>%
+  res2_dat_notimes <- filter(dat_notimes, is.na(source_site_id)) %>%
     filter(grepl('manualentry', source)) %>%
     group_by(nhdhr_id, source, date, depth) %>%
     summarize(temp = first(temp),
               source_id = first(source_id))
 
   # all other data - if there are > 12 obs/lake-day-depth
-  # we assume these are high frequency obs and take the middle value
+  # we assume these are high frequency obs and take the middle value to get closest to noon
+  # also, we deduce that if depths were measured a different amount of times
+  # there is a better chance for those data to be from different sites (not times)
   dat_notimes_npersource <- filter(dat_notimes, is.na(source_site_id)) %>%
     filter(!grepl('manualentry', source)) %>%
     group_by(nhdhr_id, source, date, depth) %>%
     mutate(n_per_day = n()) %>%
+    group_by(nhdhr_id, source, date) %>%
+    mutate(same_depth = length(unique(as.numeric(summary(as.factor(depth))))) == 1) %>%
     arrange(nhdhr_id, date, depth)
 
-  res2_dat_notimes <- filter(dat_notimes_npersource, n_per_day >=12) %>%
-
+  # what we assume to be different sites, take first record
+  res3_dat_notimes <- filter(dat_notimes_npersource, !same_depth) %>%
+    group_by(nhdhr_id, source, date, depth) %>%
     summarize(temp = first(temp),
-              source = first(source),
+              source_id = first(source_id))
+
+  # what we assume to be different times, take middle record
+  res4_dat_notimes <- filter(dat_notimes_npersource, same_depth & n_per_day >=12) %>%
+    group_by(nhdhr_id, source, date, depth) %>%
+    summarize(temp = temp[floor(mean(n_fine)/2) + 1],
               source_id = first(source_id))
 
   # the reasons for the rest of the repeated observations are unknown
+  # take the value closest to the median of that lake-source-date-depth
+  # if it's time, hopefully this captures mid day
+  # if it's space, hopefully this captures the most representative site
 
-  #######################
-  # get data with time
+  getmode <- function(v) {
+    uniqv <- unique(v)
+    uniqv[which.max(tabulate(match(v, uniqv)))]
+  }
+
+  res5_dat_notimes <- filter(dat_notimes_npersource, same_depth & n_per_day < 12) %>%
+    group_by(nhdhr_id, source, date, depth) %>%
+    mutate(closest_med = which.min(round(abs(temp - median(temp)), 2))) %>%
+    group_by(nhdhr_id, source, date) %>%
+    # make sure the same record is kept for each lake-source-date
+    # in an attempt to keep the time or site the same across depths
+    mutate(which_keep = getmode(closest_med)) %>%
+    ungroup() %>%
+    group_by(nhdhr_id, source, date, depth) %>%
+    summarize(temp = temp[first(which_keep)],
+              source_id = source_id[first(which_keep)])
+
+  ############## sort out "time" data with time stamps
+
   # create a variable that represents difference from noon in hours
   # assume all UTC timezones are GMT-5
 
   # find local times closest to noon
-  # adjust UTC to be central time by subtracting 7 hours instead of 12
+  # adjust UTC to be central time (CDT) by subtracting 7 hours instead of 12
+  # adjust GMT to be CDT by
 
   # FIX THIS
   # more time zones
   # need to account for pos or neg diff from noon
-  dat_times <- filter(all_dat, !is.na(time)) %>%
+  dat_times <- dat_times %>%
     mutate(time_hm = lubridate::hm(time)) %>%
     mutate(hours_diff_noon = case_when(timezone %in% 'UTC' ~ abs(time_hm$hour - 7) + (time_hm$minute/60),
                                      TRUE ~ abs(time_hm$hour - 12) - (time_hm$minute/60)))
