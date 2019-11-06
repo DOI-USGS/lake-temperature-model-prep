@@ -175,80 +175,21 @@ reduce_temp_data <- function(outind, inind) {
 
 
   #################################
-  # sort out the "other" multiples
+  # sort out the "other" multiples, which we assume are from multiple sites
 
-  # because each lake-date-depth multiple is from the same source, we assume
-  # that multiple values are from multiple sites
   # pick either site with most data
   # or first reported site, depending on which is available
   # this includes sites where you could have one declared and one undeclared
   # site ID (e.g., "site 1" and "NA")
 
   best_local_sites <- other_multiples %>%
-    filter(n_sources == 1 & n_sites > 1) %>%
-    group_by(nhdhr_id, source_site_id) %>%
-    summarize(n_site_days = length(unique(date))) %>%
-    group_by(nhdhr_id) %>%
-    summarize(local_best_site = source_site_id[which.max(n_site_days)]) %>%
-    ungroup()
-
-  single_vals1 <- other_multiples %>%
-    filter(n_sources == 1 & n_sites > 1) %>%
-    arrange(nhdhr_id, date, depth) %>%
-    left_join(best_sites) %>%
-    left_join(best_local_sites) %>%
-    mutate(use_site = source_site_id %in% overall_best_site,
-           use_site2 = source_site_id %in% local_best_site) %>%
-    group_by(nhdhr_id, date, depth) %>%
-    summarize(temp = ifelse(any(use_site), temp[use_site],
-                            ifelse(any(use_site2), temp[use_site2], first(temp))),
-              source = first(source),
-              source_site_id = ifelse(any(use_site), source_site_id[use_site],
-                                      ifelse(any(use_site2), source_site_id[use_site2], first(source_site_id))),
-              source_id = first(source_id))
-
-  # single lake-date-depth values, which have one site and one source
-  # these have multiples when merged back with the "time_multiples" data
-  single_vals2 <- other_multiples %>%
-    filter(n_sources == 1 & n_sites == 1)
-
-  # different sources, one to many sites
-  # many of these are likely the same observations in two+ databases
-  # so should first do a distinct()
-  # picks the "best" source data (source with greatest ndays)
-  # or the first source
-  best_local_sites <- other_multiples %>%
-    filter(n_sources > 1) %>%
     group_by(nhdhr_id, source, source_site_id) %>%
     summarize(n_site_days = length(unique(date))) %>%
-    group_by(nhdhr_id) %>%
+    group_by(nhdhr_id, source) %>%
     summarize(local_best_site = source_site_id[which.max(n_site_days)]) %>%
     ungroup()
 
-  best_local_sources <- other_multiples %>%
-    filter(n_sources > 1) %>%
-    group_by(nhdhr_id, source) %>%
-    summarize(n_source_days = length(unique(date))) %>%
-    group_by(nhdhr_id) %>%
-    summarize(local_best_source = source[which.max(n_source_days)]) %>%
-    ungroup()
-
-  single_vals3 <- other_multiples %>%
-    filter(n_sources > 1) %>%
-    distinct(nhdhr_id, date, depth, temp, .keep_all = TRUE) %>%
-    left_join(best_sources) %>%
-    left_join(best_local_sources) %>%
-    mutate(use_source = source %in% overall_best_source,
-           use_source2 = source %in% local_best_source) %>%
-    # first, pick the best source
-    group_by(nhdhr_id, date, depth, source) %>%
-    summarize(temp = ifelse(any(use_source), temp[use_source],
-                            ifelse(any(use_source2), temp[use_source2], first(temp))),
-              source_site_id = ifelse(any(use_source), source_site_id[use_source],
-                                      ifelse(any(use_source2), source_site_id[use_source2], first(source_site_id))),
-              source_id = first(source_id)) %>%
-    # now if there are multiple sites in that source, pick best site
-    ungroup() %>%
+  resolved_multiples2 <- other_multiples %>%
     left_join(best_sites) %>%
     left_join(best_local_sites) %>%
     mutate(use_site = source_site_id %in% overall_best_site,
@@ -260,7 +201,6 @@ reduce_temp_data <- function(outind, inind) {
               source_site_id = ifelse(any(use_site), source_site_id[use_site],
                                       ifelse(any(use_site2), source_site_id[use_site2], first(source_site_id))),
               source_id = first(source_id))
-
 
   resolved_other_multiples <- bind_rows(single_vals1, single_vals2, single_vals3)
 
