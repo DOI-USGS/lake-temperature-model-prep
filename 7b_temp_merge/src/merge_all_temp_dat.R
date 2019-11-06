@@ -110,7 +110,7 @@ reduce_temp_data <- function(outind, inind) {
     group_by(nhdhr_id) %>%
     summarize(overall_best_source = source[which.max(n_days)])
 
-  # reduce to a single source for each lake-date-depth
+  # reduce to a single source for each lake-date
   local_sources <- multiples %>%
     group_by(nhdhr_id, source, date) %>%
     summarize(n_per_sourcedate = n()) %>%
@@ -124,16 +124,32 @@ reduce_temp_data <- function(outind, inind) {
     mutate(use_source = source %in% overall_best_source,
            use_source2 = source %in% local_best_source) %>%
     group_by(nhdhr_id, date, depth) %>%
+    # first use global best if available, then use local best if available,
+    # then use first source. This takes the same source for a given date
+    # across all depths if available
     mutate(keep = ifelse(any(use_source), source[use_source],
                          ifelse(any(use_source2), source[use_source2], first(source)))) %>%
     ungroup() %>%
     filter(source == keep)
 
+  cat(nrow(multiples) - nrow(multiples_single_source), "temperature observations were dropped due to multiple sources of data per lake-date-depth. The 'best' source was kept when possible.")
 
-  # first, data we assume to be from multiple times at a single site
+
+  # now some of these are true single data now that multiple sources have been dropped
+  resolved_multiples1 <- multiples_single_source %>%
+    group_by(nhdhr_id, date, depth) %>%
+    mutate(n_coarse = n()) %>%
+    filter(n_coarse == 1)
+
+  remaining_multiples <- multiples_single_source %>%
+    group_by(nhdhr_id, date, depth) %>%
+    mutate(n_coarse = n()) %>%
+    filter(n_coarse > 1)
+
+  # first, handle data we assume to be from multiple times at a single site
   # will have the same lake-source-site-date-depth
   # we will sort out these assumptions in more detail later on
-  time_multiples <- multiples %>%
+  time_multiples <- remaining_multiples %>%
     group_by(nhdhr_id, source, source_site_id, date, depth) %>%
     mutate(n_fine = n()) %>%
     filter(n_fine > 1) %>%
@@ -143,15 +159,14 @@ reduce_temp_data <- function(outind, inind) {
   # have multiples across source-sites
   # this could be multiple sources with the same data, multiple sources
   # with different data, single source with multiple sites
-  other_multiples <- multiples %>%
+  other_multiples <- remaining_multiples %>%
     group_by(nhdhr_id, source, source_site_id, date, depth) %>%
     mutate(n_fine = n()) %>%
     filter(n_fine == 1) %>%
     ungroup()
 
-
-
-  best_sites <- multiples %>%
+  # find the best sites from the remaining data
+  best_sites <- bind_rows(true_singles, resolved_multiples1, remaining_multiples) %>%
     group_by(nhdhr_id, source, source_site_id) %>%
     summarize(n_site_days = length(unique(date))) %>%
     group_by(nhdhr_id, source) %>%
@@ -162,16 +177,9 @@ reduce_temp_data <- function(outind, inind) {
   #################################
   # sort out the "other" multiples
 
-  # provide more info about where the multiplication is happening
-  other_multiples <- group_by(other_multiples, nhdhr_id, date, depth) %>%
-    mutate(n_sites = length(unique(source_site_id)),
-           n_sources = length(unique(source))) %>%
-    arrange(nhdhr_id, date, depth) %>%
-    ungroup()
-
-  # now reduce to single value for lake-date-depth
-
-  # same source, multi sites -- # pick either site with most data
+  # because each lake-date-depth multiple is from the same source, we assume
+  # that multiple values are from multiple sites
+  # pick either site with most data
   # or first reported site, depending on which is available
   # this includes sites where you could have one declared and one undeclared
   # site ID (e.g., "site 1" and "NA")
