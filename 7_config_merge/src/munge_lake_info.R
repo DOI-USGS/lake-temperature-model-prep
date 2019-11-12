@@ -15,6 +15,37 @@ munge_lake_area <- function(out_ind, lakes_ind){
   gd_put(out_ind, data_file)
 }
 
+munge_cd_from_area <- function(out_ind, areas_ind){
+
+  min_wstr <- 0.0001 # this is the minimum wind sheltering value we'll use
+  coef_wind_drag.ref <- 0.00140 # reference cd value which will be scaled
+  data_file <- scipiper::as_data_file(out_ind)
+
+  cds <- scipiper::sc_retrieve(areas_ind) %>% readRDS() %>%
+    mutate(wstr = 1.0 - exp(-0.3*(areas_m2*1.0e-6))) %>%
+    mutate(cd = case_when(
+      wstr < min_wstr ~ coef_wind_drag.ref*min_wstr^0.33,
+      TRUE ~ coef_wind_drag.ref*wstr^0.33)
+
+    ) %>% dplyr::select(site_id, cd) %>%
+    saveRDS(data_file)
+
+  gd_put(out_ind, data_file)
+}
+
+munge_Kw <- function(out_ind, secchi_ind, wqp_xwalk_ind){
+
+  wqp_xwalk <- scipiper::sc_retrieve(wqp_xwalk_ind) %>% readRDS()
+  Kw_data <- scipiper::sc_retrieve(secchi_ind) %>% feather::read_feather() %>%
+    inner_join(wqp_xwalk, by = "MonitoringLocationIdentifier") %>% group_by(site_id) %>%
+    summarise(Kw = 1.7/mean(secchi, na.rm = TRUE)) %>% filter(!is.na(Kw)) %>%
+    dplyr::select(site_id, Kw)
+  # write, post, and promise the file is posted
+  data_file <- scipiper::as_data_file(out_ind)
+  saveRDS(Kw_data, data_file)
+  gd_put(out_ind, data_file)
+}
+
 #' combines hypsographic data w/ max depth data.
 #' @param out_ind out indicator file
 #' @param areas_ind indicator file for data.frame that includes site_id and areas_m2
@@ -137,7 +168,7 @@ munge_meteo_fl <- function(out_ind, centroids_ind, lake_depth_ind, sf_grid, time
     tidyr::gather(key = cent_idx, value = grid_idx) %>%
     mutate(x = sf_grid[grid_idx,]$x, y = sf_grid[grid_idx,]$y) %>%
     mutate(site_id = centroids_sf$site_id) %>%
-    mutate(meteo_fl = create_meteo_filepath(t0, t1, x, y, dirname = 'drivers')) %>%
+    mutate(meteo_fl = create_meteo_filepath(t0, t1, x, y, dirname = 'drivers') %>% basename()) %>% #using basename to get rid of dir
     dplyr::select(site_id, meteo_fl)
 
   data_file <- scipiper::as_data_file(out_ind)

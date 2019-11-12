@@ -42,5 +42,3 @@ targets:
 
   7a_wqp_munge/out/temp_wqp_munged_linked.feather:
     command: gd_get('7a_wqp_munge/out/temp_wqp_munged_linked.feather.ind')
-
-

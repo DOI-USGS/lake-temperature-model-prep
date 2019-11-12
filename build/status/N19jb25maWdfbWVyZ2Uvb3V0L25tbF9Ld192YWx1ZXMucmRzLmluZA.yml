@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 7_config_merge/out/nml_Kw_values.rds.ind
+type: file
+hash: 552722a5b597a5613d583e6a0619021c
+time: 2019-11-02 07:53:33 UTC
+depends:
+  7a_wqp_munge/out/secchi_wqp_munged.feather.ind: d7646c45d4df63a53c30b2cca2d17612
+  2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind: 00ff698cdb5164ed93cd4661af75b31b
+fixed: 305598af5830c4e40039adef7ddca831
+code:
+  functions:
+    munge_Kw: a0d2b1e3a34910b687f0795d182ad8bc
+
