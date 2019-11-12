@@ -265,7 +265,7 @@ reduce_temp_data <- function(outind, inind) {
     ungroup() %>% arrange(site_id, date, depth)
 
   all_dailies <- bind_rows(daily_vals, singles) %>%
-    select(site_id, date, depth, temp, source)
+    dplyr::select(site_id, date, depth, temp, source)
 
   cat(nrow(reduced_multiples) - nrow(daily_vals), "temperature observations were dropped due to multiples source-sites per lake-date-depth. The 'best' source-site was chosen when available.")
 
