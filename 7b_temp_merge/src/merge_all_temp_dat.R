@@ -271,7 +271,8 @@ reduce_temp_data <- function(outind, inind) {
 
   cat("\nThere are", nrow(all_dailies), "temperature observations in the final dataset.")
 
-  return(all_dailies)
+  feather::write_feather(all_dailies, outfile)
+  gd_put(outind, outfile)
 
 }
 
