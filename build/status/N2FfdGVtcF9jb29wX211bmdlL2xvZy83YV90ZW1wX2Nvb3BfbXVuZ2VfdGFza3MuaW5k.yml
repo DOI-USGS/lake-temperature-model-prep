@@ -1,8 +1,8 @@
 version: 0.3.0
 name: 7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind
 type: file
-hash: a999025cd817c1c33261cb024c545f62
-time: 2019-10-28 17:11:37 UTC
+hash: a1642f0cfe9cc9cd83f7cb2e0706132f
+time: 2019-11-04 19:03:12 UTC
 depends:
   coop_munge_taskplan: 7d14ad081b2f8a1cc00db9586beac5ac
   7a_temp_coop_munge_tasks.yml: f300cb789db5ef0c5b8c381745c52c56
