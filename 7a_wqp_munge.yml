@@ -21,13 +21,24 @@ targets:
     command: munge_wqp_temperature(
       outind = target_name,
       wqp_ind = '6_wqp_fetch/out/wqp_temperature_data.rds.ind')
+
   7a_wqp_munge/out/temp_wqp_munged.feather:
-    command: require_local('7a_wqp_munge/out/temp_wqp_munged.feather.ind')
+    command: gd_get('7a_wqp_munge/out/temp_wqp_munged.feather.ind')
 
   7a_wqp_munge/out/secchi_wqp_munged.feather.ind:
     command: munge_wqp_secchi(
       outind = target_name,
       wqp_ind = '6_wqp_fetch/out/wqp_secchi_data.rds.ind')
+
   7a_wqp_munge/out/secchi_wqp_munged.feather:
     command: gd_get('7a_wqp_munge/out/secchi_wqp_munged.feather.ind')
 
+  # -- link WQP dat to NHDHR IDs -- #
+  7a_wqp_munge/out/temp_wqp_munged_linked.feather.ind:
+    command: crosswalk_wqp_dat(
+      outind = target_name,
+      wqp_munged = '7a_wqp_munge/out/temp_wqp_munged.feather.ind',
+      wqp_crosswalk = '2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind')
+
+  7a_wqp_munge/out/temp_wqp_munged_linked.feather:
+    command: gd_get('7a_wqp_munge/out/temp_wqp_munged_linked.feather.ind')

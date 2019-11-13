@@ -48,9 +48,9 @@ targets:
     command: crosswalk_coop_dat(
       outind = target_name,
       inind = '7a_temp_coop_munge/tmp/all_coop_dat.rds.ind',
-      id_crosswalk = '2_crosswalk_munge/out/micorps_nhd_crosswalk.rds.ind',
-      wbic_crosswalk = '1_crosswalk_fetch/out/nhd2wbic.RData.ind',
-      dow_crosswalk = '1_crosswalk_fetch/out/nhd2dowlknum.RData.ind')
+      id_crosswalk = '2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind',
+      wbic_crosswalk = '2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind',
+      dow_crosswalk = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
 
   7a_temp_coop_munge/out/all_coop_dat_linked.feather:
     command: gd_get('7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind')

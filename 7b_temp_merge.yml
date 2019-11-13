@@ -1,4 +1,4 @@
-target_default: 7a_temp_coop_munge
+target_default: 7b_temp_merge
 
 packages:
   - scipiper
@@ -22,7 +22,7 @@ targets:
   7b_temp_merge/out/merged_temp_data_alltimes.feather.ind:
     command: merge_temp_data(
       outind = target_name,
-      wqp_ind = '7a_temp_wqp_munge/out/all_wqp_dat_linked.feather.ind',
+      wqp_ind = '7a_wqp_munge/out/temp_wqp_munged_linked.feather.ind',
       coop_ind = '7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind')
 
   7b_temp_merge/out/merged_temp_data_alltimes.feather:

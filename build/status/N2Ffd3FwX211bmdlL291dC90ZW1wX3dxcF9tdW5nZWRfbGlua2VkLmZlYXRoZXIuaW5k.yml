@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 7a_wqp_munge/out/temp_wqp_munged_linked.feather.ind
+type: file
+hash: 54daad5dd7f0e966799458db6f6d7612
+time: 2019-10-29 15:23:58 UTC
+depends:
+  7a_wqp_munge/out/temp_wqp_munged.feather.ind: 8bfa02ad0be69499efa9bb8c850e882c
+  2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind: 3b7ebebd1b38b4d87c6515942e3ddfc4
+fixed: b25053c774f1ac14b3b9fbd479a0181f
+code:
+  functions:
+    crosswalk_wqp_dat: 999941bcd0a1f7833dd03ae9015e76c4
+
