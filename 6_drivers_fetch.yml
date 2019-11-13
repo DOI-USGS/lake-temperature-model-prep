@@ -37,29 +37,38 @@ targets:
     command: c(I("6_drivers/log/nc"))
 
   cell_data_dir:
-    command: c(I("6_drivers/out/feather"))
+    command: c(I("/Volumes/ThunderBlade/NLDAS_feather/"))
 
   cell_ind_dir:
     command: c(I("6_drivers/log/feather"))
 
-  # is this now in 2_xwalk-centroids?
-  feature_centroids:
+  # We are doing this because we don't want to expand the current .nc dataset _yet_. In the future, we'd only have "feature_centroids"
+  old_feature_centroids:
     command: sf_file_centroids("2_crosswalk_munge/out/lakes_sf.rds")
+
+  new_feature_centroids:
+    command: readRDS("2_crosswalk_munge/out/centroid_lakes_sf.rds")
 
   NLDAS_grid: # info from OPeNDAP: https://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FORA0125_H.002
     command: create_ldas_grid(x0 = I(-124.9375), y0 = I(25.0625), x_num = I(464), y_num = I(224), cell_res = I(0.125))
 
+  old_feature_NLDAS_cells:
+    command: cells_containing_points(NLDAS_grid, old_feature_centroids)
+
   feature_NLDAS_cells:
-    command: cells_containing_points(NLDAS_grid, feature_centroids)
+    command: cells_containing_points(NLDAS_grid, new_feature_centroids)
+
+  old_nldas_cells:
+    command: as_OPeNDAP_cells(old_feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m')))
 
   nldas_cells:
     command: as_OPeNDAP_cells(feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m')))
 
   nldas_empty_box: # this is the domain that will require a FULL data pull in the time dimension
-    command: nldas_diff_box(nldas_cells, '6_drivers/in/nldas_cells.rds')
+    command: nldas_diff_box(old_nldas_cells, '6_drivers/in/nldas_cells.rds')
 
   nldas_partial_box: # this is the domain that will require a PARTIAL time pull, where partial time could be 0 (complete)
-    command: nldas_update_box(nldas_cells, nldas_empty_box)
+    command: nldas_update_box(old_nldas_cells, nldas_empty_box)
 
   nldas_new_cube_files:
     command: calc_nldas_files(nldas_empty_box, replete_time_range, nccopy_time_stride, nc_dir = cube_data_dir)
