@@ -4,25 +4,26 @@ crosswalk_coop_dat <- function(outind = target_name,
 
   infile <- scipiper::sc_retrieve(inind)
   outfile <- as_data_file(outind)
+
+  # modify DOWs to add leading zero if not 8 characters long
   dat <- readRDS(infile)
+
 
   idfile <- sc_retrieve(id_crosswalk, remake_file = '2_crosswalk_munge.yml')
   id2nhd <- readRDS(idfile)
   id2nhd <- rename(id2nhd, site_id = id)
   id2nhd <- distinct(id2nhd)
 
-  wbicfile <- sc_retrieve(wbic_crosswalk, remake_file = '1_crosswalk_fetch.yml')
-  wbic2nhd <- get(load(wbicfile))
-  wbic2nhd$WBIC <- as.character(wbic2nhd$WBIC)
+  wbicfile <- sc_retrieve(wbic_crosswalk, remake_file = '2_crosswalk_munge.yml')
+  wbic2nhd <- readRDS(wbicfile)
+  wbic2nhd$WBIC <- gsub('WBIC_', '', as.character(wbic2nhd$WBIC_ID))
   wbic2nhd <- distinct(wbic2nhd) # get rid of duplicated obs
 
 
-  dowfile <- sc_retrieve(dow_crosswalk, remake_file = '1_crosswalk_fetch.yml')
-  dow2nhd <- get(load(dowfile))
-  dow2nhd$DOW <- as.character(dow2nhd$dowlknum)
+  dowfile <- sc_retrieve(dow_crosswalk, remake_file = '2_crosswalk_munge.yml')
+  dow2nhd <- readRDS(dowfile)
+  dow2nhd$DOW <- gsub('mndow_', '', as.character(dow2nhd$MNDOW_ID))
   dow2nhd <- distinct(dow2nhd) # get rid of duplicated obs
-
-  # first, remove any
 
   # merge each possible ID with nhdid
   # wbic
@@ -38,16 +39,20 @@ crosswalk_coop_dat <- function(outind = target_name,
     left_join(wbics_in_dat)
 
   # dow
+
+  dat_filt_dow <- filter(dat, !is.na(DOW)) %>%
+    filter(!DOW == '') %>%
+    mutate(DOW = ifelse(nchar(DOW)==8, DOW, paste0('0', DOW)))
+
   dows_in_dat <- dow2nhd %>%
-    filter(DOW %in% unique(dat$DOW)) %>%
+    filter(DOW %in% unique(dat_filt_dow$DOW)) %>%
     distinct() %>%
-    dplyr::select(-dowlknum) %>%
     group_by(DOW) %>%
     summarize(site_id = first(site_id)) # this is a bandaid for multiple site matches
 
   # dupes <- which(duplicated(dows_in_dat$DOW))
 
-  dat_dow <- filter(dat, !is.na(DOW)) %>%
+  dat_dow <- dat_filt_dow %>%
     left_join(dows_in_dat)
 
   # id
@@ -59,6 +64,12 @@ crosswalk_coop_dat <- function(outind = target_name,
   dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id) %>%
     tidyr::gather(key = state_id_type, value = state_id, DOW, id, WBIC) %>%
     filter(!is.na(state_id))
+
+  # find which coop files have missing crosswalks
+  dat_missing <- dat_all_linked %>%
+    group_by(source) %>%
+    summarize(all_missing = all(is.na(site_id)),
+              sum_missing = sum(is.na(site_id)))
 
   warning(paste0('Dropping ', sum(is.na(dat_all_linked$site_id)), ' temperature observations due to missing NHD ids.'))
 

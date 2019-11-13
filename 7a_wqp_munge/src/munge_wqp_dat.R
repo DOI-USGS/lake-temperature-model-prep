@@ -67,7 +67,7 @@ munge_wqp_secchi <- function(outind, wqp_ind){
   gd_put(outind, outfile)
 }
 
-crosswalk_wqp_dat <- function(outind, wqp_munged, wqp_crosswalk, wqp_latlong_ind) {
+crosswalk_wqp_dat <- function(outind, wqp_munged, wqp_crosswalk) {
 
   outfile = as_data_file(outind)
 
@@ -75,20 +75,10 @@ crosswalk_wqp_dat <- function(outind, wqp_munged, wqp_crosswalk, wqp_latlong_ind
   wqp2nhd <- readRDS(crossfile) %>%
     distinct()
 
-  wqp_latlong <- readRDS(sc_retrieve(wqp_latlong_ind))
-
-  latlong <- as.data.frame(st_coordinates(wqp_latlong)) %>%
-    mutate(MonitoringLocationIdentifier = wqp_latlong$MonitoringLocationIdentifier) %>%
-    rename(LongitudeMeasure = X, LatitudeMeasure = Y) %>%
-    distinct()
-
-  wqp_nhdLookup <- left_join(wqp2nhd, latlong)
-
   infile <- sc_retrieve(wqp_munged)
-  wqp_dat <- readRDS(infile)
+  wqp_dat <- feather::read_feather(infile)
 
-  wqp_linked <- left_join(wqp_dat, wqp_nhdLookup, by = c('wqx.id' = 'MonitoringLocationIdentifier')) %>%
-    dplyr::select(-LatitudeMeasure, -LongitudeMeasure) %>%
+  wqp_linked <- left_join(wqp_dat, dplyr::select(wqp2nhd, site_id, MonitoringLocationIdentifier)) %>%
     rename(id = site_id) %>%
     filter(!is.na(id))
 

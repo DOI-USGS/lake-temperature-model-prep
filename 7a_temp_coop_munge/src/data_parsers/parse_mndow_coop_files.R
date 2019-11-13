@@ -44,8 +44,9 @@ parse_Water_Temp <- function(inind, outind){
         mutate(POSIXct = as.POSIXct(Date_Time, "%m/%d/%y %H:%M:%S", tz = "UTC"),
                time = strftime(POSIXct, format = '%H:%M'),
                DateTime = as.Date(POSIXct),
-               DOW = DOWLKNUM, depth = Depth_m, temp = Water_Temp_C, timezone = "UTC") %>%
-        dplyr::select(DateTime, time, timezone, depth, temp, DOW) %>%
+               DOW = DOWLKNUM, depth = Depth_m, temp = Water_Temp_C,
+               timezone = "UTC", site = String) %>%
+        dplyr::select(DateTime, time, timezone, depth, temp, DOW, site) %>%
         arrange(DateTime)
 
       data_out <- rbind(data_out, data)
@@ -63,8 +64,9 @@ parse_Water_Temp <- function(inind, outind){
         mutate(POSIXct = as.POSIXct(Date.Time, "%m/%d/%y %H:%M:%S", tz = "UTC"),
                time = strftime(POSIXct, format = '%H:%M'),
                DateTime = as.Date(POSIXct),
-               DOW = DOWLKNUM, depth = Depth.m, temp = Water.Temp.C, timezone = "UTC") %>%
-        dplyr::select(DateTime, time, timezone, depth, temp, DOW) %>%
+               DOW = DOWLKNUM, depth = Depth.m, temp = Water.Temp.C,
+               timezone = "UTC", site = String) %>%
+        dplyr::select(DateTime, time, timezone, depth, temp, DOW, site) %>%
         arrange(DateTime)
 
       data_out <- rbind(data_out, data)
