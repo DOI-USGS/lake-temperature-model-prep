@@ -35,7 +35,9 @@ create_nhd_HR_download_makefile <- function(makefile, task_plan, final_targets){
   packages <- c('dplyr','sf', 'lwgeom')
   sources <- '1_crosswalk_fetch/src/fetch_NHD.R'
 
-  create_task_makefile(task_plan, makefile, include = include, packages = packages, sources = sources, finalize_funs = 'combine_nhd_sfs', final_targets = final_targets)
+  create_task_makefile(task_plan, makefile, include = include, packages = packages,
+                       sources = sources, finalize_funs = c('combine_nhd_sfs','GNIS_Name_xwalk'),
+                       final_targets = final_targets)
 }
 
 #' @param min_size minimum size in m^2 for lakes to keep. Can override at individual level w/ `keep_IDs`
@@ -46,7 +48,7 @@ filter_sf_lakes <- function(waterbodies_sf, min_size, remove_IDs = NULL, keep_ID
   waterbodies_sf$area_m2 <- as.numeric(sf::st_area(waterbodies_sf))# in m2, stripping "units" class because I don't know how to filter against
   waterbodies_sf %>%
     filter(area_m2 > min_size) %>%
-    mutate(site_id = paste0('nhdhr_', Permanent_Identifier)) %>% dplyr::select(site_id) %>%  #geometry selected automatically
+    mutate(site_id = paste0('nhdhr_', Permanent_Identifier)) %>% dplyr::select(site_id, GNIS_Name) %>%  #geometry selected automatically
     sf::st_transform(crs = 4326)
 
 }
@@ -69,11 +71,23 @@ fetch_NHD_as_sf <- function(url){
     filter(FType %in% c(390, 436, 361)) #select only lakes/ponds/reservoirs. This drops things like swamp/marsh
 }
 
+GNIS_Name_xwalk <- function(ind_file, ...){
+  data_file <- scipiper::as_data_file(ind_file)
+
+  sf_lakes <- rbind(...)
+  deduped_sf_lakes <- st_drop_geometry(sf_lakes[!duplicated(sf_lakes$site_id), ]) %>%
+    dplyr::select(site_id, GNIS_Name)
+
+  saveRDS(deduped_sf_lakes, data_file)
+  gd_put(ind_file, data_file)
+}
+
 combine_nhd_sfs <- function(ind_file, ...){
   data_file <- scipiper::as_data_file(ind_file)
 
   sf_lakes <- rbind(...)
-  deduped_sf_lakes <- sf_lakes[!duplicated(sf_lakes$site_id), ]
+  deduped_sf_lakes <- sf_lakes[!duplicated(sf_lakes$site_id), ] %>%
+    dplyr::select(site_id)
 
   saveRDS(deduped_sf_lakes, data_file)
   gd_put(ind_file, data_file)

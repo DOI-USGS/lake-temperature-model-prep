@@ -40,6 +40,10 @@ cells_containing_points <- function(cell_grid, points){
   return(cells_w_pts)
 }
 
+cells_containing_points_within <- function(cell_grid, points, x_range, y_range){
+  cells_containing_points(cell_grid, points) %>%
+    dplyr::filter(x_range[1] <= x & x <= x_range[2], y_range[1] <= y & y <= y_range[2])
+}
 
 sf_file_centroids <- function(filepath){
 
