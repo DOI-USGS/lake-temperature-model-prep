@@ -56,7 +56,7 @@ targets:
     command: cells_containing_points(NLDAS_grid, old_feature_centroids)
 
   feature_NLDAS_cells:
-    command: cells_containing_points(NLDAS_grid, new_feature_centroids)
+    command: cells_containing_points_within(NLDAS_grid, new_feature_centroids, x_range = I(c(202,335)), y_range = I(c(127, 191)))
 
   old_nldas_cells:
     command: as_OPeNDAP_cells(old_feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m')))
