@@ -1,0 +1,15 @@
+version: 0.3.0
+name: 4_params_munge/out/mndow_perc_02_bathy.rds.ind
+type: file
+hash: 31727163dc5441d102956cf51e986762
+time: 2019-11-15 18:16:37 UTC
+depends:
+  3_params_fetch/in/mndow_percentage_02_hypsos.zip.ind: 397435986ad273212395a60fd66d7e96
+  2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind: 92f9c3f5d352c96e01cfccf350d220b8
+  1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind: b533bec808378b91bfac97b24b276182
+fixed: b0550238bb23b6c02851ac3c8f4053e4
+code:
+  functions:
+    collapse_multi_bathy: 5bc1b5b0f04bbe175472b7c7cbd84570
+    munge_mndow_perc_bathy: c18f3e587e243bddc074413e6633faa8
+
