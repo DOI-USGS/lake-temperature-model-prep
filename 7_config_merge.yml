@@ -53,6 +53,7 @@ targets:
       '4_params_munge/out/mndow_02_bathy.rds.ind',
       '4_params_munge/out/mndow_01_bathy.rds.ind',
       '4_params_munge/out/mndow_perc_bathy.rds.ind',
+      '4_params_munge/out/mndow_perc_02_bathy.rds.ind',
       '4_params_munge/out/wbic_bathy.rds.ind',
       '4_params_munge/out/lagos_depths.rds.ind',
       '4_params_munge/out/wbic_depths.rds.ind',

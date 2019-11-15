@@ -31,6 +31,9 @@ targets:
   3_params_fetch/in/mndow_percentage_hypsos.zip:
     command: gd_get('3_params_fetch/in/mndow_percentage_hypsos.zip.ind')
 
+  3_params_fetch/in/mndow_percentage_02_hypsos.zip:
+    command: gd_get('3_params_fetch/in/mndow_percentage_02_hypsos.zip.ind')
+
   3_params_fetch/in/mndow_hypsos_m-20191024.zip:
     command: gd_get('3_params_fetch/in/mndow_hypsos_m-20191024.zip.ind')
 
