@@ -1,5 +1,6 @@
-find_parser <- function(coop_wants, parser_files) {
+find_parser <- function(coop_wants, parser_filehash) {
 
+  parser_files <- yaml::yaml.load_file(parser_filehash) %>% names()
   parser_env <- new.env()
   sapply(parser_files, source,  parser_env)
 
