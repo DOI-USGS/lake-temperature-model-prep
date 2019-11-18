@@ -1,3 +1,8 @@
+list_coop_files <- function(fileout, dirpath, dummy){
+  scipiper::sc_indicate(fileout,  data_file = list.files(dirpath, full.names = TRUE))
+}
+
+
 crosswalk_coop_dat <- function(outind = target_name,
                                inind = '7a_temp_coop_munge/tmp/all_coop_dat.rds.ind',
                                id_crosswalk, wbic_crosswalk, dow_crosswalk) {
