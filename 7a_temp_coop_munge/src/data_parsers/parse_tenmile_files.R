@@ -237,19 +237,40 @@ parse_Tenmile_2009_Temperatures <-
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
-parse_Tenmile_2007_Temperatures <- function(inind, outind) {
+parse_Tenmile_2007_Temperatures <-
+  parse_Tenmile_2006_Temperatures <-
+  parse_Tenmile_2005_Temperatures <-
+  parse_Tenmile_2004_Temperatures <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
 
   dat <- readxl::read_xls(infile, skip = 1)
   dates <- grep('\\d{4,}', names(readxl::read_xls(infile, n_max = 1, skip = 1)), value = TRUE)
-  dates <- as.Date(as.numeric(dates), origin = '1903-12-31')
+
+  # it looks like some of the files have 2006 year, though the title of the file suggests a different year
+  # followed up with Bruce Carlson and confirmed the file title has the correct year
+  if (grepl('2005|2006', inind)) {
+    dates <- as.Date(as.numeric(dates), origin = '1899-12-30')
+  } else if (grepl('2007', inind)) {
+    # somehow the origin for the dates in 2007 changes by cell?!?
+    # hard coding these in
+    dates <- as.Date(c('2007-05-22', '2007-05-30', '2007-06-05', '2007-06-12', '2007-06-30', '2007-07-07', '2007-07-15', '2007-07-21', '2007-07-28', '2007-08-03', '2007-08-10', '2007-08-22', '2007-08-28', '2007-08-31', '2007-09-12', '2007-09-16'))
+  } else if (grepl('2004', inind)) {
+    dates <- as.Date(as.numeric(dates), origin = '1897-12-30')
+
+  } else if (grepl('2003', infile)) {
+    dates <- as.Date(as.numeric(dates), origin = '1896-12-29')
+
+  } else if (grepl('2002', inind)) {
+    dates <- as.Date(as.numeric(dates), origin = '1895-12-30')
+  }
 
   dat_out <- dat %>%
     mutate(depth = feet_to_meters(Feet)) %>%
     select(-Feet) %>%
     tidyr::gather(key = key, value = temp, -depth) %>%
-    mutate(date = rep(dates, each = nrow(dat))) %>%
+    mutate(date = rep(dates, each = nrow(dat)),
+           temp = fahrenheit_to_celsius(temp)) %>%
     filter(!is.na(temp)) %>%
     filter(!is.na(depth)) %>%
     mutate(DOW = '11041300') %>%

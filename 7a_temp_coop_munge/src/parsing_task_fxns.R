@@ -99,6 +99,7 @@ create_coop_munge_makefile <- function(target_name, taskplan, final_targets) {
                 '7a_temp_coop_munge/src/data_parsers/parse_redlake_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_dakota_files.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_indiana_files.R',
+                '7a_temp_coop_munge/src/data_parsers/parse_tenmile_files.R',
                 '7a_temp_coop_munge/src/parsing_task_fxns.R',
                 'lib/src/require_local.R',
                 '7a_temp_coop_munge/src/data_parsers/parse_unit_functions.R'),
