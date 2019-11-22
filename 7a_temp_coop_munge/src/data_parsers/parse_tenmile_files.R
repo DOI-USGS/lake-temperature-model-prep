@@ -61,7 +61,7 @@ parse_Tenmile_2018_PCA_October <-
            time = format(dat$`Time (HH:MM:SS)`, '%H:%M'),
            timezone = 'CDT',
            site = '202') %>%
-    select(date,
+    dplyr::select(date,
            time,
            timezone,
            depth = `Depth m`,
@@ -179,7 +179,7 @@ parse_Tenmile_2011Nov8_MPCA_data <- function(inind, outind) {
            time = '11:50',
            timezone = 'CDT',
            site = '202') %>%
-    select(date,
+    dplyr::select(date,
            time,
            timezone,
            depth = `Depth1`,
@@ -240,11 +240,23 @@ parse_Tenmile_2009_Temperatures <-
 parse_Tenmile_2007_Temperatures <-
   parse_Tenmile_2006_Temperatures <-
   parse_Tenmile_2005_Temperatures <-
-  parse_Tenmile_2004_Temperatures <- function(inind, outind) {
+  parse_Tenmile_2004_Temperatures <-
+  parse_Tenmile_2003_Temperatures <-
+  parse_Tenmile_2002_Temperatures <-
+  parse_Tenmile_2001_Temperatures <-
+  parse_Tenmile_2000_Temperatures <-
+  parse_Tenmile_1999_Temperatures <-
+  parse_Tenmile_1998_Temperatures <-
+  parse_Tenmile_1997_Temperatures <-
+  parse_Tenmile_1996_Temperatures <-
+
+
+  function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
 
   dat <- readxl::read_xls(infile, skip = 1)
+  if (grepl('1998', inind)) {dat <- readxl::read_xls(infile, skip = 1, n_max = 12)}
   dates <- grep('\\d{4,}', names(readxl::read_xls(infile, n_max = 1, skip = 1)), value = TRUE)
 
   # it looks like some of the files have 2006 year, though the title of the file suggests a different year
@@ -259,22 +271,48 @@ parse_Tenmile_2007_Temperatures <-
     dates <- as.Date(as.numeric(dates), origin = '1897-12-30')
 
   } else if (grepl('2003', infile)) {
+
     dates <- as.Date(as.numeric(dates), origin = '1896-12-29')
 
   } else if (grepl('2002', inind)) {
+
     dates <- as.Date(as.numeric(dates), origin = '1895-12-30')
+
+  } else if  (grepl('2001', inind)) {
+
+    dates <- as.Date(as.numeric(dates), origin = '1894-12-30')
+
+  } else if (grepl('2000', inind)) {
+
+    dates <- as.Date(as.numeric(dates), origin = '1893-12-30')
+
+  } else if (grepl('1999', inind)) {
+
+    dates <- as.Date(as.numeric(dates), origin = '1892-12-29')
+
+  } else if (grepl('1998', inind)) {
+
+    dates <- as.Date(as.numeric(dates), origin = '1891-12-30')
+
+  } else if (grepl('1997', inind)) {
+
+    dates <- as.Date(as.numeric(dates), origin = '1890-12-30')
+
+  } else if (grepl('1996', inind)) {
+
+    dates <- as.Date(as.numeric(dates), origin = '1889-12-30')
   }
 
   dat_out <- dat %>%
     mutate(depth = feet_to_meters(Feet)) %>%
-    select(-Feet) %>%
+    dplyr::select(-Feet) %>%
     tidyr::gather(key = key, value = temp, -depth) %>%
     mutate(date = rep(dates, each = nrow(dat)),
            temp = fahrenheit_to_celsius(temp)) %>%
     filter(!is.na(temp)) %>%
     filter(!is.na(depth)) %>%
     mutate(DOW = '11041300') %>%
-    select(-key)
+    dplyr::select(-key)
 
 
   saveRDS(object = dat_out, file = outfile)

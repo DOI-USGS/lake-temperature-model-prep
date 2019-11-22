@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Tenmile_2019_Temperatures.xlsx.ind
+type: file
+hash: 408a598f331be81b25dd5e6bf6f25b59
+time: 2019-11-22 02:44:31 UTC
+depends: {}
+fixed: 11f6214d1ded2d4e1a7c5c872d31cf50
+code:
+  functions: {}
+
