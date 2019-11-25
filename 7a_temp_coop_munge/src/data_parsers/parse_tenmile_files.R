@@ -11,7 +11,7 @@ parse_Tenmile_2019_Temperatures <- function(inind, outind) {
   temp_cols <- grep('temp', names(dat), ignore.case = TRUE)
   temp_dat <- c(dat[[temp_cols[1]]], dat[[temp_cols[2]]], dat[[temp_cols[3]]])
 
-  dat_out <- data.frame(date = c(rep(dates[1], nrow(dat)), rep(dates[2], nrow(dat)), rep(dates[3], nrow(dat))),
+  dat_out <- data.frame(DateTime = c(rep(dates[1], nrow(dat)), rep(dates[2], nrow(dat)), rep(dates[3], nrow(dat))),
                         depth = rep(dat$Meters, 3),
                         temp = temp_dat) %>%
     filter(!is.na(temp)) %>%
@@ -34,7 +34,7 @@ parse_Tenmile_2018_Temperatures_b <- function(inind, outind) {
   temp_dat <- dat[temp_cols] %>%
     tidyr::gather()
 
-  dat_out <- data.frame(date = rep(dates, each = nrow(dat)),
+  dat_out <- data.frame(DateTime = rep(dates, each = nrow(dat)),
                         depth = rep(dat$Meters, length(temp_cols)),
                         temp = temp_dat$value) %>%
     filter(!is.na(temp)) %>%
@@ -57,11 +57,11 @@ parse_Tenmile_2018_PCA_October <-
   dat <- readxl::read_xlsx(infile)
 
   dat_out <- dat %>%
-    mutate(date = as.Date(`Date (MM/DD/YYYY)`),
+    mutate(DateTime = as.Date(`Date (MM/DD/YYYY)`),
            time = format(dat$`Time (HH:MM:SS)`, '%H:%M'),
            timezone = 'CDT',
            site = '202') %>%
-    dplyr::select(date,
+    dplyr::select(DateTime,
            time,
            timezone,
            depth = `Depth m`,
@@ -93,7 +93,7 @@ parse_Tenmile_2017_Temperatures_O2 <- function(inind, outind) {
   temp_dat <- dat[temp_cols] %>%
     tidyr::gather()
 
-  dat_out <- data.frame(date = rep(dates, each = nrow(dat)),
+  dat_out <- data.frame(DateTime = rep(dates, each = nrow(dat)),
                         depth = rep(dat$`Depth - M`, length(temp_cols)),
                         temp = temp_dat$value) %>%
     filter(!is.na(temp)) %>%
@@ -124,13 +124,15 @@ parse_Tenmile_2016_Temperatures_O2 <-
 
   depth_col <- dat[[grep('depth|meters', names(dat), ignore.case = TRUE)]]
 
-  dat_out <- data.frame(date = rep(dates, each = nrow(dat)),
+  dat_out <- data.frame(DateTime = rep(dates, each = nrow(dat)),
                         depth = rep(depth_col, length(temp_cols)),
                         temp = temp_dat$value) %>%
     filter(!is.na(temp)) %>%
     filter(!is.na(depth)) %>%
     mutate(DOW = '11041300') %>%
     mutate(site = '202')
+
+    dat_out$temp <- gsub('-', '', dat_out$temp)
 
   saveRDS(object = dat_out, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -156,7 +158,7 @@ parse_Tenmile_2011_Temp_O2 <-
       depth_col <- dat[[1]]
     }
 
-  dat_out <- data.frame(date = rep(dates, each = nrow(dat)),
+  dat_out <- data.frame(DateTime = rep(dates, each = nrow(dat)),
                         depth = rep(depth_col, length(temp_cols)),
                         temp = temp_dat$value) %>%
     filter(!is.na(temp)) %>%
@@ -175,11 +177,11 @@ parse_Tenmile_2011Nov8_MPCA_data <- function(inind, outind) {
   dat <- readxl::read_xls(infile)
 
   dat_out <- dat %>%
-    mutate(date = as.Date('2011-11-08'),
+    mutate(DateTime = as.Date('2011-11-08'),
            time = '11:50',
            timezone = 'CDT',
            site = '202') %>%
-    dplyr::select(date,
+    dplyr::select(DateTime,
            time,
            timezone,
            depth = `Depth1`,
@@ -226,7 +228,7 @@ parse_Tenmile_2009_Temperatures <-
 
   depth_col <- dat1[[grep('depth|meters', names(dat1), ignore.case = TRUE)]]
 
-  dat_out <- data.frame(date = rep(dates, each = nrow(dat1)),
+  dat_out <- data.frame(DateTime = rep(dates, each = nrow(dat1)),
                         depth = rep(depth_col, length(dates)),
                         temp = temp_dat$value) %>%
     filter(!is.na(temp)) %>%
@@ -307,7 +309,7 @@ parse_Tenmile_2007_Temperatures <-
     mutate(depth = feet_to_meters(Feet)) %>%
     dplyr::select(-Feet) %>%
     tidyr::gather(key = key, value = temp, -depth) %>%
-    mutate(date = rep(dates, each = nrow(dat)),
+    mutate(DateTime = rep(dates, each = nrow(dat)),
            temp = fahrenheit_to_celsius(temp)) %>%
     filter(!is.na(temp)) %>%
     filter(!is.na(depth)) %>%
