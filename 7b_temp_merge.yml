@@ -77,8 +77,7 @@ targets:
     command: summarize_sources(
       datin_ind = '7b_temp_merge/out/temp_data_with_sources.feather.ind',
       metadata_ind = '7b_temp_merge/in/source_metadata.csv.ind',
-      datout_ind = target_name
-    )
+      datout_ind = target_name)
 
   7b_temp_merge/out/source_metadata_for_release.csv:
     command: gd_get('7b_temp_merge/out/source_metadata_for_release.csv.ind')
