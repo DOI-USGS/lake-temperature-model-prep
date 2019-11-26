@@ -89,3 +89,6 @@ build/status/N2FfdGVtcF9jb29wX211bmdlL3RtcC9*
 
 # ignore html files
 *.html
+
+# ignore source metdata csv
+7b_temp_merge/in/source_metadata.csv
