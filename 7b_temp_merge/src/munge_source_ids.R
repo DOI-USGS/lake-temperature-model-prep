@@ -42,7 +42,7 @@ add_source_ids <- function(datin_ind, metadata_ind, datout_ind) {
   metadata <- sc_retrieve(metadata_ind)
   metadata <- read.csv(metadata, stringsAsFactors = FALSE)
 
-  dat <- feather::read_feather(sc_retrieve(dat_ind)) %>%
+  dat <- feather::read_feather(sc_retrieve(datin_ind)) %>%
     mutate(file_name = gsub('(7a_temp_coop_munge/tmp/)(.*)(.rds)', '\\2', source, perl = TRUE))
 
   dat_source <- left_join(dat, metadata, by = 'file_name') %>%
