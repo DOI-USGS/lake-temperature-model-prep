@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Tenmile_2010Temp_and_O2_Carlsonsite.xlsx.ind
+type: file
+hash: 954e785e252d283a8a6a9b73d7c5fe31
+time: 2019-11-22 02:57:44 UTC
+depends: {}
+fixed: 091b0ef95db4b94382aa493cffc61d75
+code:
+  functions: {}
+

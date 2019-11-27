@@ -5,7 +5,7 @@ filter_coop_all <- function(file_list) {
   # for now, just keep all .xlsx, .txt, .csv, .accdb
   filenames <- file_list$name
 
-  keep_files <- grep('\\.xlsx|\\.txt|\\.csv|\\.accdb', filenames, value = TRUE)
+  keep_files <- grep('\\.xlsx|\\.txt|\\.csv|\\.accdb|\\.xls', filenames, value = TRUE)
 
   # remove "explainer" files
   keep_files <- keep_files[-grep('explainer', keep_files, ignore.case = T)]

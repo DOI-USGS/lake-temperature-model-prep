@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Tenmile_1997_Temperatures.xls.ind
+type: file
+hash: 6a83b1f30355676796503053a26bbdf7
+time: 2019-11-22 02:50:18 UTC
+depends: {}
+fixed: e9e3fc041f54d7c3dce629af6faff905
+code:
+  functions: {}
+

@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Tenmile_2008_Temperatures_and_Oxygen.xls.ind
+type: file
+hash: 91f5d545ec12d2a9ae012afe44a12edb
+time: 2019-11-22 02:56:35 UTC
+depends: {}
+fixed: a3cf2c178c32dbcb46147bd0fa11e0b2
+code:
+  functions: {}
+
