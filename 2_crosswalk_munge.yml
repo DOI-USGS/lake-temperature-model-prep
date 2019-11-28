@@ -163,11 +163,3 @@ targets:
   2_crosswalk_munge/out/centroid_lakes_sf.rds:
     command: gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind')
 
-
-  # NAMES are in the WBIC depth file too!!
-  2_crosswalk_munge/out/names_nhdhr_xwalk.rds.ind:
-    command: munge_names(
-      out_ind = target_name,
-      lake_ind = "1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind")
-  2_crosswalk_munge/out/names_nhdhr_xwalk.rds:
-    command: gd_get('2_crosswalk_munge/out/names_nhdhr_xwalk.rds.ind')
