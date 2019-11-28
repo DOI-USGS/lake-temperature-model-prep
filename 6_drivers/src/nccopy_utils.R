@@ -42,7 +42,7 @@ nccopy_split_combine <- function(nc_filepath, max_steps, skip_on_exists = FALSE)
                                           sprintf("NLDAS_%s_fixed.nc", stringr::str_pad(file_num, width = 3, pad = '0'))))
 
   registerDoMC(cores=4)
-
+  #for (split_file in split_file_metadata){
   foreach(split_file=split_file_metadata) %dopar% {
 
     nc_temp_file_fixed <- split_file_info %>% filter(file_meta == split_file) %>% pull(nc_temp_file_fixed)
@@ -95,9 +95,8 @@ combine_nc_files <- function(filepaths_to_combine, nc_out_filepath){
 nccopy_retry <- function(url, file_out, retries = 15, verbose = FALSE, snooze = 5, variable){
   retry <- 0
   while (retry < retries){
-    output <- system(sprintf("nccopy -w  %s %s", url, file_out), ignore.stdout = TRUE, ignore.stderr = TRUE)
-
-    if(output | file.size(file_out) == 0){
+    output <- system(sprintf("nccopy -m 15m %s %s", url, file_out), ignore.stdout = TRUE, ignore.stderr = TRUE)
+    if(output || file.size(file_out) == 0){
       unlink(file_out)
       retry <- retry + 1
       Sys.sleep(snooze)

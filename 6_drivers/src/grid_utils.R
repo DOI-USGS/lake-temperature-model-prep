@@ -45,6 +45,13 @@ cells_containing_points_within <- function(cell_grid, points, x_range, y_range){
     dplyr::filter(x_range[1] <= x & x <= x_range[2], y_range[1] <= y & y <= y_range[2])
 }
 
+cells_all <- function(cell_grid, x_range, y_range){
+  st_set_geometry(cell_grid, NULL) %>%
+    dplyr::filter(x_range[1] <= x & x <= x_range[2], y_range[1] <= y & y <= y_range[2]) %>%
+    dplyr::select(x, y)
+}
+
+
 sf_file_centroids <- function(filepath){
 
   .obj <- readRDS(filepath)
