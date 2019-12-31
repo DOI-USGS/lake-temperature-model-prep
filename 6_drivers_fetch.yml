@@ -7,7 +7,7 @@ packages:
   - ncdf4
   - sf
   - stringr
-  - doMC
+  - doMC # not available on Windows
 
 sources:
   - 6_drivers/src/nldas_cube_utils.R
