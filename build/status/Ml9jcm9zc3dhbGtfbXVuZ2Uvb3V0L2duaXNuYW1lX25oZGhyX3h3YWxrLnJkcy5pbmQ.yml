@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind
+type: file
+hash: d80ac548a149f7e1dc129761d1e659f9
+time: 2020-01-03 14:44:58 UTC
+depends:
+  1_crosswalk_fetch_nhd_tasks.yml: 264f77e2cff5e6f5b81064d4060c8383
+fixed: 36522325771905f2a8bd7e18293773d2
+code:
+  functions: {}
+
