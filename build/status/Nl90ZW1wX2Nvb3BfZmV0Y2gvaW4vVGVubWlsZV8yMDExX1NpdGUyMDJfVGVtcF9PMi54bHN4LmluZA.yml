@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Tenmile_2011_Site202_Temp_O2.xlsx.ind
+type: file
+hash: 79904ec44559994b22b729507f30f375
+time: 2019-11-22 02:59:02 UTC
+depends: {}
+fixed: 5214049d153f5a93b19eba9ca6650e7f
+code:
+  functions: {}
+

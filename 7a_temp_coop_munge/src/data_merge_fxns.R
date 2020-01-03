@@ -23,6 +23,8 @@ merge_coop_dat <- function(outind, inind) {
 
       # this is a hack, should fix parsers/dependencies on parsers
       temp_dat$DateTime <- as.Date(temp_dat$DateTime)
+      temp_dat$temp <- as.numeric(temp_dat$temp)
+      temp_dat$depth <- as.numeric(temp_dat$depth)
 
       if ('time' %in% names(temp_dat)) {
         temp_dat$time <- as.character(temp_dat$time)

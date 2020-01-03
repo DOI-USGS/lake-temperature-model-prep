@@ -162,7 +162,7 @@ reduce_temp_data <- function(outind, inind) {
               time = time[which.min(hours_diff_noon)],
               source_id = source_id[which.min(hours_diff_noon)])
 
-  cat(nrow(time_multiples) - nrow(resolved_time_multiples), "repeated observations were dropped. Observations with time closest to noon (local time) were retained when possible.")
+  cat(nrow(time_multiples) - nrow(resolved_time_multiples), "high frequency (>1/day) observations were dropped. Observations with time closest to noon (local time) were retained when possible.")
 
   ##########################################################
   ############## sort out "other" instances with multiple obs per lake-source-site-date-depth
