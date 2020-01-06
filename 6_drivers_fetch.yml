@@ -23,7 +23,7 @@ targets:
       - "6_drivers/log/feather/6_fetch_new_cell_tasks.ind"
 
   replete_time_range:
-    command: c(t0=I(0), t1 = I(358295)) # for doing one timechunk: 24999
+    command: c(t0=I(0), t1 = I(359420)) # for doing one timechunk: 24999
 
   append_time_range:
     command: nldas_times_diff(replete_time_range, '6_drivers/in/nldas_times.rds')
