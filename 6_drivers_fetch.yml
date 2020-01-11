@@ -60,7 +60,7 @@ targets:
   #  command: cells_containing_points_within(NLDAS_grid, new_feature_centroids, x_range = I(c(202,335)), y_range = I(c(127, 191)))
 
   feature_NLDAS_cells:
-    command: cells_all(NLDAS_grid, x_range = I(c(202,335)), y_range = I(c(155, 191))) # was c(127,155) had to do this in two chunks do to memory issues
+    command: cells_all(NLDAS_grid, x_range = I(c(202,335)), y_range = I(c(127,154))) # was c(127,154) and c(155, 191) had to do this in two chunks do to memory issues
 
   old_nldas_cells:
     command: as_OPeNDAP_cells(old_feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m')))
@@ -122,7 +122,7 @@ targets:
     command: create_cell_task_makefile(target_name, append_cell_plan)
 
   "6_drivers/log/feather/6_fetch_new_cell_tasks.ind":
-    command: loop_tasks(task_plan = new_cell_plan, task_makefile = "6_fetch_new_cell_tasks.yml")
+    command: scmake(I("6_fetch_new_cell_tasks.ind_promise"), remake_file = "6_fetch_new_cell_tasks.yml")
     depends:
       - nldas_new_cells
 

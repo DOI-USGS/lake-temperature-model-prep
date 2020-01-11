@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 6_drivers/log/feather/cellgroup_time[0.359420]_var[spfh2m].yml.ind
+type: file
+hash: 96ac4351be1e640dcb0f83c45572b082
+time: 2020-01-07 18:04:28 UTC
+depends:
+  6_drivers/log/feather/cellgroup_time[0.359420]_var[spfh2m].yml: 62b488f44504c548ccaabddecc7733c5
+fixed: 4c3b12f37af0b39eceada22513ac5b19
+code:
+  functions: {}
+
