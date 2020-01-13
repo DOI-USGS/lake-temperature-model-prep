@@ -100,7 +100,7 @@ targets:
     command: gd_get('1_crosswalk_fetch/out/wbic_lakes_sf.rds.ind')
 
   1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind:
-    command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_temperature_charnames, dummy = I('2019-10-25'))
+    command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_temperature_charnames, dummy = I('2020-01-13'))
   1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind')
 
