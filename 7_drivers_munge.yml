@@ -35,5 +35,6 @@ targets:
   "7_drivers_munge_tasks.yml":
     command: create_driver_task_makefile(target_name, GLM_driver_plan)
 
+  # using loop_tasks because of this error: * Error in NULL: object 'tmp2m' not found; debug with scmake("7_drivers_munge/out/NLDAS_time[0.359420]_x[223]_y[141].csv", "7_drivers_munge_tasks.yml")
   "7_drivers_munge/out/7_drivers_munge_tasks.ind":
-    command: scmake(I('7_drivers_munge_tasks.ind_promise'), remake_file='7_drivers_munge_tasks.yml')
+    command: scmake(I("7_drivers_munge_tasks.ind_promise"), remake_file = '7_drivers_munge_tasks.yml')
