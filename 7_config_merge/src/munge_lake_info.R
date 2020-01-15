@@ -175,3 +175,49 @@ munge_meteo_fl <- function(out_ind, centroids_ind, lake_depth_ind, sf_grid, time
   saveRDS(meteo_fl, data_file)
   gd_put(out_ind, data_file)
 }
+
+build_nml_list <- function(
+  H_A_ind = '7_config_merge/out/nml_H_A_values.rds.ind',
+  cd_ind = '7_config_merge/out/nml_cd_values.rds.ind',
+  lat_lon_ind = '7_config_merge/out/nml_lat_lon_values.rds.ind',
+  len_wid_ind = '7_config_merge/out/nml_len_wid_values.rds.ind',
+  lake_depth_ind = '7_config_merge/out/nml_lake_depth_values.rds.ind',
+  layer_thick_ind = '7_config_merge/out/nml_layer_thick_values.rds.ind',
+  meteo_fl_ind = '7_config_merge/out/nml_meteo_fl_values.rds.ind',
+  kw_ind = '7_config_merge/out/nml_Kw_values.rds.ind',
+  feature_NLDAS_cells){
+
+  # combine the model parameters into a single data.frame
+  nml_df_data <- readRDS(scipiper::sc_retrieve(cd_ind)) %>%
+    inner_join(readRDS(scipiper::sc_retrieve(lat_lon_ind)), by = 'site_id') %>%
+    inner_join(readRDS(scipiper::sc_retrieve(len_wid_ind)), by = 'site_id') %>%
+    inner_join(readRDS(scipiper::sc_retrieve(lake_depth_ind)), by = 'site_id') %>%
+    inner_join(readRDS(scipiper::sc_retrieve(layer_thick_ind)), by = 'site_id') %>%
+    inner_join(readRDS(scipiper::sc_retrieve(meteo_fl_ind)), by = 'site_id') %>%
+    inner_join(readRDS(scipiper::sc_retrieve(kw_ind)), by = 'site_id') %>%
+    # only include those sites for which the meteo file was actually created
+    mutate(meteo_x = as.integer(substring(meteo_fl, 24, 26)),
+           meteo_y = as.integer(substring(meteo_fl, 31, 33))) %>%
+    left_join(mutate(feature_NLDAS_cells, has_meteo=TRUE), by=c(meteo_x='x', meteo_y='y')) %>%
+    mutate(has_meteo = replace_na(has_meteo, FALSE))
+#    filter(meteo_fl %in% basename(names(yaml::read_yaml(meteo_fl_list))))
+  points_to_poly <- st_join(dplyr::filter(new_feature_centroids, site_id %in% nml_df_data$site_id), NLDAS_grid, join = st_intersects)
+  ggplot(nml_df_data, aes(x=meteo_x, y=meteo_y)) + geom_point(aes(color=has_meteo)) + theme_bw() + geom_point(data=sf::st_drop_geometry(points_to_poly), aes(x=x, y=y), size=0.3)
+
+
+  # convert df to list where each row of the former df becomes a list element
+  nml_list <- split(nml_df_data, seq(nrow(nml_df_data))) %>% setNames(nml_df_data$site_id)
+
+  # merge height & area info with the nlm_list. note the file referred to by H_A_ind is a list already
+  H_A_list <- readRDS(scipiper::sc_retrieve(H_A_ind))
+  H_A_site_ids <- names(H_A_list)
+  for (id in H_A_site_ids[H_A_site_ids %in% names(nml_list)]){
+    nml_list[[id]] = as.list(nml_list[[id]])
+    nml_list[[id]]$A = H_A_list[[id]]$A
+    nml_list[[id]]$H = H_A_list[[id]]$H
+  }
+
+  saveRDS(nml_list, scipiper::as_data_file(out_ind))
+  gd_put(out_ind)
+}
+
