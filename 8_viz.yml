@@ -3,40 +3,55 @@ target_default: 8_viz
 packages:
   - scipiper
   - dplyr
+  - ggplot2
   - feather
   - lakeattributes
 
 sources:
   - 8_viz/src/merge_lake_data.R
   - 8_viz/src/render_html.R
+  - 8_viz/src/plot_lake_obs_counts.R
 
 targets:
 
   8_viz:
     depends:
-     - 8_viz/inout/lakes_summary.feather.ind
+      - 8_viz/out/lake_obs_counts.png
 
-  # -- get WQP, coop data and merge -- #
-  # -- removes (coarsely defined) duplicates -- #
-  # -- removes egregious outliers in Jan/Feb (>10 deg C) and July/Aug (surface, <10 deg C)
-  # -- returns all times -- ##
+  # temp_obs_ind should not be in I() but AA can't build it locally on 1/15/2020 and so is skipping
+  8_viz/out/lake_obs_counts.png:
+    command: plot_lake_obs_counts(
+      out_file = '8_viz/out/lake_obs_counts.png',
+      temp_obs_ind = I('7b_temp_merge/out/temp_data_with_sources.feather.ind'),
+      nml_list_ind = '7_config_merge/out/nml_list.rds.ind')
 
-  8_viz/inout/lakes_summary.feather.ind:
-    command: merge_lake_data(
-      out_ind = target_name,
-      temp_data_ind = '7b_temp_merge/out/merged_temp_data_daily.feather.ind',
-      lake_names_ind = '2_crosswalk_munge/out/lake_names_crosswalk.rds.ind',
-      dow_cross_ind = '1_crosswalk_fetch/out/nhd2dowlknum.RData.ind',
-      state_cross_ind = '4_params_munge/out/nhd2states.rds.ind',
-      MN_bathy_ind = '4_params_munge/out/MN_bathy.rds.ind')
-
-  8_viz/inout/lakes_summary.feather:
-    command: gd_get('8_viz/inout/lakes_summary.feather.ind')
-
-  8_viz/out/lakes_summary_fig.html.ind:
-    command: render_html(filename_md = 'lake_data_map.Rmd', out_ind = target_name)
-    depends:
-      - 8_viz/inout/lakes_summary.feather.ind
-
-  8_viz/out/lakes_summary_fig.html:
-    command: gd_get('8_viz/out/lakes_summary_fig.html.ind')
+#### We expect the following to be out of date as of the transition to NHD-HR:
+#
+#  8_viz:
+#    depends:
+#     - 8_viz/inout/lakes_summary.feather.ind
+#
+#  # -- get WQP, coop data and merge -- #
+#  # -- removes (coarsely defined) duplicates -- #
+#  # -- removes egregious outliers in Jan/Feb (>10 deg C) and July/Aug (surface, <10 deg C)
+#  # -- returns all times -- ##
+#
+#  8_viz/inout/lakes_summary.feather.ind:
+#    command: merge_lake_data(
+#      out_ind = target_name,
+#      temp_data_ind = '7b_temp_merge/out/merged_temp_data_daily.feather.ind',
+#      lake_names_ind = '2_crosswalk_munge/out/lake_names_crosswalk.rds.ind',
+#      dow_cross_ind = '1_crosswalk_fetch/out/nhd2dowlknum.RData.ind',
+#      state_cross_ind = '4_params_munge/out/nhd2states.rds.ind',
+#      MN_bathy_ind = '4_params_munge/out/MN_bathy.rds.ind')
+#
+#  8_viz/inout/lakes_summary.feather:
+#    command: gd_get('8_viz/inout/lakes_summary.feather.ind')
+#
+#  8_viz/out/lakes_summary_fig.html.ind:
+#    command: render_html(filename_md = 'lake_data_map.Rmd', out_ind = target_name)
+#    depends:
+#      - 8_viz/inout/lakes_summary.feather.ind
+#
+#  8_viz/out/lakes_summary_fig.html:
+#    command: gd_get('8_viz/out/lakes_summary_fig.html.ind')
