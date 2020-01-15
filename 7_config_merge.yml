@@ -28,6 +28,7 @@ targets:
       - 7_config_merge/out/nml_layer_thick_values.rds.ind
       - 7_config_merge/out/nml_meteo_fl_values.rds.ind
       - 7_config_merge/out/nml_Kw_values.rds.ind
+      - 7_config_merge/out/nml_list.rds.ind
 
   7_config_merge/out/canonical_lakes_area.rds.ind:
     command: munge_lake_area(target_name,
@@ -94,3 +95,16 @@ targets:
       wqp_xwalk_ind = '2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind')
   7_config_merge/out/nml_Kw_values.rds:
     command: gd_get('7_config_merge/out/nml_Kw_values.rds.ind')
+
+  7_config_merge/out/nml_list.rds.ind:
+    command: build_nml_list('7_config_merge/out/nml_H_A_values.rds.ind',
+      '7_config_merge/out/nml_cd_values.rds.ind',
+      '7_config_merge/out/nml_lat_lon_values.rds.ind',
+      '7_config_merge/out/nml_len_wid_values.rds.ind',
+      '7_config_merge/out/nml_lake_depth_values.rds.ind',
+      '7_config_merge/out/nml_layer_thick_values.rds.ind',
+      '7_config_merge/out/nml_meteo_fl_values.rds.ind',
+      '7_config_merge/out/nml_Kw_values.rds.ind',
+      target_name)
+  7_config_merge/out/nml_list.rds:
+    command: gd_get('7_config_merge/out/nml_list.rds.ind')

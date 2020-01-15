@@ -185,7 +185,7 @@ build_nml_list <- function(
   layer_thick_ind = '7_config_merge/out/nml_layer_thick_values.rds.ind',
   meteo_fl_ind = '7_config_merge/out/nml_meteo_fl_values.rds.ind',
   kw_ind = '7_config_merge/out/nml_Kw_values.rds.ind',
-  feature_NLDAS_cells){
+  out_ind){
 
   # combine the model parameters into a single data.frame
   nml_df_data <- readRDS(scipiper::sc_retrieve(cd_ind)) %>%
@@ -194,16 +194,12 @@ build_nml_list <- function(
     inner_join(readRDS(scipiper::sc_retrieve(lake_depth_ind)), by = 'site_id') %>%
     inner_join(readRDS(scipiper::sc_retrieve(layer_thick_ind)), by = 'site_id') %>%
     inner_join(readRDS(scipiper::sc_retrieve(meteo_fl_ind)), by = 'site_id') %>%
-    inner_join(readRDS(scipiper::sc_retrieve(kw_ind)), by = 'site_id') %>%
-    # only include those sites for which the meteo file was actually created
-    mutate(meteo_x = as.integer(substring(meteo_fl, 24, 26)),
-           meteo_y = as.integer(substring(meteo_fl, 31, 33))) %>%
-    left_join(mutate(feature_NLDAS_cells, has_meteo=TRUE), by=c(meteo_x='x', meteo_y='y')) %>%
-    mutate(has_meteo = replace_na(has_meteo, FALSE))
-#    filter(meteo_fl %in% basename(names(yaml::read_yaml(meteo_fl_list))))
-  points_to_poly <- st_join(dplyr::filter(new_feature_centroids, site_id %in% nml_df_data$site_id), NLDAS_grid, join = st_intersects)
-  ggplot(nml_df_data, aes(x=meteo_x, y=meteo_y)) + geom_point(aes(color=has_meteo)) + theme_bw() + geom_point(data=sf::st_drop_geometry(points_to_poly), aes(x=x, y=y), size=0.3)
-
+    inner_join(readRDS(scipiper::sc_retrieve(kw_ind)), by = 'site_id')
+    # ideally would only include those sites for which the meteo file was
+    # actually created, but in practice this was a huge headache on 1/15/2020,
+    # so for now we'll do that filtering in lake-temperature-process-modeling.
+    # if we had a reliable list of files in 7_drivers_munge_tasks.ind we'd do:
+    #    filter(meteo_fl %in% basename(names(yaml::read_yaml(meteo_fl_list))))
 
   # convert df to list where each row of the former df becomes a list element
   nml_list <- split(nml_df_data, seq(nrow(nml_df_data))) %>% setNames(nml_df_data$site_id)
