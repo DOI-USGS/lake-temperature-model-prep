@@ -63,7 +63,7 @@ summarize_sources <- function(metadata_ind, datin_ind, datout_ind){
 
   source_summary_out <-left_join(source_summary, metadata)
 
-  write.csv(source_summary, as_data_file(datout_ind), row.names = FALSE)
+  write.csv(source_summary_out, as_data_file(datout_ind), row.names = FALSE)
   gd_put(datout_ind, as_data_file(datout_ind))
 }
 

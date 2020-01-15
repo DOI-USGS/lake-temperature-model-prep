@@ -1,13 +1,13 @@
 version: 0.3.0
 name: 7b_temp_merge/out/source_metadata_for_release.csv.ind
 type: file
-hash: 46d098c7f03e8ba791239228599a4bbc
-time: 2020-01-13 22:58:55 UTC
+hash: d942e5847c744bb50fcaeb89473d99e9
+time: 2020-01-15 16:34:31 UTC
 depends:
   7b_temp_merge/out/temp_data_with_sources.feather.ind: 55b19c141a2dbea4840aadcba29b30df
   7b_temp_merge/in/source_metadata.csv.ind: 6fb63f83d46e8cf5eadbf46872c15747
 fixed: 70be80eb410015414c94b5cc0eccdf43
 code:
   functions:
-    summarize_sources: bc32e95994f05acef4e06fa534f4dabd
+    summarize_sources: fe5d41d3dab84ae2d74bbc15114e4910
 
