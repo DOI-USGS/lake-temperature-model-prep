@@ -175,3 +175,45 @@ munge_meteo_fl <- function(out_ind, centroids_ind, lake_depth_ind, sf_grid, time
   saveRDS(meteo_fl, data_file)
   gd_put(out_ind, data_file)
 }
+
+build_nml_list <- function(
+  H_A_ind = '7_config_merge/out/nml_H_A_values.rds.ind',
+  cd_ind = '7_config_merge/out/nml_cd_values.rds.ind',
+  lat_lon_ind = '7_config_merge/out/nml_lat_lon_values.rds.ind',
+  len_wid_ind = '7_config_merge/out/nml_len_wid_values.rds.ind',
+  lake_depth_ind = '7_config_merge/out/nml_lake_depth_values.rds.ind',
+  layer_thick_ind = '7_config_merge/out/nml_layer_thick_values.rds.ind',
+  meteo_fl_ind = '7_config_merge/out/nml_meteo_fl_values.rds.ind',
+  kw_ind = '7_config_merge/out/nml_Kw_values.rds.ind',
+  out_ind){
+
+  # combine the model parameters into a single data.frame
+  nml_df_data <- readRDS(scipiper::sc_retrieve(cd_ind)) %>%
+    inner_join(readRDS(scipiper::sc_retrieve(lat_lon_ind)), by = 'site_id') %>%
+    inner_join(readRDS(scipiper::sc_retrieve(len_wid_ind)), by = 'site_id') %>%
+    inner_join(readRDS(scipiper::sc_retrieve(lake_depth_ind)), by = 'site_id') %>%
+    inner_join(readRDS(scipiper::sc_retrieve(layer_thick_ind)), by = 'site_id') %>%
+    inner_join(readRDS(scipiper::sc_retrieve(meteo_fl_ind)), by = 'site_id') %>%
+    inner_join(readRDS(scipiper::sc_retrieve(kw_ind)), by = 'site_id')
+    # ideally would only include those sites for which the meteo file was
+    # actually created, but in practice this was a huge headache on 1/15/2020,
+    # so for now we'll do that filtering in lake-temperature-process-modeling.
+    # if we had a reliable list of files in 7_drivers_munge_tasks.ind we'd do:
+    #    filter(meteo_fl %in% basename(names(yaml::read_yaml(meteo_fl_list))))
+
+  # convert df to list where each row of the former df becomes a list element
+  nml_list <- split(nml_df_data, seq(nrow(nml_df_data))) %>% setNames(nml_df_data$site_id)
+
+  # merge height & area info with the nlm_list. note the file referred to by H_A_ind is a list already
+  H_A_list <- readRDS(scipiper::sc_retrieve(H_A_ind))
+  H_A_site_ids <- names(H_A_list)
+  for (id in H_A_site_ids[H_A_site_ids %in% names(nml_list)]){
+    nml_list[[id]] = as.list(nml_list[[id]])
+    nml_list[[id]]$A = H_A_list[[id]]$A
+    nml_list[[id]]$H = H_A_list[[id]]$H
+  }
+
+  saveRDS(nml_list, scipiper::as_data_file(out_ind))
+  gd_put(out_ind)
+}
+
