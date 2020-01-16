@@ -31,20 +31,15 @@ plot_lake_obs_counts <- function(
     site_counts_mat <- matrix(
       NA, nrow=length(mins_obs_per_date), ncol=length(mins_obs_dates),
       dimnames=list(min_obs_per_date=mins_obs_per_date, min_obs_dates=mins_obs_dates))
-    for(min_obs_per_date in mins_obs_per_date) {
+    site_counts_mat['0', '0'] <- obs_counts %>% pull(site_id) %>% unique() %>% length()
+    for(min_obs_per_date in mins_obs_per_date[-1]) {
       message('.', appendLF = FALSE)
       date_counts <- obs_counts %>%
-        filter(n_per_date >= min_obs_per_date) %>%
-        summarize(n_obs_dates = length(which(!is.na(date))))
-      for(min_obs_dates in mins_obs_dates) {
-        site_counts_mat[as.character(min_obs_per_date), as.character(min_obs_dates)] <-
-          if(xor(min_obs_per_date == 0, min_obs_dates == 0)) {
-            NA
-          } else {
-            date_counts <- filter(date_counts, n_obs_dates >= min_obs_dates)
-            nrow(date_counts)
-          }
-
+        filter(n_per_date >= min_obs_per_date, !is.na(date)) %>%
+        summarize(n_obs_dates = n())
+      for(min_obs_dates in mins_obs_dates[-1]) {
+        date_counts <- filter(date_counts, n_obs_dates >= min_obs_dates)
+        site_counts_mat[as.character(min_obs_per_date), as.character(min_obs_dates)] <- nrow(date_counts)
       }
     }
     message(appendLF = TRUE)
@@ -67,13 +62,13 @@ plot_lake_obs_counts <- function(
 
   ggplot(data=site_counts, aes(x=obs_dates, y=n_sites, color=obs_per_date)) +
     geom_line(data=filter(site_counts, obs_dates > 0), aes(linetype=has_glm)) +
-    geom_point(data=filter(site_counts, obs_dates == 0), aes(shape=has_glm)) +
+    geom_point(data=filter(site_counts, obs_dates == 0) %>% mutate(n_sites = ifelse(has_glm == 'Yes only', n_sites, NA)), aes(shape=has_glm)) +
     theme_bw() +
     scale_x_log10('Minimum Observation Dates', breaks=rep(c(1,2,5), times=4)*rep(c(1,10,100,1000), each=3), minor_breaks=NULL) +
     scale_y_log10('Number of Lakes Meeting Criteria', breaks=rep(c(1,2,5), times=4)*rep(c(1,10,100,1000), each=3), minor_breaks=NULL) +
     scale_color_discrete('Min Depths per Date', breaks=c(0,1,5,10,20,30)) +
-    scale_linetype_discrete('Has GLM params') +
-    scale_shape_discrete('Has GLM params')
+    scale_linetype_discrete('Has GLM Params') +
+    scale_shape_discrete('Has GLM Params')
 
   if(!dir.exists(dirname(out_file))) dir.create(dirname(out_file))
   ggsave(out_file, width=7, height=6)
