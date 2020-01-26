@@ -5,6 +5,7 @@ packages:
   - scipiper
   - dataRetrieval
   - sf
+  - httr
   - sbtools
   - smoothr
 
@@ -35,9 +36,8 @@ targets:
       "Depth, Secchi disk depth",
       "Depth, Secchi disk depth (choice list)",
       "Secchi Reading Condition (choice list)",
-      "Secchi depth",
       "Water transparency, Secchi disc")))
-
+ #https://www.waterqualitydata.us/portal/#siteType=Lake%2C%20Reservoir%2C%20Impoundment&characteristicName=Depth%2C%20Secchi%20disk%20depth&characteristicName=Water%20transparency%2C%20Secchi%20disc&characteristicName=Depth%2C%20Secchi%20disk%20depth%20(choice%20list)&characteristicName=Secchi%20Reading%20Condition%20(choice%20list)&mimeType=tsv
   nhd_HR_download_plan:
     command: create_nhd_HR_download_plan(I(c("North_Dakota","South_Dakota","Iowa","Michigan","Indiana","Illinois","Wisconsin", "Minnesota")),
       min_size = I(40000))
@@ -105,7 +105,7 @@ targets:
     command: gd_get('1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind')
 
   1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind:
-    command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_secchi_charnames, dummy = I('2020-01-14'))
+    command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_secchi_charnames, dummy = I('2020-01-18'))
   1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind')
 

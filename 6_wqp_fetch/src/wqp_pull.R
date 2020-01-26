@@ -137,7 +137,8 @@ get_wqp_data <- function(data_file, partition, wqp_pull_params, verbose = FALSE)
 
 # hack around w/ https://github.com/USGS-R/dataRetrieval/issues/434
 wqp_POST <- function(wqp_args_list){
-  wqp_url <- "https://www.waterqualitydata.us/Result/search"
+
+  wqp_url <- "https://www.waterqualitydata.us/data/Result/search"
 
 
   wqp_args_list$siteid <- wqp_args_list$siteid

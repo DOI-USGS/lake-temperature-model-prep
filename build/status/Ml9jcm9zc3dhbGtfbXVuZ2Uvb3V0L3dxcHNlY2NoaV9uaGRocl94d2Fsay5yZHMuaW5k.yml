@@ -1,11 +1,11 @@
 version: 0.3.0
 name: 2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind
 type: file
-hash: ac3397caec21b15eb9173b78292e06fa
-time: 2020-01-14 21:44:12 UTC
+hash: 50cf546976d1c6c435191b97b40bf397
+time: 2020-01-19 19:39:29 UTC
 depends:
   1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind: 842f56b0dcae2c0068182d9da067ebcd
-  1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind: 104bdedf3a5a6fbfcbc0e89692ada72b
+  1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind: ab4fac13da4fceb032f8471bc67f3756
 fixed: 2363a948af15ee20a243154589eb1cf1
 code:
   functions:
