@@ -60,3 +60,10 @@ targets:
     command: fetch_nlcd_classes_canopyheight(target_name)
   3_params_fetch/out/nlcd_classes_canopyheight.rds:
     command: gd_get('3_params_fetch/out/nlcd_classes.rds.ind')
+
+  # Shapefile download available at https://www.nd.gov/gis/apps/Download/?clipping=Full&coord=LL83&format=SHAPE&layers=NDGAMEFISH.LAKE_CONTOURS
+  3_params_fetch/out/ndgf_lake_contours.rds:
+    command: gd_get('3_params_fetch/out/ndgf_lake_contours.rds.ind')
+  # Shapefile download available at https://www.nd.gov/gis/apps/Download/?clipping=Full&coord=LL83&format=SHAPE&layers=NDGAMEFISH.LAKE_MAXIMUMDEPTH
+  3_params_fetch/out/ndgf_lake_maxdepth.rds:
+    command: gd_get('3_params_fetch/out/ndgf_lake_maxdepth.rds.ind')
