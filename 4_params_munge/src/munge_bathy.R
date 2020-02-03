@@ -82,6 +82,7 @@ munge_mndow_perc_bathy <- function(out_ind, bathy_zip_ind, mndow_xwalk_ind, mndo
 
 }
 
+# Get into format site_id, other_ID, depths, areas
 munge_mndow_bathy <- function(out_ind, bathy_zip_ind, mndow_xwalk_ind){
 
   mndow_xwalk <- readRDS(sc_retrieve(mndow_xwalk_ind))
@@ -101,3 +102,36 @@ munge_mndow_bathy <- function(out_ind, bathy_zip_ind, mndow_xwalk_ind){
     saveRDS(data_file)
   gd_put(out_ind, data_file)
 }
+
+munge_ndgf_bathy <- function(out_ind, ndgf_contour_ind, ndgf_xwalk_ind){
+
+  ndgf_xwalk <- readRDS(sc_retrieve(ndgf_xwalk_ind))
+
+  # Use the lake surface polygon to join
+  ndgf_contours <- readRDS(sc_retrieve(ndgf_contour_ind)) %>%
+    mutate(NDGF_ID = as.character(LAKE)) %>%
+    inner_join(ndgf_xwalk, by = 'NDGF_ID') %>%
+    rename(other_ID = NDGF_ID,
+           depths = CONTOUR)
+
+  # The polygon version causes an error if you use it with dplyr functions after st_polygonize
+  # E.g. `found multiple dimensions: XYZ XY`
+  ndgf_contours_polygons <- st_polygonize(ndgf_contours)
+
+  # `st_area` doesn't return the expected result when added with mutate()
+  # E.g. `mutate(areas = as.numeric(st_area(geometry)))`
+  ndgf_areas <- st_area(ndgf_contours_polygons)
+
+  # Now add to contour geom as a column and reformat
+  ndgf_bathy <- ndgf_contours %>%
+    mutate(areas = as.numeric(ndgf_areas)) %>%
+    dplyr::select(site_id, other_ID, depths, areas)
+
+  # I'm not sure if I need to use `collapse_multi_bathy` or not
+  # All other function examples use it
+  data_file <- scipiper::as_data_file(out_ind)
+  collapse_multi_bathy(ndgf_bathy) %>%
+    saveRDS(data_file)
+  gd_put(out_ind, data_file)
+}
+
