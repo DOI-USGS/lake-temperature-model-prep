@@ -109,7 +109,7 @@ munge_ndgf_bathy <- function(out_ind, ndgf_contour_ind, ndgf_xwalk_ind){
 
   # Use the lake surface polygon to join
   ndgf_contours <- readRDS(sc_retrieve(ndgf_contour_ind)) %>%
-    mutate(NDGF_ID = as.character(LAKE)) %>%
+    mutate(NDGF_ID = sprintf("ndgf_%s", LAKE)) %>%
     inner_join(ndgf_xwalk, by = 'NDGF_ID') %>%
     rename(other_ID = NDGF_ID,
            depths = CONTOUR)
