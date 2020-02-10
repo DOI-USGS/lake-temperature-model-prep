@@ -10,6 +10,6 @@ munge_ndgf_depths <- function(out_ind, ndgf_depths_ind, ndgf_xwalk_ind){
     inner_join(ndgf_xwalk, by = 'NDGF_ID') %>% dplyr::select(site_id, NDGF_ID, z_max)
 
   data_file <- scipiper::as_data_file(out_ind)
-  saveRDS(wbic_depths, data_file)
+  saveRDS(ndgf_depths, data_file)
   gd_put(out_ind, data_file)
 }
