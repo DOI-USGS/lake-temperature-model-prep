@@ -142,7 +142,7 @@ munge_ndgf_bathy <- function(out_ind, ndgf_contour_ind, ndgf_xwalk_ind, ndgf_sur
     filter(NDGF_ID %in% unique(ndgf_non_surface_geoms$other_ID)) %>%
     mutate(depths = 0, areas = as.numeric(st_area(geometry))) %>%
     # Needs to be in the same order as non surface one because we are binding rows
-    select(site_id, other_ID = NDGF_ID, depths, areas) %>%
+    dplyr::select(site_id, other_ID = NDGF_ID, depths, areas) %>%
     # Convert geometry type so it matches the type coming from contour data
     st_cast("MULTILINESTRING") %>%
     st_transform(crs = crs)
@@ -168,8 +168,10 @@ munge_ndgf_bathy <- function(out_ind, ndgf_contour_ind, ndgf_xwalk_ind, ndgf_sur
     # filter them out so that they do not cause issues
     filter(areas != 0) %>%
     # IDs stored in `not_working` are not passing monotonicity
-    # Still investigating why that is the issue.
-    filter(other_ID %in% sprintf("ndgf_%s", not_working))
+    # Still investigating why that is the issue. Might be because
+    # they had both positive and negative depths. Maybe do filter
+    # areas > depth=0 as a start?
+    filter(!other_ID %in% sprintf("ndgf_%s", not_working))
 
   data_file <- scipiper::as_data_file(out_ind)
   collapse_multi_bathy(ndgf_bathy_valid) %>%
