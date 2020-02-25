@@ -27,17 +27,17 @@ col_types <- c("darkblue","dodgerblue","green4","gold1","orange","brown","red")
 
 df$popup <- paste0("<table>",
                    "<tr><td>Lake Name:</td><td>",
-                   df$lake_name,'</td></tr>',
+                   df$GNIS_Name,'</td></tr>',
                    "<tr><td>Site ID:</td><td>",
                    df$site_id,'</td></tr>',
-                   "<tr><td>DOW:</td><td>",
-                   df$dowlknum,'</td></tr>',
                    "<tr><td># Observations:</td><td>",
                    df$n_obs,'</td></tr>',
                    "<tr><td># Profiles:</td><td>",
                    df$n_profiles,'</td></tr>',
                    "<tr><td>Years w/ >5 profiles:</td><td>",
                    df$n_years_6profs,'</td></tr>',
+                   "<tr><td>Source of data:</td><td>",
+                   df$Lake_Source,'</td></tr>',
                    '</table>')
 
 col_types <- c("darkblue","dodgerblue","green4","gold1","orange","brown","red")
@@ -50,7 +50,7 @@ leaflet::leaflet(height = "500px") %>%
     leaflet::addProviderTiles("CartoDB.Positron") %>%
     leaflet::setView(lng = -92.5, lat = 44.5, zoom=5) %>%
     leaflet::addCircleMarkers(data= dplyr::filter(df, !is.na(n_obs)),
-                              lat=~lat, lng=~lon, 
+                              lat=~latitude, lng=~longitude, 
                               group = "Observed",
                               popup= ~popup,
                      fillColor = ~pal(n_obs),
@@ -58,23 +58,23 @@ leaflet::leaflet(height = "500px") %>%
                      radius = ~4,
                      stroke=FALSE) %>%
       leaflet::addCircleMarkers(data= dplyr::filter(df, !zmax & !is.na(n_obs)),
-                              lat=~lat, lng=~lon, 
+                              lat=~latitude, lng=~longitude, 
                               group = "Observed but no zmax",
                               popup= ~popup ,
                      fillColor = ~pal(n_obs),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
-      leaflet::addCircleMarkers(data= dplyr::filter(df, !hypsometry & n_profiles >= 100),
-                              lat=~lat, lng=~lon, 
-                              group = ">100 profiles & no hypsometry",
+      leaflet::addCircleMarkers(data= dplyr::filter(df, !hypsography & n_profiles >= 100),
+                              lat=~latitude, lng=~longitude, 
+                              group = ">100 profiles & no hypsography",
                               popup= ~popup ,
                      fillColor = ~pal(n_obs),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
     leaflet::addCircleMarkers(data= dplyr::filter(df, is.na(n_obs)),
-                              lat=~lat, lng=~lon, 
+                              lat=~latitude, lng=~longitude, 
                               group = "No observations",
                               popup= ~popup ,
                      fillColor = "red",
