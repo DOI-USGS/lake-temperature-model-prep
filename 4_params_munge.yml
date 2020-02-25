@@ -24,7 +24,6 @@ sources:
 targets:
   4_params_munge:
     depends:
-      - 4_params_munge/out/nhd2states.rds.ind
       - 4_params_munge/out/mndow_01_bathy.rds.ind
       - 4_params_munge/out/mndow_02_bathy.rds.ind
       - 4_params_munge/out/mndow_perc_bathy.rds.ind
