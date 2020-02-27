@@ -113,3 +113,11 @@ targets:
     command: fetch_micorps_sites(target_name)
   1_crosswalk_fetch/out/micorps_sites.xlsx:
     command: gd_get('1_crosswalk_fetch/out/micorps_sites.xlsx.ind')
+
+  # Shapefile download available at https://www.nd.gov/gis/apps/Download/?clipping=Full&coord=LL83&format=SHAPE&layers=NDGAMEFISH.NDGF_LAKESVW
+  # Before uploading, I edited the lake id column using: `mutate(LAKE = sprintf("ndgf_%s", LAKE)) %>% rename(site_id = LAKE)`
+  # Note that the other NDGF resources have some lakes that do not appear in NDGF_LAKESVW
+  #   NDGF_LAKE_CONTOURS has 16 that don't appear in LAKESVW
+  #   NDGF_Lake_MaximumDepth has 22 that don't apepar in LAKESVW
+  1_crosswalk_fetch/out/ndgf_lakesvw.rds:
+    command: gd_get('1_crosswalk_fetch/out/ndgf_lakesvw.rds.ind')

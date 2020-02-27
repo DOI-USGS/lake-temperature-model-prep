@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 4_params_munge/out/ndgf_depths.rds.ind
+type: file
+hash: 929fed56b322d2ea6a52e1e564525257
+time: 2020-02-04 17:09:51 UTC
+depends:
+  3_params_fetch/out/ndgf_lake_maxdepth.rds.ind: f827a69943d2097be2e3429c7f647ab3
+  2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind: e5009164303616b70afdbf09e8108cab
+fixed: d524287a78cfc08648b2024191ec4612
+code:
+  functions:
+    munge_ndgf_depths: 3cb9bae1a2e666bf67a3b315e7f04191
+

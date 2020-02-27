@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds.ind
+type: file
+hash: ad320603da5c818b4c05e6e22add646d
+time: 2020-02-04 17:03:21 UTC
+depends:
+  1_crosswalk_fetch/out/ndgf_lakesvw.rds.ind: 0a3230081db0bd5a3cedcfb7b620bb11
+  1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind: 842f56b0dcae2c0068182d9da067ebcd
+fixed: c4a136893697237ad6bea280e7d5f2b2
+code:
+  functions:
+    crosswalk_poly_intersect_poly: b23c3d244c429cd409e5970a5bcb1055
+

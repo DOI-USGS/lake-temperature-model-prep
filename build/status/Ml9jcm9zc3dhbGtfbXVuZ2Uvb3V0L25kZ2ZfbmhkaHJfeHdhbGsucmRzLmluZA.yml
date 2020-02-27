@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind
+type: file
+hash: e5009164303616b70afdbf09e8108cab
+time: 2020-02-04 17:04:48 UTC
+depends:
+  2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds.ind: ad320603da5c818b4c05e6e22add646d
+fixed: 6ecd6db03b4e73bf3730e79a7840f9ea
+code:
+  functions:
+    choose1_poly_intersect_poly: 5ec2c5ba954b4e7c262b9352b8b466d9
+

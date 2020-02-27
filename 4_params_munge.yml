@@ -20,6 +20,7 @@ sources:
   - 4_params_munge/src/munge_secchi_model_data.R
   - 4_params_munge/src/munge_cd_from_nlcd.R
   - 4_params_munge/src/munge_wbic.R
+  - 4_params_munge/src/munge_ndgf.R
 
 targets:
   4_params_munge:
@@ -29,8 +30,10 @@ targets:
       - 4_params_munge/out/mndow_perc_bathy.rds.ind
       - 4_params_munge/out/mndow_perc_02_bathy.rds.ind
       - 4_params_munge/out/wbic_bathy.rds.ind
+      - 4_params_munge/out/ndgf_bathy.rds.ind
       - 4_params_munge/out/mglp_depths.rds.ind
       - 4_params_munge/out/wbic_depths.rds.ind
+      - 4_params_munge/out/ndgf_depths.rds.ind
 
   4_params_munge/out/nlcd_2011_buffers.rds.ind:
     command: munge_nlcd_buffers(target_name,
@@ -67,6 +70,13 @@ targets:
       wbic_xwalk_ind = '2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind')
   4_params_munge/out/wbic_depths.rds:
     command: gd_get('4_params_munge/out/wbic_depths.rds.ind')
+
+  4_params_munge/out/ndgf_depths.rds.ind:
+    command: munge_ndgf_depths(target_name,
+      ndgf_depths_ind = '3_params_fetch/out/ndgf_lake_maxdepth.rds.ind',
+      ndgf_xwalk_ind = '2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind')
+  4_params_munge/out/ndgf_depths.rds:
+    command: gd_get('4_params_munge/out/ndgf_depths.rds.ind')
 
   4_params_munge/out/mndow_perc_bathy.rds.ind:
     command: munge_mndow_perc_bathy(
@@ -109,3 +119,12 @@ targets:
       wbic_xwalk_ind = '2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind')
   4_params_munge/out/wbic_bathy.rds:
     command: gd_get('4_params_munge/out/wbic_bathy.rds.ind')
+
+  4_params_munge/out/ndgf_bathy.rds.ind:
+    command: munge_ndgf_bathy(target_name,
+      ndgf_contour_ind = '3_params_fetch/out/ndgf_lake_contours.rds.ind',
+      ndgf_xwalk_ind = '2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind',
+      ndgf_surface_sf_ind = '1_crosswalk_fetch/out/ndgf_lakesvw.rds.ind',
+      crs = I(26915))
+  4_params_munge/out/ndgf_bathy.rds:
+    command: gd_get('4_params_munge/out/ndgf_bathy.rds.ind')
