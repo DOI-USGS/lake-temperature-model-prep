@@ -107,3 +107,42 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_names_ind, lake_loc_ind,
   gd_put(out_ind)
 
 }
+
+# Not pipeline ready yet, but so that you can see what I did
+summary_MN_lake_data <- function() {
+
+  mndow_xwalk <- readRDS(sc_retrieve("2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind"))
+
+  # this data downloaded here: https://drive.google.com/drive/u/4/folders/13w3QDXicjHVymVW1NeyJpJqVRZ7KvlTD
+  walleye_df <- read_csv("WAE_numYears_meanCPUE.csv") %>%
+    mutate(MNDOW_ID = sprintf("mndow_%s", DOW)) %>%
+    rename(n_walleye_yrs = n_yrs) %>%
+    left_join(mndow_xwalk) %>%
+    dplyr::select(site_id, MNDOW_ID, n_walleye_yrs)
+
+  # this data downloaded here: https://drive.google.com/drive/u/4/folders/13w3QDXicjHVymVW1NeyJpJqVRZ7KvlTD
+  time_varying_kw_sites <- readRDS("nhdhr_ids_time_varying_clarity.rds")
+
+  lake_summary_data <- read_feather("8_viz/inout/lakes_summary.feather") %>%
+    rename(n_temp_obs = n_obs) %>%
+    left_join(walleye_df) %>%
+    mutate(has_time_varying_kw = site_id %in% time_varying_kw_sites)
+
+  all_criteria <- lake_summary_data %>%
+    filter(n_profiles >= 10,
+           n_walleye_yrs >= 5, # already doing this in CSV
+           has_time_varying_kw)
+
+  # Wouldn't just be MN ...
+  # n_lakes_with_profiles <- lake_summary_data %>%
+  #   filter(n_profiles >= 10) %>%
+  #   nrow()
+  #
+  # n_lakes_with_timevaryingkw <- lake_summary_data %>%
+  #   filter(has_time_varying_kw) %>%
+  #   nrow()
+  #
+  # n_lakes_with_walleye <- nrow(walleye_df)
+
+  return(all_criteria)
+}
