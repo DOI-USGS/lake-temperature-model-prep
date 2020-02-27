@@ -128,21 +128,56 @@ summary_MN_lake_data <- function() {
     left_join(walleye_df) %>%
     mutate(has_time_varying_kw = site_id %in% time_varying_kw_sites)
 
-  all_criteria <- lake_summary_data %>%
-    filter(n_profiles >= 10,
-           n_walleye_yrs >= 5, # already doing this in CSV
-           has_time_varying_kw)
+  mn_sf <- sf::st_as_sf(maps::map("state", "minnesota", fill = TRUE, plot = FALSE)) %>%
+    st_transform(crs = 4326)
 
-  # Wouldn't just be MN ...
-  # n_lakes_with_profiles <- lake_summary_data %>%
-  #   filter(n_profiles >= 10) %>%
-  #   nrow()
-  #
-  # n_lakes_with_timevaryingkw <- lake_summary_data %>%
-  #   filter(has_time_varying_kw) %>%
-  #   nrow()
-  #
-  # n_lakes_with_walleye <- nrow(walleye_df)
+  lake_summary_sf <- st_as_sf(lake_summary_data,
+                              coords = c("longitude", "latitude"),
+                              crs = 4326)
+  mn_lake_summary_sf <- st_intersection(lake_summary_sf, mn_sf)
 
-  return(all_criteria)
+  all_criteria_walleye <- mn_lake_summary_sf %>%
+    filter(n_walleye_yrs >= 5, # already doing this in CSV
+           n_profiles >= 10,
+           has_time_varying_kw,
+           zmax,
+           hypsography)
+
+  mn_lakes_w_zmax_hypso <- mn_lake_summary_sf %>%
+    filter(zmax,
+           hypsography)
+
+  mn_lakes_w_hypso_prof <- mn_lake_summary_sf %>%
+    filter(hypsography) %>%
+    filter(n_profiles >= 10)
+
+  lakes_with_timevaryingkw <- mn_lakes_w_zmax_hypso %>%
+    filter(has_time_varying_kw)
+
+  lakes_model_toha <- lakes_with_timevaryingkw %>%
+    filter(n_walleye_yrs >= 5)
+
+  lakes_gucci <- lakes_with_timevaryingkw %>%
+    filter(n_profiles >= 50)
+
+  lakes_timex <- lakes_with_timevaryingkw %>%
+    filter(n_profiles >= 10, n_profiles < 50)
+
+  lakes_gucci_walleye <- lakes_gucci %>%
+    filter(n_walleye_yrs >= 5)
+
+  lakes_timex_walleye <- lakes_timex %>%
+    filter(n_walleye_yrs >= 5)
+
+  par(mar=c(0,0,0,0))
+  plot(st_geometry(mn_sf), col = "grey", border=NA)
+  plot(st_geometry(lakes_with_timevaryingkw), add=T, col="cornflowerblue")
+  plot(st_geometry(lakes_timex), add=T, col="darkgreen")
+  plot(st_geometry(lakes_gucci), add=T, col="maroon")
+  plot(st_geometry(lakes_gucci_walleye), add=T, col="yellow")
+
+  par(mar=c(0,0,0,0))
+  plot(st_geometry(mn_sf), col = "grey", border=NA)
+  plot(st_geometry(mn_lakes_w_hypso_prof), add=T, col="darkgreen")
+
 }
