@@ -36,50 +36,82 @@ df$popup <- paste0("<table>",
                    df$n_profiles,'</td></tr>',
                    "<tr><td>Years w/ >5 profiles:</td><td>",
                    df$n_years_6profs,'</td></tr>',
-                   "<tr><td>Source of data:</td><td>",
+                   "<tr><td>Crosswalked to:</td><td>",
                    df$Lake_Source,'</td></tr>',
                    '</table>')
 
 col_types <- c("darkblue","dodgerblue","green4","gold1","orange","brown","red")
   
-legend_vals <- unique(as.numeric(quantile(c(0,df$n_obs), probs=c(0,0.01,0.1,0.25,0.5,0.75,0.9,.99,1), na.rm=TRUE)))
+legend_vals <- unique(as.numeric(quantile(c(0,df$n_obs), probs=c(0,0.1,0.5,0.9,.99,1), na.rm=TRUE)))
 
 pal = leaflet::colorBin(palette = 'viridis', c(0,df$n_obs), bins = legend_vals, na.color = 'red', reverse = TRUE)
 
 leaflet::leaflet(height = "800px", width = "1000px") %>%
     leaflet::addProviderTiles("CartoDB.Positron") %>%
     leaflet::setView(lng = -92.5, lat = 44.5, zoom=5) %>%
-    leaflet::addCircleMarkers(data= dplyr::filter(df, !is.na(n_obs)),
+    leaflet::addCircleMarkers(data= dplyr::filter(df, hypsography & kw_file & meteo),
                               lat=~latitude, lng=~longitude, 
-                              group = "Observed",
+                              group = "TOHA lake",
                               popup= ~popup,
                      fillColor = ~pal(n_obs),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
-      leaflet::addCircleMarkers(data= dplyr::filter(df, !zmax & !is.na(n_obs)),
+  leaflet::addCircleMarkers(data= dplyr::filter(df, n_profiles > 50 & !hypsography),
                               lat=~latitude, lng=~longitude, 
-                              group = "Observed but no zmax",
+                              group = "Lots of data, no hypso",
                               popup= ~popup ,
                      fillColor = ~pal(n_obs),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
-      leaflet::addCircleMarkers(data= dplyr::filter(df, !hypsography & n_profiles >= 100),
+    leaflet::addCircleMarkers(data= dplyr::filter(df, zmax & kw & !meteo & n_profiles > 10),
                               lat=~latitude, lng=~longitude, 
-                              group = ">100 profiles & no hypsography",
+                              group = "PGDL, but no meteo",
                               popup= ~popup ,
                      fillColor = ~pal(n_obs),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
-    leaflet::addCircleMarkers(data= dplyr::filter(df, is.na(n_obs)),
+      leaflet::addCircleMarkers(data= dplyr::filter(df, kw_file, !kw),
                               lat=~latitude, lng=~longitude, 
-                              group = "No observations",
+                              group = "Kw_file, no kw",
                               popup= ~popup ,
-                     fillColor = "red",
+                     fillColor = ~pal(n_obs),
+                     fillOpacity = 0.8,
                      radius = ~4,
-                     fillOpacity = 0.5,
+                     stroke=FALSE) %>%
+      leaflet::addCircleMarkers(data= dplyr::filter(df, hypsography),
+                              lat=~latitude, lng=~longitude, 
+                              group = "hypsography",
+                              popup= ~popup ,
+                     fillColor = ~pal(n_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+      leaflet::addCircleMarkers(data= dplyr::filter(df, zmax & kw & meteo & n_profiles > 10),
+                              lat=~latitude, lng=~longitude, 
+                              group = "PGDL lake",
+                              popup= ~popup ,
+                     fillColor = ~pal(n_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+    leaflet::addCircleMarkers(data= dplyr::filter(df, zmax & kw & meteo),
+                              lat=~latitude, lng=~longitude, 
+                              group = "GLM lake",
+                              popup= ~popup ,
+                     fillColor = ~pal(n_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+      leaflet::addCircleMarkers(data= dplyr::filter(df, zmax & kw & !meteo),
+                              lat=~latitude, lng=~longitude, 
+                              group = "GLM lake, but no meteo",
+                              popup= ~popup ,
+                     fillColor = ~pal(n_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
                      stroke=FALSE) %>%
   leaflet::addLegend(data = df, pal = pal,
                      position = 'bottomleft',
@@ -87,7 +119,8 @@ leaflet::leaflet(height = "800px", width = "1000px") %>%
                      labFormat = leaflet::labelFormat(digits = 0),
                      title = "Number of observations") %>%
   addLayersControl(
-    baseGroups = c("Observed","No observations","Observed but no zmax",">100 profiles & no hypsometry"),
+    baseGroups = c("TOHA lake","PGDL lake","GLM lake","Kw_file, no kw","hypsography", "Lots of data, no hypso", "PGDL, but no meteo", "GLM lake, but no meteo"),
+    #overlayGroups = c("observed","hypsography", "zmax", "kw","kw_file","meteo"),
     options = layersControlOptions(collapsed = FALSE)
   ) %>% 
   hideGroup(c("No observations","Observed but no zmax",">100 profiles & no hypsometry"))
