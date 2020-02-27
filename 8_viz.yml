@@ -6,6 +6,7 @@ packages:
   - ggplot2
   - feather
   - lakeattributes
+  - leaflet
 
 sources:
   - 8_viz/src/merge_lake_data.R
@@ -38,10 +39,12 @@ targets:
   # -- removes egregious outliers in Jan/Feb (>10 deg C) and July/Aug (surface, <10 deg C)
   # -- returns all times -- ##
 
+  # update with booleans for:
+  # has meteo, max depth, hypso, kw, kw_file, obs...
   8_viz/inout/lakes_summary.feather.ind:
     command: merge_lake_data(
       out_ind = target_name,
-      temp_data_ind = '7b_temp_merge/out/temp_data_with_sources.feather.ind',
+      temp_data_fl = I('7b_temp_merge/out/temp_data_with_sources.feather'),
       lake_names_ind = '2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind',
       lake_loc_ind = '7_config_merge/out/nml_lat_lon_values.rds.ind',
       lake_data_ind = '7_config_merge/out/nml_H_A_values.rds.ind',
@@ -51,7 +54,10 @@ targets:
       Micorps_xwalk = "2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind",
       MNDOW_xwalk = "2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind",
       Winslow_xwalk = "2_crosswalk_munge/out/winslow_nhdhr_xwalk.rds.ind",
-      NDGF_xwalk = "2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind")
+      NDGF_xwalk = "2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind",
+      kw_ind = "7_config_merge/out/nml_Kw_values.rds.ind",
+      meteo_ind = "7_config_merge/out/nml_meteo_fl_values.rds.ind",
+      kw_file_fl = "~/Downloads/nhdhr_ids_time_varying_clarity.rds")
 
   8_viz/inout/lakes_summary.feather:
     command: gd_get('8_viz/inout/lakes_summary.feather.ind')

@@ -1,16 +1,24 @@
 version: 0.3.0
 name: 8_viz/inout/lakes_summary.feather.ind
 type: file
-hash: 1c1716b9a93860c11bf654d2209105c2
-time: 2019-07-09 00:34:40 UTC
+hash: bab029a8630e26725a5b87d8ba5bbbea
+time: 2020-02-27 05:21:20 UTC
 depends:
-  7b_temp_merge/out/merged_temp_data_daily.feather.ind: f1d338bb91565d9133ad643a47f5732c
-  2_crosswalk_munge/out/lake_names_crosswalk.rds.ind: 0e798c8f88fa4e2f464bdce0c3428c45
-  1_crosswalk_fetch/out/nhd2dowlknum.RData.ind: ce80e67e873d6f641dafb2d7936089f9
-  4_params_munge/out/nhd2states.rds.ind: e09656e6cb78ec3e2ed9d5af82ddc553
-  4_params_munge/out/MN_bathy.rds.ind: cefa7e8ed0d62b0c1839b356252aec8f
-fixed: a08061e86c9c6c92d354a47a95dc5bc9
+  2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind: d80ac548a149f7e1dc129761d1e659f9
+  7_config_merge/out/nml_lat_lon_values.rds.ind: f2c70b165f5f7edde7dde4f0ac453182
+  7_config_merge/out/nml_H_A_values.rds.ind: 0b3a16f396d8262e7fd1a8325fa19afa
+  2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind: 5a6d87dd769bd637e260b21fbb21bfd6
+  2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind: 7338f5691e62648bfbe369d2f4e76143
+  2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind: f8eeb51dede7c1453ef5b74fc6f5f0ad
+  2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind: 0dcab56cbdb46c6b421c466268760e65
+  2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind: 92f9c3f5d352c96e01cfccf350d220b8
+  2_crosswalk_munge/out/winslow_nhdhr_xwalk.rds.ind: 0035cadb012ace68a396972b731bdd7a
+  2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind: e5009164303616b70afdbf09e8108cab
+  7_config_merge/out/nml_Kw_values.rds.ind: 2df2809ae86a876aca85ea5c46a0a19c
+  7_config_merge/out/nml_meteo_fl_values.rds.ind: 05eae95df12edee2d8f66dea646cae1b
+  ~/Downloads/nhdhr_ids_time_varying_clarity.rds: 53ef5251ca63ab6b7c2a6e5c43533ff5
+fixed: 9b6eb595d12ee5198433a96f86aee6c0
 code:
   functions:
-    merge_lake_data: 64b8d5cfb7018511680cf057ef6aedad
+    merge_lake_data: 22b33894f7c1a956aa01990389748660
 

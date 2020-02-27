@@ -1,12 +1,19 @@
 
-merge_lake_data <- function(out_ind, temp_data_ind, lake_names_ind, lake_loc_ind, lake_data_ind,
+merge_lake_data <- function(out_ind, temp_data_fl, lake_names_ind, lake_loc_ind, lake_data_ind,
                             lagos_xwalk_ind, MGLP_xwalk_ind, WBIC_xwalk_ind, Micorps_xwalk_ind,
-                            MNDOW_xwalk_ind, Winslow_xwalk_ind, NDGF_xwalk_ind){
+                            MNDOW_xwalk_ind, Winslow_xwalk_ind, NDGF_xwalk_ind, kw_ind,
+                            meteo_ind, kw_file_fl ){
 
-  temp_dat <- feather::read_feather(sc_retrieve(temp_data_ind))
+  temp_dat <- feather::read_feather(temp_data_fl)
   lake_names <- readRDS(sc_retrieve(lake_names_ind))
   lake_loc <- readRDS(sc_retrieve(lake_loc_ind))
   lake_data <- readRDS(sc_retrieve(lake_data_ind))
+
+
+  kw_file_ids <- readRDS(kw_file_fl)
+  kw_val_ids <- readRDS(sc_retrieve(kw_ind))[["site_id"]]
+  meteo_file_ids <- readRDS(sc_retrieve(meteo_ind)) %>%
+    filter(file.exists(file.path('7_drivers_munge/out/',meteo_fl))) %>% pull(site_id)
 
   # Read xwalks
   lagos_xwalk <- readRDS(sc_retrieve(lagos_xwalk_ind))[["site_id"]]
@@ -47,6 +54,9 @@ merge_lake_data <- function(out_ind, temp_data_ind, lake_names_ind, lake_loc_ind
   # Figure out which lakes have zmax and which have hypso
   all_lakes <- unique(lake_names$site_id)
   has_zmax <- all_lakes %in% names(lake_data) # any lake in this dataset has zmax
+  has_kw <- all_lakes %in% kw_val_ids
+  has_kw_file <- all_lakes %in% kw_file_ids
+  has_meteo <- all_lakes %in% meteo_file_ids
   has_hypso <- lapply(all_lakes, function(id) {
     # First check that lake has data
     if(id %in% names(lake_data)) {
@@ -62,10 +72,13 @@ merge_lake_data <- function(out_ind, temp_data_ind, lake_names_ind, lake_loc_ind
     return(has_hypso)
   }) %>% unlist()
 
-  hypso_zmax_dat <- data.frame(site_id = all_lakes,
-                               zmax = has_zmax,
-                               hypsography = has_hypso,
-                               stringsAsFactors = FALSE)
+  metadata <- data.frame(site_id = all_lakes,
+                         zmax = has_zmax,
+                         hypsography = has_hypso,
+                         kw = has_kw,
+                         kw_file = has_kw_file,
+                         meteo = has_meteo,
+                         stringsAsFactors = FALSE)
 
   # Combine everything into one dataset
   lake_summary <- lake_names %>%
@@ -73,7 +86,7 @@ merge_lake_data <- function(out_ind, temp_data_ind, lake_names_ind, lake_loc_ind
     left_join(lake_days) %>%
     left_join(profile_years) %>%
     left_join(rename(lake_loc)) %>%
-    left_join(hypso_zmax_dat)
+    left_join(metadata)
 
   all_real <- function(x) !all(is.na(x))
   lake_summary_w_xwalk <- lake_summary %>%
