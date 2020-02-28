@@ -89,9 +89,9 @@ groups <- c(
   "PGDL light w/ walleye"
 )
 
-leaflet::leaflet(height = "800px", width = "1000px") %>%
+leaflet::leaflet(height = "500px", width = "1000px") %>%
     leaflet::addProviderTiles("CartoDB.Positron") %>%
-    leaflet::setView(lng = -92.5, lat = 44.5, zoom=5) %>%
+    leaflet::setView(lng = -92.5, lat = 46, zoom=6) %>%
     leaflet::addCircleMarkers(data= mn_lakes_w_zmax_hypso,
                               lat=~latitude, lng=~longitude, 
                               group = groups[1],
