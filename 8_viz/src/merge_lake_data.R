@@ -108,22 +108,18 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_names_ind, lake_loc_ind,
 
 }
 
-# Not pipeline ready yet, but so that you can see what I did
-summary_MN_lake_data <- function() {
+# Summarizing the information related to TOHA models
+summarize_MN_toha_lake_data <- function(out_ind, mndow_xwalk_ind, lake_summary_ind, walleye_count_data, time_varying_kw_sites) {
 
-  mndow_xwalk <- readRDS(sc_retrieve("2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind"))
+  mndow_xwalk <- readRDS(sc_retrieve(mndow_xwalk_ind))
 
-  # this data downloaded here: https://drive.google.com/drive/u/4/folders/13w3QDXicjHVymVW1NeyJpJqVRZ7KvlTD
-  walleye_df <- read_csv("WAE_numYears_meanCPUE.csv") %>%
+  walleye_df <- walleye_count_data %>%
     mutate(MNDOW_ID = sprintf("mndow_%s", DOW)) %>%
     rename(n_walleye_yrs = n_yrs) %>%
     left_join(mndow_xwalk) %>%
     dplyr::select(site_id, MNDOW_ID, n_walleye_yrs)
 
-  # this data downloaded here: https://drive.google.com/drive/u/4/folders/13w3QDXicjHVymVW1NeyJpJqVRZ7KvlTD
-  time_varying_kw_sites <- readRDS("nhdhr_ids_time_varying_clarity.rds")
-
-  lake_summary_data <- read_feather("8_viz/inout/lakes_summary.feather") %>%
+  lake_summary_data <- read_feather(sc_retrieve(lake_summary_ind)) %>%
     rename(n_temp_obs = n_obs) %>%
     left_join(walleye_df) %>%
     mutate(has_time_varying_kw = site_id %in% time_varying_kw_sites)
@@ -136,48 +132,12 @@ summary_MN_lake_data <- function() {
                               crs = 4326)
   mn_lake_summary_sf <- st_intersection(lake_summary_sf, mn_sf)
 
-  all_criteria_walleye <- mn_lake_summary_sf %>%
-    filter(n_walleye_yrs >= 5, # already doing this in CSV
-           n_profiles >= 10,
-           has_time_varying_kw,
-           zmax,
-           hypsography)
+  # Leaflet maps need columns of latitude and longitude
+  mn_lake_summary_sf$longitude <- st_coordinates(mn_lake_summary_sf)[, "X"]
+  mn_lake_summary_sf$latitude <- st_coordinates(mn_lake_summary_sf)[, "Y"]
 
-  mn_lakes_w_zmax_hypso <- mn_lake_summary_sf %>%
-    filter(zmax,
-           hypsography)
-
-  mn_lakes_w_hypso_prof <- mn_lake_summary_sf %>%
-    filter(hypsography) %>%
-    filter(n_profiles >= 10)
-
-  lakes_with_timevaryingkw <- mn_lakes_w_zmax_hypso %>%
-    filter(has_time_varying_kw)
-
-  lakes_model_toha <- lakes_with_timevaryingkw %>%
-    filter(n_walleye_yrs >= 5)
-
-  lakes_gucci <- lakes_with_timevaryingkw %>%
-    filter(n_profiles >= 50)
-
-  lakes_timex <- lakes_with_timevaryingkw %>%
-    filter(n_profiles >= 10, n_profiles < 50)
-
-  lakes_gucci_walleye <- lakes_gucci %>%
-    filter(n_walleye_yrs >= 5)
-
-  lakes_timex_walleye <- lakes_timex %>%
-    filter(n_walleye_yrs >= 5)
-
-  par(mar=c(0,0,0,0))
-  plot(st_geometry(mn_sf), col = "grey", border=NA)
-  plot(st_geometry(lakes_with_timevaryingkw), add=T, col="cornflowerblue")
-  plot(st_geometry(lakes_timex), add=T, col="darkgreen")
-  plot(st_geometry(lakes_gucci), add=T, col="maroon")
-  plot(st_geometry(lakes_gucci_walleye), add=T, col="yellow")
-
-  par(mar=c(0,0,0,0))
-  plot(st_geometry(mn_sf), col = "grey", border=NA)
-  plot(st_geometry(mn_lakes_w_hypso_prof), add=T, col="darkgreen")
+  outfile <- as_data_file(out_ind)
+  saveRDS(mn_lake_summary_sf, outfile)
+  gd_put(out_ind)
 
 }

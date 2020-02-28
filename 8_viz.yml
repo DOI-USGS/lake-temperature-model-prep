@@ -7,6 +7,7 @@ packages:
   - feather
   - lakeattributes
   - leaflet
+  - readr
 
 sources:
   - 8_viz/src/merge_lake_data.R
@@ -69,3 +70,30 @@ targets:
 
   8_viz/out/lakes_summary_fig.html:
     command: gd_get('8_viz/out/lakes_summary_fig.html.ind')
+
+  ##### Adding summary and visual of data that we are thinking of using for TOHA
+
+  # These two datasets help visualize and summarize the data we are using for TOHA models.
+  # They were downloaded from here: https://drive.google.com/drive/u/4/folders/13w3QDXicjHVymVW1NeyJpJqVRZ7KvlTD
+  # Then put inside of `in`
+  walleye_count_data:
+    command: read_csv(I("8_viz/in/WAE_numYears_meanCPUE.csv"))
+  time_varying_kw_sites:
+    command: readRDS(I("8_viz/in/nhdhr_ids_time_varying_clarity.rds"))
+
+  8_viz/inout/summary_toha_sf.rds.ind:
+    command: summarize_MN_toha_lake_data(
+      out_ind = target_name,
+      mndow_xwalk_ind = "2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind",
+      lake_summary_ind = "8_viz/inout/lakes_summary.feather.ind",
+      walleye_count_data = walleye_count_data,
+      time_varying_kw_sites = time_varying_kw_sites)
+
+  8_viz/out/summary_toha_sf.rds:
+    command: gd_get('8_viz/out/summary_toha_sf.rds.ind')
+
+  8_viz/out/toha_lakes_summary_fig.html.ind:
+    command: render_html(filename_md = 'toha_lake_data_map.Rmd', out_ind = target_name)
+
+  8_viz/out/toha_lakes_summary_fig.html:
+    command: gd_get('8_viz/out/toha_lakes_summary_fig.html.ind')
