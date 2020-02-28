@@ -1,9 +1,10 @@
 version: 0.3.0
 name: 8_viz/inout/lakes_summary.feather.ind
 type: file
-hash: 5700641661755e2169790726b421dd5a
-time: 2020-02-28 17:50:25 UTC
+hash: bf0f6749d01d5f87b60c949c4239679f
+time: 2020-02-28 19:28:34 UTC
 depends:
+  7_config_merge/out/nml_lake_depth_values.rds.ind: 5dd3ff2163e7688d6b0a06279ad6572b
   2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind: d80ac548a149f7e1dc129761d1e659f9
   7_config_merge/out/nml_lat_lon_values.rds.ind: f2c70b165f5f7edde7dde4f0ac453182
   7_config_merge/out/nml_H_A_values.rds.ind: 0b3a16f396d8262e7fd1a8325fa19afa
@@ -20,5 +21,5 @@ depends:
 fixed: 9b6eb595d12ee5198433a96f86aee6c0
 code:
   functions:
-    merge_lake_data: 22b33894f7c1a956aa01990389748660
+    merge_lake_data: f39844f5526375c292b4a9dd0c9b5089
 
