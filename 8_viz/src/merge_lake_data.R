@@ -1,5 +1,5 @@
 
-merge_lake_data <- function(out_ind, temp_data_fl, lake_names_ind, lake_loc_ind, lake_data_ind,
+merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_ind, lake_loc_ind, lake_data_ind,
                             lagos_xwalk_ind, MGLP_xwalk_ind, WBIC_xwalk_ind, Micorps_xwalk_ind,
                             MNDOW_xwalk_ind, Winslow_xwalk_ind, NDGF_xwalk_ind, kw_ind,
                             meteo_ind, kw_file_fl ){
@@ -8,6 +8,7 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_names_ind, lake_loc_ind,
   lake_names <- readRDS(sc_retrieve(lake_names_ind))
   lake_loc <- readRDS(sc_retrieve(lake_loc_ind))
   lake_data <- readRDS(sc_retrieve(lake_data_ind))
+  these_depths <- readRDS(sc_retrieve(lake_depth_ind))
 
 
   kw_file_ids <- readRDS(kw_file_fl)
@@ -30,26 +31,24 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_names_ind, lake_loc_ind,
     group_by(site_id) %>%
     summarize(n_obs = n())
 
+
+
+  # find the min number of obs per date requirement for each lake by including `lake_depth` and `min_depth_density`
+
+  min_depth_density <- 0.5
+  min_depths <- 5
+  obs_requirements <- mutate(these_depths, min_obs = min(ceiling(lake_depth * min_depth_density), min_depths))
+
   lake_days <- temp_dat %>%
+    inner_join(obs_requirements) %>%
+    dplyr::select(-lake_depth) %>%
     group_by(site_id, date) %>%
-    summarize(n_depths = n()) %>%
-    filter(n_depths >= 5) %>%
+    summarize(n_depths = n(), min_obs = unique(min_obs)) %>%
+    filter(n_depths >= min_obs) %>%
     ungroup() %>%
     mutate(year = lubridate::year(date)) %>%
     group_by(site_id) %>%
     summarize(n_profiles = n())
-
-  profile_years <- temp_dat %>%
-    group_by(site_id, date) %>%
-    summarize(n_depths = n()) %>%
-    filter(n_depths >= 5) %>%
-    ungroup() %>%
-    mutate(year = lubridate::year(date)) %>%
-    group_by(site_id, year) %>%
-    summarize(n_profiles = n()) %>%
-    filter(n_profiles >5) %>%
-    group_by(site_id) %>%
-    summarize(n_years_6profs = n())
 
   # Figure out which lakes have zmax and which have hypso
   all_lakes <- unique(lake_names$site_id)
@@ -84,7 +83,6 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_names_ind, lake_loc_ind,
   lake_summary <- lake_names %>%
     left_join(total_obs) %>%
     left_join(lake_days) %>%
-    left_join(profile_years) %>%
     left_join(rename(lake_loc)) %>%
     left_join(metadata)
 
