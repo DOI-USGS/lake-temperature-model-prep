@@ -107,7 +107,8 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
 }
 
 # Summarizing the information related to TOHA models
-summarize_MN_toha_lake_data <- function(out_ind, mndow_xwalk_ind, lake_summary_ind, walleye_count_data, time_varying_kw_sites) {
+summarize_MN_toha_lake_data <- function(out_ind, mndow_xwalk_ind, lake_summary_ind,
+                                        walleye_count_data, plant_priority_data) {
 
   mndow_xwalk <- readRDS(sc_retrieve(mndow_xwalk_ind))
 
@@ -117,25 +118,16 @@ summarize_MN_toha_lake_data <- function(out_ind, mndow_xwalk_ind, lake_summary_i
     left_join(mndow_xwalk) %>%
     dplyr::select(site_id, MNDOW_ID, n_walleye_yrs)
 
+  plant_priority_sites <- plant_priority_data[["site_id"]]
+
   lake_summary_data <- read_feather(sc_retrieve(lake_summary_ind)) %>%
-    rename(n_temp_obs = n_obs) %>%
+    rename(n_temp_obs = n_obs,
+           has_time_varying_kw = kw_file) %>%
     left_join(walleye_df) %>%
-    mutate(has_time_varying_kw = site_id %in% time_varying_kw_sites)
-
-  mn_sf <- sf::st_as_sf(maps::map("state", "minnesota", fill = TRUE, plot = FALSE)) %>%
-    st_transform(crs = 4326)
-
-  lake_summary_sf <- st_as_sf(lake_summary_data,
-                              coords = c("longitude", "latitude"),
-                              crs = 4326)
-  mn_lake_summary_sf <- st_intersection(lake_summary_sf, mn_sf)
-
-  # Leaflet maps need columns of latitude and longitude
-  mn_lake_summary_sf$longitude <- st_coordinates(mn_lake_summary_sf)[, "X"]
-  mn_lake_summary_sf$latitude <- st_coordinates(mn_lake_summary_sf)[, "Y"]
+    mutate(EWR_Lake = site_id %in% plant_priority_sites)
 
   outfile <- as_data_file(out_ind)
-  saveRDS(mn_lake_summary_sf, outfile)
+  saveRDS(lake_summary_data, outfile)
   gd_put(out_ind)
 
 }
