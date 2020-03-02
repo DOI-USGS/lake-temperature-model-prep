@@ -78,11 +78,11 @@ targets:
   # They were downloaded from here: https://drive.google.com/drive/u/4/folders/13w3QDXicjHVymVW1NeyJpJqVRZ7KvlTD
   # Then uploaded to this pipeline GD folder & then incorporated into the pipeline using `gd_confirm_posted`.
   8_viz/in/WAE_numYears_meanCPUE.csv:
-    command: gd_get(I("8_viz/in/WAE_numYears_meanCPUE.csv.ind"))
+    command: gd_get("8_viz/in/WAE_numYears_meanCPUE.csv.ind")
   walleye_count_data:
     command: read_csv(I("8_viz/in/WAE_numYears_meanCPUE.csv"))
   8_viz/in/JakeWalsh_NHDIDs.csv:
-    command: gd_get(I("8_viz/in/JakeWalsh_NHDIDs.csv.ind"))
+    command: gd_get("8_viz/in/JakeWalsh_NHDIDs.csv.ind")
   plant_priority_data:
     command: read_csv(I("8_viz/in/JakeWalsh_NHDIDs.csv"))
 
