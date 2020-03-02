@@ -25,6 +25,7 @@ sources:
 targets:
   4_params_munge:
     depends:
+      - 4_params_munge/out/toha_varying_kw.rds.ind
       - 4_params_munge/out/mndow_01_bathy.rds.ind
       - 4_params_munge/out/mndow_02_bathy.rds.ind
       - 4_params_munge/out/mndow_perc_bathy.rds.ind
@@ -34,6 +35,13 @@ targets:
       - 4_params_munge/out/mglp_depths.rds.ind
       - 4_params_munge/out/wbic_depths.rds.ind
       - 4_params_munge/out/ndgf_depths.rds.ind
+
+  4_params_munge/out/toha_varying_kw.rds.ind:
+    command: munge_daily_secchi(target_name,
+      kw_files_zip_ind = '3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip.ind')
+
+  4_params_munge/out/toha_varying_kw.rds:
+    command: gd_get('4_params_munge/out/toha_varying_kw.rds.ind')
 
   4_params_munge/out/nlcd_2011_buffers.rds.ind:
     command: munge_nlcd_buffers(target_name,
