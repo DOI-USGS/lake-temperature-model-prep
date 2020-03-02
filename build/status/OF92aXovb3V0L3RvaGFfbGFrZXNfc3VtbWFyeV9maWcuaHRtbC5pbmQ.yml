@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 8_viz/out/toha_lakes_summary_fig.html.ind
+type: file
+hash: 8afe85e9f663bab445c3037858c36c8d
+time: 2020-03-02 14:23:14 UTC
+depends:
+  toha_lake_data_map.Rmd: 16a97ed1e0c8959a4aa6d082af983846
+fixed: 32f01618760c9f6bf3fc0432e1350908
+code:
+  functions:
+    render_html: 54f8107e1ea9a6a8c5c798ce8ba3c437
+
