@@ -59,7 +59,7 @@ targets:
       NDGF_xwalk = "2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind",
       kw_ind = "7_config_merge/out/nml_Kw_values.rds.ind",
       meteo_ind = "7_config_merge/out/nml_meteo_fl_values.rds.ind",
-      kw_file_fl = "~/Downloads/nhdhr_ids_time_varying_clarity.rds")
+      toha_varying_kw_ind = "4_params_munge/out/toha_varying_kw.rds.ind")
 
   8_viz/inout/lakes_summary.feather:
     command: gd_get('8_viz/inout/lakes_summary.feather.ind')
