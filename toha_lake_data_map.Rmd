@@ -1,0 +1,218 @@
+---
+title: "Status of Lake Data for TOHA Modeling"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+```{r filterData, echo=FALSE}
+library(sf)
+library(dplyr)
+
+lake_summary_sf <- readRDS(file.path("8_viz", "inout", "summary_toha_sf.rds"))
+lake_summary_df <- lake_summary_sf
+lake_summary_df$geometry <- NULL
+
+# needs 
+lake_summary_df <- lake_summary_df %>% 
+  filter(meteo)
+
+lake_summary_df$popup <- paste0("<table>",
+                   "<tr><td>Lake Name:</td><td>",
+                   lake_summary_df$GNIS_Name,'</td></tr>',
+                   "<tr><td>Site ID:</td><td>",
+                   lake_summary_df$site_id,'</td></tr>',
+                   "<tr><td># Temp Observations:</td><td>",
+                   lake_summary_df$n_temp_obs,'</td></tr>',
+                   "<tr><td># Profiles:</td><td>",
+                   lake_summary_df$n_profiles,'</td></tr>',
+                   "<tr><td>Years w/ >5 profiles:</td><td>",
+                   lake_summary_df$n_years_6profs,'</td></tr>',
+                   "<tr><td>Crosswalked to:</td><td>",
+                   lake_summary_df$Lake_Source,'</td></tr>',
+                   "<tr><td># Walleye Yrs:</td><td>",
+                   lake_summary_df$n_walleye_yrs,'</td></tr>',
+                   "<tr><td>EWR Lake:</td><td>",
+                   lake_summary_df$EWR_Lake,'</td></tr>',
+                   '</table>')
+
+
+lakes_w_zmax_hypso <- lake_summary_df %>%
+  filter(zmax,
+         hypsography)
+
+# Essentially filters to MN since we only have kw for those
+lakes_with_timevaryingkw <- lakes_w_zmax_hypso %>%
+  filter(has_time_varying_kw)
+
+lakes_model_toha <- lakes_with_timevaryingkw %>%
+  filter(n_walleye_yrs >= 5)
+
+lakes_gucci <- lakes_with_timevaryingkw %>%
+  filter(n_profiles >= 50)
+
+lakes_timex <- lakes_with_timevaryingkw %>%
+  filter(n_profiles >= 10, n_profiles < 50)
+
+lakes_gucci_walleye <- lakes_gucci %>%
+  filter(n_walleye_yrs >= 5)
+
+lakes_timex_walleye <- lakes_timex %>%
+  filter(n_walleye_yrs >= 5)
+
+lakes_ewr_pgdl_gucci <- lakes_with_timevaryingkw %>% 
+  filter(n_profiles >= 50, 
+         EWR_Lake)
+
+lakes_ewr_pgdl_light <- lakes_with_timevaryingkw %>% 
+  filter(n_profiles >= 10, n_profiles < 50, 
+         EWR_Lake)
+
+lakes_ewr_nokw_pgdl_gucci <- lake_summary_df %>%
+  filter(zmax,
+         hypsography,
+         n_profiles >= 50,
+         !has_time_varying_kw, 
+         EWR_Lake)
+
+lakes_ewr_nokw_pgdl_light <- lake_summary_df %>%
+  filter(zmax,
+         hypsography,
+         n_profiles >= 10, n_profiles < 50,
+         !has_time_varying_kw, 
+         EWR_Lake)
+```
+
+```{r firstMap}
+library(leaflet)
+
+col_types <- c("darkblue","dodgerblue","green4","gold1","orange","brown","red")
+  
+legend_vals <- unique(as.numeric(quantile(c(0,lake_summary_df$n_temp_obs), probs=c(0,0.1,0.5,0.9,.99,1), na.rm=TRUE)))
+
+pal = leaflet::colorBin(palette = 'viridis', c(0, lake_summary_df$n_temp_obs), bins = legend_vals, na.color = 'red', reverse = TRUE)
+
+groups <- c(
+  sprintf("Zmax & hypso (n=%s)", nrow(lakes_w_zmax_hypso)),
+  sprintf("Zmax, hypso, & time-varying kw (n=%s)", nrow(lakes_with_timevaryingkw)),
+  sprintf("TOHA model: zmax, hypso, time-varying kw, & walleye (n=%s)", nrow(lakes_model_toha)),
+  sprintf("PGDL gucci (n=%s)", nrow(lakes_gucci)),
+  sprintf("PGDL light (n=%s)", nrow(lakes_timex)),
+  sprintf("PGDL gucci w/ walleye (n=%s)", nrow(lakes_gucci_walleye)),
+  sprintf("PGDL light w/ walleye (n=%s)", nrow(lakes_timex_walleye)),
+  sprintf("EWR Lake: ready for PGDL gucci (n=%s)", nrow(lakes_ewr_pgdl_gucci)),
+  sprintf("EWR Lake: ready for PGDL light (n=%s)", nrow(lakes_ewr_pgdl_light)),
+  sprintf("EWR Lake: no Kw but temp for PGDL gucci (n=%s)", nrow(lakes_ewr_nokw_pgdl_gucci)),
+  sprintf("EWR Lake: no Kw but temp for PGDL light (n=%s)", nrow(lakes_ewr_nokw_pgdl_light))
+)
+
+leaflet::leaflet(height = "500px", width = "1000px") %>%
+    leaflet::addProviderTiles("CartoDB.Positron") %>%
+    leaflet::setView(lng = -92.5, lat = 46, zoom=6) %>%
+    leaflet::addCircleMarkers(data= lakes_w_zmax_hypso,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[1],
+                              popup= ~popup,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+  leaflet::addCircleMarkers(data= lakes_with_timevaryingkw,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[2],
+                              popup= ~popup ,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+    leaflet::addCircleMarkers(data= lakes_model_toha,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[3],
+                              popup= ~popup ,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+      leaflet::addCircleMarkers(data= lakes_gucci,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[4],
+                              popup= ~popup ,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+      leaflet::addCircleMarkers(data= lakes_timex,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[5],
+                              popup= ~popup ,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+      leaflet::addCircleMarkers(data= lakes_gucci_walleye,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[6],
+                              popup= ~popup ,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+    leaflet::addCircleMarkers(data= lakes_timex_walleye,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[7],
+                              popup= ~popup ,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+    leaflet::addCircleMarkers(data= lakes_ewr_pgdl_gucci,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[8],
+                              popup= ~popup ,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+    leaflet::addCircleMarkers(data= lakes_ewr_pgdl_light,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[9],
+                              popup= ~popup ,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+    leaflet::addCircleMarkers(data= lakes_ewr_nokw_pgdl_gucci,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[10],
+                              popup= ~popup ,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+    leaflet::addCircleMarkers(data= lakes_ewr_nokw_pgdl_light,
+                              lat=~latitude, lng=~longitude, 
+                              group = groups[11],
+                              popup= ~popup ,
+                     fillColor = ~pal(n_temp_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>%
+  leaflet::addLegend(data = lake_summary_df, pal = pal,
+                     position = 'bottomleft',
+                     values=~n_temp_obs,
+                     labFormat = leaflet::labelFormat(digits = 0),
+                     title = "Number of temp observations") %>%
+  addLayersControl(
+    baseGroups = groups,
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>% 
+  hideGroup(groups[-1])
+
+
+```
