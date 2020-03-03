@@ -2,7 +2,7 @@
 merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_ind, lake_loc_ind, lake_data_ind,
                             lagos_xwalk_ind, MGLP_xwalk_ind, WBIC_xwalk_ind, Micorps_xwalk_ind,
                             MNDOW_xwalk_ind, Winslow_xwalk_ind, NDGF_xwalk_ind, kw_ind,
-                            meteo_ind, kw_file_fl ){
+                            meteo_ind, toha_varying_kw_ind){
 
   temp_dat <- feather::read_feather(temp_data_fl)
   lake_names <- readRDS(sc_retrieve(lake_names_ind))
@@ -11,7 +11,7 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
   these_depths <- readRDS(sc_retrieve(lake_depth_ind))
 
 
-  kw_file_ids <- readRDS(kw_file_fl)
+  kw_file_ids <- readRDS(sc_retrieve(toha_varying_kw_ind)) %>% pull(site_id) %>% unique()
   kw_val_ids <- readRDS(sc_retrieve(kw_ind))[["site_id"]]
   meteo_file_ids <- readRDS(sc_retrieve(meteo_ind)) %>%
     filter(file.exists(file.path('7_drivers_munge/out/',meteo_fl))) %>% pull(site_id)
@@ -108,9 +108,11 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
 
 # Summarizing the information related to TOHA models
 summarize_MN_toha_lake_data <- function(out_ind, mndow_xwalk_ind, lake_summary_ind,
-                                        walleye_count_data, plant_priority_data) {
+                                        walleye_count_ind, plant_priority_ind) {
 
   mndow_xwalk <- readRDS(sc_retrieve(mndow_xwalk_ind))
+  walleye_count_data <- read_csv(sc_retrieve(walleye_count_ind))
+  plant_priority_data <- read_csv(sc_retrieve(plant_priority_ind))
 
   walleye_df <- walleye_count_data %>%
     mutate(MNDOW_ID = sprintf("mndow_%s", DOW)) %>%

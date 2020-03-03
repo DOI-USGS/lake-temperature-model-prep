@@ -59,7 +59,7 @@ targets:
       NDGF_xwalk = "2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind",
       kw_ind = "7_config_merge/out/nml_Kw_values.rds.ind",
       meteo_ind = "7_config_merge/out/nml_meteo_fl_values.rds.ind",
-      kw_file_fl = "~/Downloads/nhdhr_ids_time_varying_clarity.rds")
+      toha_varying_kw_ind = "4_params_munge/out/toha_varying_kw.rds.ind")
 
   8_viz/inout/lakes_summary.feather:
     command: gd_get('8_viz/inout/lakes_summary.feather.ind')
@@ -79,26 +79,24 @@ targets:
   # Then uploaded to this pipeline GD folder & then incorporated into the pipeline using `gd_confirm_posted`.
   8_viz/in/WAE_numYears_meanCPUE.csv:
     command: gd_get("8_viz/in/WAE_numYears_meanCPUE.csv.ind")
-  walleye_count_data:
-    command: read_csv(I("8_viz/in/WAE_numYears_meanCPUE.csv"))
   8_viz/in/JakeWalsh_NHDIDs.csv:
     command: gd_get("8_viz/in/JakeWalsh_NHDIDs.csv.ind")
-  plant_priority_data:
-    command: read_csv(I("8_viz/in/JakeWalsh_NHDIDs.csv"))
 
   8_viz/inout/summary_toha_sf.rds.ind:
     command: summarize_MN_toha_lake_data(
       out_ind = target_name,
       mndow_xwalk_ind = "2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind",
       lake_summary_ind = "8_viz/inout/lakes_summary.feather.ind",
-      walleye_count_data = walleye_count_data,
-      plant_priority_data = plant_priority_data)
+      walleye_count_ind = "8_viz/in/WAE_numYears_meanCPUE.csv.ind",
+      plant_priority_ind = "8_viz/in/JakeWalsh_NHDIDs.csv.ind")
 
   8_viz/inout/summary_toha_sf.rds:
     command: gd_get('8_viz/inout/summary_toha_sf.rds.ind')
 
   8_viz/out/toha_lakes_summary_fig.html.ind:
     command: render_html(filename_md = 'toha_lake_data_map.Rmd', out_ind = target_name)
+    depends:
+      - 8_viz/inout/summary_toha_sf.rds.ind
 
   8_viz/out/toha_lakes_summary_fig.html:
     command: gd_get('8_viz/out/toha_lakes_summary_fig.html.ind')

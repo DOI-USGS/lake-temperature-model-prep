@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 4_params_munge/out/toha_varying_kw.rds.ind
+type: file
+hash: 237913c493d457aef191ad03df0ea837
+time: 2020-03-03 14:57:53 UTC
+depends:
+  3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip.ind: b3b1c5890dc6b112583abf879f73a3f9
+fixed: 24cf3dc5f5af547578923a20ffde4984
+code:
+  functions:
+    munge_daily_secchi: 176ac8cca187324d537c267a0e5f0d61
+
