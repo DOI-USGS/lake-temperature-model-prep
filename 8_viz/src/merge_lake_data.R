@@ -108,9 +108,11 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
 
 # Summarizing the information related to TOHA models
 summarize_MN_toha_lake_data <- function(out_ind, mndow_xwalk_ind, lake_summary_ind,
-                                        walleye_count_data, plant_priority_data) {
+                                        walleye_count_ind, plant_priority_ind) {
 
   mndow_xwalk <- readRDS(sc_retrieve(mndow_xwalk_ind))
+  walleye_count_data <- read_csv(sc_retrieve(walleye_count_ind))
+  plant_priority_data <- read_csv(sc_retrieve(plant_priority_ind))
 
   walleye_df <- walleye_count_data %>%
     mutate(MNDOW_ID = sprintf("mndow_%s", DOW)) %>%
