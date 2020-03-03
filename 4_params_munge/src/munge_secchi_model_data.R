@@ -1,8 +1,5 @@
 munge_daily_secchi <- function(out_ind, kw_files_zip_ind) {
 
-  cwd <- getwd()
-  on.exit(setwd(cwd))
-
   outfile <- as_data_file(out_ind)
 
   kw_files_zip <- sc_retrieve(kw_files_zip_ind)
