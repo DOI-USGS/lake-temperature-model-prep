@@ -25,30 +25,19 @@ munge_mglp_mi_perc_bathy <- function(out_ind, bathy_csv_ind, mglp_xwalk_ind, lak
   mglp_xwalk <- readRDS(sc_retrieve(mglp_xwalk_ind)) %>%
     left_join(areas, by = 'MGLP_ID')
 
+  # lakes like MIstjom36571 have >1 name, eg  Havens Lake & Goodrich Lake
+  # Two Hearted Lak has multiple long_dd and lat_DD
+
   bathy_areas <- scipiper::sc_retrieve(bathy_csv_ind) %>% read_csv %>%
     mutate(MGLP_ID = paste0('MGLP_', MGLP_ID), depths = Depth_ft * 0.3048) %>%
-    left_join(mglp_xwalk) %>%
+    inner_join(mglp_xwalk) %>% mutate(areas = LakeAfr_Be * areas_m2) %>%
+    mutate(other_ID = paste0(MGLP_ID, LAKE_NAME, LONG_DD, LAT_DD)) %>%
+    dplyr::select(site_id, other_ID, depths, areas) %>%
+    collapse_multi_bathy()
 
-
-
-  browser()
-  bth_dir <- tempdir()
-
-  # this still has the state-specific ID, since some NHDHR ids (site_id) have more than one. We need to combine those later
-  bathy_data_mapped <- sc_retrieve(bathy_zip_ind) %>% unzip(exdir = bth_dir) %>%
-    purrr::map(function(x) {
-      MNDOW_ID <- basename(x) %>% str_extract('[0-9]+.csv$') %>% str_extract('[0-9]+') %>% paste0('mndow_', .)
-      data <- {read_csv(x)[,1:2]} %>% setNames(c('depth_feet', 'proportion_area')) %>%
-        mutate(MNDOW_ID = MNDOW_ID, depths = depth_feet * 0.3048) %>%
-        dplyr::select(-depth_feet)
-    }) %>% purrr::reduce(rbind) %>%
-    inner_join(mndow_xwalk, by = 'MNDOW_ID') %>%
-    mutate(areas = proportion_area * areas_m2) %>% rename(other_ID = MNDOW_ID) %>%
-    dplyr::select(site_id, other_ID, depths, areas)
-
-  data_file <- scipiper::as_data_file(out_ind)
-  collapse_multi_bathy(bathy_data_mapped) %>%
-    saveRDS(data_file)
+  warning('collapsing some odd MI lakes into one')
+  data_file <- as_data_file(out_ind)
+  saveRDS(bathy_areas, data_file)
   gd_put(out_ind, data_file)
 
 }
