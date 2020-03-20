@@ -30,6 +30,7 @@ targets:
       - 4_params_munge/out/mndow_02_bathy.rds.ind
       - 4_params_munge/out/mndow_perc_bathy.rds.ind
       - 4_params_munge/out/mndow_perc_02_bathy.rds.ind
+      - 4_params_munge/out/mglp_mi_perc_bathy.rds.ind
       - 4_params_munge/out/wbic_bathy.rds.ind
       - 4_params_munge/out/ndgf_bathy.rds.ind
       - 4_params_munge/out/mglp_depths.rds.ind
@@ -85,6 +86,15 @@ targets:
       ndgf_xwalk_ind = '2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind')
   4_params_munge/out/ndgf_depths.rds:
     command: gd_get('4_params_munge/out/ndgf_depths.rds.ind')
+
+  4_params_munge/out/mglp_mi_perc_bathy.rds.ind:
+    command: munge_mglp_mi_perc_bathy(
+      out_ind = target_name,
+      bathy_csv_ind = '3_params_fetch/in/mi_hypsography_mglpid.csv.ind',
+      mglp_xwalk_ind = '2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind',
+      lake_poly_ind = '1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind')
+  4_params_munge/out/mglp_mi_perc_bathy.rds:
+    command: gd_get('4_params_munge/out/mglp_mi_perc_bathy.rds.ind')
 
   4_params_munge/out/mndow_perc_bathy.rds.ind:
     command: munge_mndow_perc_bathy(

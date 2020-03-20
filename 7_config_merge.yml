@@ -57,6 +57,7 @@ targets:
       '4_params_munge/out/mndow_perc_02_bathy.rds.ind',
       '4_params_munge/out/wbic_bathy.rds.ind',
       '4_params_munge/out/ndgf_bathy.rds.ind',
+      '4_params_munge/out/mglp_mi_perc_bathy.rds.ind',
       '4_params_munge/out/lagos_depths.rds.ind',
       '4_params_munge/out/wbic_depths.rds.ind',
       '4_params_munge/out/mglp_depths.rds.ind',
