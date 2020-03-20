@@ -11,6 +11,7 @@ sources:
   - 6_temp_coop_fetch/src/filter_files.R
   - 6_temp_coop_fetch/src/task_fxns.R
   - 6_temp_coop_fetch/src/download_and_indicate.R
+  - 6_temp_coop_fetch/src/list_gd_files.R
 
 targets:
 
@@ -43,11 +44,16 @@ targets:
 
   # -- create makefile with targets for each file listed in gd -- #
 
-  coop_all_files:
-    command: drive_ls(path = coop_file_upload_location)
+  # update dummy_date if you know there are updates in google drive (e.g., new cooperator file)
+  # that you want the peipline to recognize
+  6_temp_coop_fetch/out/coop_all_files.rds.ind:
+    command: files_in_drive(out_ind = target_name, gd_path = coop_file_upload_location, dummy_date = I('2020-03-20'))
+
+  6_temp_coop_fetch/out/coop_all_files.rds:
+    command: gd_get('6_temp_coop_fetch/out/coop_all_files.rds.ind')
 
   coop_wants:
-    command: filter_coop_all(coop_all_files)
+    command: filter_coop_all('6_temp_coop_fetch/out/coop_all_files.rds.ind')
 
   coop_wants_fetch_plan:
     command: create_coop_taskplan(coop_wants)
