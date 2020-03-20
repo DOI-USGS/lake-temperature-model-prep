@@ -22,7 +22,7 @@ targets:
 
   7a_temp_coop_munge/tmp/parser_files.yml:
     command: list_coop_files(target_name,
-      dirpath = I('7a_temp_coop_munge/src/data_parsers'), dummy = I('2019-11-21'))
+      dirpath = I('7a_temp_coop_munge/src/data_parsers'), dummy = I('2020-03-30'))
 
   coop_parsers:
     command: find_parser(coop_wants, '7a_temp_coop_munge/tmp/parser_files.yml')
