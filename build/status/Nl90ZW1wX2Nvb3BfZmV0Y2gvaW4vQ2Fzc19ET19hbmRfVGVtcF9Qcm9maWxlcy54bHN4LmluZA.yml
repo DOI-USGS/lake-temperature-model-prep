@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Cass_DO_and_Temp_Profiles.xlsx.ind
+type: file
+hash: ea989ec2ce9150634344ea31208d54d0
+time: 2020-03-12 14:06:20 UTC
+depends: {}
+fixed: b93055a06d239e690b86ec84f2dfe36f
+code:
+  functions: {}
+
