@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/out/coop_all_files.rds.ind
+type: file
+hash: ae3509a06d64930c5b67729f00ffb6d9
+time: 2020-03-20 14:39:46 UTC
+depends:
+  coop_file_upload_location: 2c1265c14fda5fa0d792caa9b0ad5d3b
+fixed: a76b3b7987b092329690c6adecf9e643
+code:
+  functions:
+    files_in_drive: af41cd21ddd1fadb9d8a28b44542d5df
+

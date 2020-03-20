@@ -12,5 +12,9 @@ filter_coop_all <- function(in_ind) {
   # remove "explainer" files
   keep_files <- keep_files[-grep('explainer', keep_files, ignore.case = T)]
 
+  # remove templates
+  keep_files <- keep_files[-grep('template', keep_files, ignore.case = T)]
+
+
   return(keep_files)
 }
