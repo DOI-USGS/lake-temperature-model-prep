@@ -16,6 +16,8 @@ targets:
   7b_temp_merge:
     depends:
      - 7b_temp_merge/out/merged_temp_data_daily.feather.ind
+     - 7b_temp_merge/out/temp_data_with_sources.feather.ind
+     - 7b_temp_merge/out/source_metadata_for_release.csv.ind
 
   # -- get WQP, coop data and merge -- #
   # -- removes (coarsely defined) duplicates -- #
