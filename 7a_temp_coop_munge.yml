@@ -42,16 +42,10 @@ targets:
 
   # -- bind together all data using final indicator file of 7a_temp_coop_munge_tasks.yml -- #
 
-  7a_temp_coop_munge/tmp/all_coop_dat.rds.ind:
-    command: merge_coop_dat(outind = target_name, inind = '7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind')
-
-  7a_temp_coop_munge/tmp/all_coop_dat.rds:
-    command: require_local('7a_temp_coop_munge/tmp/all_coop_dat.rds.ind')
-
   7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind:
     command: crosswalk_coop_dat(
       outind = target_name,
-      inind = '7a_temp_coop_munge/tmp/all_coop_dat.rds.ind',
+      inind = '7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind',
       id_crosswalk = '2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind',
       wbic_crosswalk = '2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind',
       dow_crosswalk = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')

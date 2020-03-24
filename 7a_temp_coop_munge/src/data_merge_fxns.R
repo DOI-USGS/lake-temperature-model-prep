@@ -1,5 +1,4 @@
-merge_coop_dat <- function(outind, inind) {
-  outfile <- as_data_file(outind)
+merge_coop_dat <- function(inind) {
 
   in_dat <- read.delim(inind, stringsAsFactors = F, header = FALSE)
 
@@ -49,6 +48,5 @@ merge_coop_dat <- function(outind, inind) {
            temp >= min.temp,
            temp <= max.temp)
 
-  saveRDS(object = all_dat, file = outfile)
-  sc_indicate(ind_file = outind, data_file = outfile)
+  return(all_dat)
 }

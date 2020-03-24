@@ -3,15 +3,13 @@ list_coop_files <- function(fileout, dirpath, dummy){
 }
 
 
-crosswalk_coop_dat <- function(outind = target_name,
-                               inind = '7a_temp_coop_munge/tmp/all_coop_dat.rds.ind',
+crosswalk_coop_dat <- function(outind = target_name, inind,
                                id_crosswalk, wbic_crosswalk, dow_crosswalk) {
 
-  infile <- scipiper::sc_retrieve(inind)
   outfile <- as_data_file(outind)
 
   # modify DOWs to add leading zero if not 8 characters long
-  dat <- readRDS(infile)
+  dat <- merge_coop_dat(inind)
 
 
   idfile <- sc_retrieve(id_crosswalk, remake_file = '2_crosswalk_munge.yml')
