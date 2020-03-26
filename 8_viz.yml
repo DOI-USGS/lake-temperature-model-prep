@@ -40,6 +40,13 @@ targets:
   # -- removes egregious outliers in Jan/Feb (>10 deg C) and July/Aug (surface, <10 deg C)
   # -- returns all times -- ##
 
+  # List from Holly of WI lakes that are having hypsos digitized
+  # I xwalked to nhd ids (using "2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds")
+  # Then I uloaded file to GD and then ran a gd_confirm_posted
+  # The resulting RDS file is used in the summary step
+  8_viz/in/WI_hypso_list.rds:
+    command: gd_get("8_viz/in/WI_hypso_list.rds.ind")
+
   # update with booleans for:
   # has meteo, max depth, hypso, kw, kw_file, obs...
   8_viz/inout/lakes_summary.feather.ind:
@@ -59,7 +66,8 @@ targets:
       NDGF_xwalk = "2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind",
       kw_ind = "7_config_merge/out/nml_Kw_values.rds.ind",
       meteo_ind = "7_config_merge/out/nml_meteo_fl_values.rds.ind",
-      toha_varying_kw_ind = "4_params_munge/out/toha_varying_kw.rds.ind")
+      toha_varying_kw_ind = "4_params_munge/out/toha_varying_kw.rds.ind",
+      digitzing_hypos_ind = "8_viz/in/WI_hypso_list.rds.ind")
 
   8_viz/inout/lakes_summary.feather:
     command: gd_get('8_viz/inout/lakes_summary.feather.ind')

@@ -57,12 +57,28 @@ leaflet::leaflet(height = "800px", width = "1000px") %>%
                      stroke=FALSE) %>%
   leaflet::addCircleMarkers(data= dplyr::filter(df, n_profiles > 50 & !hypsography),
                               lat=~latitude, lng=~longitude, 
-                              group = "Lots of data, no hypso",
+                              group = "Lots of data, no hypso in pipeline",
                               popup= ~popup ,
                      fillColor = ~pal(n_obs),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
+  leaflet::addCircleMarkers(data= dplyr::filter(df, n_profiles > 50 & hypsography_digitizing),
+                              lat=~latitude, lng=~longitude, 
+                              group = "Lots of data, hypso being digitized",
+                              popup= ~popup ,
+                     fillColor = ~pal(n_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>% 
+  leaflet::addCircleMarkers(data= dplyr::filter(df, n_profiles > 50 & !hypsography & !hypsography_digitizing),
+                              lat=~latitude, lng=~longitude, 
+                              group = "Lots of data, no hypso found yet",
+                              popup= ~popup ,
+                     fillColor = ~pal(n_obs),
+                     fillOpacity = 0.8,
+                     radius = ~4,
+                     stroke=FALSE) %>% 
     leaflet::addCircleMarkers(data= dplyr::filter(df, zmax & kw & !meteo & n_profiles > 10),
                               lat=~latitude, lng=~longitude, 
                               group = "PGDL, but no meteo",
@@ -117,7 +133,9 @@ leaflet::leaflet(height = "800px", width = "1000px") %>%
                      labFormat = leaflet::labelFormat(digits = 0),
                      title = "Number of observations") %>%
   addLayersControl(
-    baseGroups = c("TOHA lake","PGDL lake","GLM lake","Kw_file, no kw","hypsography", "Lots of data, no hypso", "PGDL, but no meteo", "GLM lake, but no meteo"),
+    baseGroups = c("TOHA lake","PGDL lake","GLM lake","Kw_file, no kw","hypsography", 
+                   "Lots of data, no hypso in pipeline", "Lots of data, hypso being digitized", "Lots of data, no hypso found yet",
+                   "PGDL, but no meteo", "GLM lake, but no meteo"),
     #overlayGroups = c("observed","hypsography", "zmax", "kw","kw_file","meteo"),
     options = layersControlOptions(collapsed = FALSE)
   ) %>% 
