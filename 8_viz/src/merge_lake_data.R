@@ -2,7 +2,7 @@
 merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_ind, lake_loc_ind, lake_data_ind,
                             lagos_xwalk_ind, MGLP_xwalk_ind, WBIC_xwalk_ind, Micorps_xwalk_ind,
                             MNDOW_xwalk_ind, Winslow_xwalk_ind, NDGF_xwalk_ind, kw_ind,
-                            meteo_ind, toha_varying_kw_ind){
+                            meteo_ind, toha_varying_kw_ind, digitzing_hypos_ind){
 
   temp_dat <- feather::read_feather(temp_data_fl)
   lake_names <- readRDS(sc_retrieve(lake_names_ind))
@@ -15,6 +15,7 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
   kw_val_ids <- readRDS(sc_retrieve(kw_ind))[["site_id"]]
   meteo_file_ids <- readRDS(sc_retrieve(meteo_ind)) %>%
     filter(file.exists(file.path('7_drivers_munge/out/',meteo_fl))) %>% pull(site_id)
+  wi_digitizing_ids <- readRDS(sc_retrieve(digitzing_hypos_ind)) %>% pull(site_id)
 
   # Read xwalks
   lagos_xwalk <- readRDS(sc_retrieve(lagos_xwalk_ind))[["site_id"]]
@@ -70,10 +71,12 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
     }
     return(has_hypso)
   }) %>% unlist()
+  will_have_hypso <- all_lakes %in% wi_digitizing_ids
 
   metadata <- data.frame(site_id = all_lakes,
                          zmax = has_zmax,
                          hypsography = has_hypso,
+                         hypsography_digitizing = will_have_hypso,
                          kw = has_kw,
                          kw_file = has_kw_file,
                          meteo = has_meteo,
