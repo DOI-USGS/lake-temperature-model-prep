@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 7_drivers_munge/out/7_all_local_drivers.rds.ind
+type: file
+hash: 9b1cb7bace06ff19f4ec0b28d2f5a120
+time: 2020-03-29 12:42:06 UTC
+depends:
+  replete_time_range: 5f68be4b2440ec83e0a8c95b19681b16
+fixed: 0bae021c5ba71b3423006a9ce77cbb04
+code:
+  functions:
+    index_local_drivers: 4a6592df4e67cede58e86bb6d3debeea
+

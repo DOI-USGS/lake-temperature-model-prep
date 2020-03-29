@@ -16,6 +16,7 @@ targets:
   7_drivers_munge:
     depends:
       - "7_drivers_munge/out/7_drivers_munge_tasks.ind"
+      - "7_drivers_munge/out/7_all_local_drivers.rds.ind"
 
   meteo_file_dir:
     command: c(I("7_drivers_munge/out"))
@@ -38,3 +39,11 @@ targets:
   # using loop_tasks because of this error: * Error in NULL: object 'tmp2m' not found; debug with scmake("7_drivers_munge/out/NLDAS_time[0.359420]_x[223]_y[141].csv", "7_drivers_munge_tasks.yml")
   "7_drivers_munge/out/7_drivers_munge_tasks.ind":
     command: scmake(I("7_drivers_munge_tasks.ind_promise"), remake_file = '7_drivers_munge_tasks.yml')
+
+  7_drivers_munge/out/7_all_local_drivers.rds.ind:
+    command: index_local_drivers(target_name,
+      depends = I("7_drivers_munge/out/7_drivers_munge_tasks.ind"),
+      time_range = replete_time_range)
+
+  7_drivers_munge/out/7_all_local_drivers.rds:
+    command: gd_get('7_drivers_munge/out/7_all_local_drivers.rds.ind')

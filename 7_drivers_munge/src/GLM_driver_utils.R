@@ -9,7 +9,7 @@ calc_cell_group_files <- function(grid_cells, time_range, ind_dir){
   data.frame(variable = grid_cells$variables) %>%
     mutate(filename = create_cellgroup_filename(t0 = time_range[1], t1 = time_range[2], variable = variable, dirname = ind_dir)) %>%
     mutate(hash = sc_indicate("", data_file = filename)) %>% # have to hash, otherwise they will look unchanged
-    select(filename, hash)
+    dplyr::select(filename, hash)
 }
 
 calc_driver_files <- function(cell_group_table, dirname){
@@ -140,16 +140,31 @@ feathers_to_driver_file <- function(filepath, cell_group_table){
            RelHum = 100*spfh2m/qsat(AirTemp, pressfc*0.01),
            Rain = apcpsfc*24/1000) %>%
     mutate(Snow = ifelse(AirTemp < 0, Rain*10, 0), Rain = ifelse(AirTemp < 0, 0, Rain)) %>% #convert to m/day rate)
-    select(time, ShortWave, LongWave, AirTemp, RelHum, WindSpeed, Rain, Snow) %>% # now downsample?
+    dplyr::select(time, ShortWave, LongWave, AirTemp, RelHum, WindSpeed, Rain, Snow) %>% # now downsample?
     mutate(date = lubridate::as_date(time)) %>% group_by(date) %>%
     summarize(ShortWave = mean(ShortWave), LongWave = mean(LongWave),
               AirTemp = mean(AirTemp), RelHum = mean(RelHum),
               WindSpeed = mean(WindSpeed^3)^(1/3), Rain = mean(Rain), Snow = mean(Snow), n = length(time)) %>%
-    filter(n == 24) %>% rename(time = date) %>% select(-n)
+    filter(n == 24) %>% rename(time = date) %>% dplyr::select(-n)
 
   stopifnot(length(unique(diff(drivers_out$time))) == 1)
 
   readr::write_csv(x = drivers_out, path = filepath)
+}
+
+index_local_drivers <- function(ind_out, depends, time_range){
+  a_build_index <- yaml::yaml.load_file(depends) %>% names
+  driver_dir <- dirname(a_build_index) %>% unique()
+
+  stopifnot(length(driver_dir) == 1)
+
+  data_file <- scipiper::as_data_file(ind_out)
+
+  tibble(local_driver = dir(driver_dir)) %>%
+    filter(str_detect(local_driver, sprintf('^NLDAS_time\\[%s.%s\\]', time_range[1], time_range[2]))) %>%
+    saveRDS(file = data_file)
+
+  gd_put(ind_out)
 }
 
 # from old MATLAB code:
