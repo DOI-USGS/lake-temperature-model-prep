@@ -13,9 +13,10 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
 
   kw_file_ids <- readRDS(sc_retrieve(toha_varying_kw_ind)) %>% pull(site_id) %>% unique()
   kw_val_ids <- readRDS(sc_retrieve(kw_ind))[["site_id"]]
-  have_meteo_fl <- readRDS(sc_retrieve(meteo_files_ind))
+  local_meteo_files <- readRDS(sc_retrieve(meteo_files_ind))[["local_driver"]]
+
   meteo_file_ids <- readRDS(sc_retrieve(meteo_ind)) %>%
-    filter(meteo_fl %in% have_meteo_fl$local_driver) %>% pull(site_id)
+    filter(meteo_fl %in% local_meteo_files) %>% pull(site_id)
   wi_digitizing_ids <- readRDS(sc_retrieve(digitzing_hypos_ind)) %>% pull(site_id)
 
   # Read xwalks
@@ -88,7 +89,13 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
     left_join(total_obs) %>%
     left_join(lake_days) %>%
     left_join(rename(lake_loc)) %>%
-    left_join(metadata)
+    left_join(metadata) %>%
+    mutate(obs_category = dplyr::case_when(
+      is.na(n_profiles) ~ 'none',
+      n_profiles < 10 ~ '< 10 profiles',
+      n_profiles < 50 & n_profiles >= 10 ~ '< 50 profiles',
+      n_profiles >= 50 ~ '50+ profiles'
+    ))
 
   all_real <- function(x) !all(is.na(x))
   lake_summary_w_xwalk <- lake_summary %>%
