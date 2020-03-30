@@ -32,8 +32,6 @@ lake_summary_df$popup <- paste0("<table>",
                    lake_summary_df$n_temp_obs,'</td></tr>',
                    "<tr><td># Profiles:</td><td>",
                    lake_summary_df$n_profiles,'</td></tr>',
-                   "<tr><td>Years w/ >5 profiles:</td><td>",
-                   lake_summary_df$n_years_6profs,'</td></tr>',
                    "<tr><td>Crosswalked to:</td><td>",
                    lake_summary_df$Lake_Source,'</td></tr>',
                    "<tr><td># Walleye Yrs:</td><td>",
@@ -92,11 +90,10 @@ lakes_ewr_nokw_pgdl_light <- lake_summary_df %>%
 ```{r firstMap}
 library(leaflet)
 
-col_types <- c("darkblue","dodgerblue","green4","gold1","orange","brown","red")
   
-legend_vals <- unique(as.numeric(quantile(c(0,lake_summary_df$n_temp_obs), probs=c(0,0.1,0.5,0.9,.99,1), na.rm=TRUE)))
+legend_vals <- c("< 10 profiles", "< 50 profiles", "50+ profiles", "none")
 
-pal = leaflet::colorBin(palette = 'viridis', c(0, lake_summary_df$n_temp_obs), bins = legend_vals, na.color = 'red', reverse = TRUE)
+pal <- colorFactor(c("#35B779B3","#31688EB3","#440154B3",'red'), legend_vals)
 
 groups <- c(
   sprintf("Zmax & hypso (n=%s)", nrow(lakes_w_zmax_hypso)),
@@ -119,7 +116,7 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[1],
                               popup= ~popup,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
@@ -127,7 +124,7 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[2],
                               popup= ~popup ,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
@@ -135,7 +132,7 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[3],
                               popup= ~popup ,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
@@ -143,7 +140,7 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[4],
                               popup= ~popup ,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
@@ -151,7 +148,7 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[5],
                               popup= ~popup ,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
@@ -159,7 +156,7 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[6],
                               popup= ~popup ,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
@@ -167,7 +164,7 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[7],
                               popup= ~popup ,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
@@ -175,7 +172,7 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[8],
                               popup= ~popup ,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
@@ -183,7 +180,7 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[9],
                               popup= ~popup ,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
@@ -191,7 +188,7 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[10],
                               popup= ~popup ,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
@@ -199,13 +196,13 @@ leaflet::leaflet(height = "500px", width = "1000px") %>%
                               lat=~latitude, lng=~longitude, 
                               group = groups[11],
                               popup= ~popup ,
-                     fillColor = ~pal(n_temp_obs),
+                     fillColor = ~pal(obs_category),
                      fillOpacity = 0.8,
                      radius = ~4,
                      stroke=FALSE) %>%
   leaflet::addLegend(data = lake_summary_df, pal = pal,
                      position = 'bottomleft',
-                     values=~n_temp_obs,
+                     values=~obs_category,
                      labFormat = leaflet::labelFormat(digits = 0),
                      title = "Number of temp observations") %>%
   addLayersControl(
