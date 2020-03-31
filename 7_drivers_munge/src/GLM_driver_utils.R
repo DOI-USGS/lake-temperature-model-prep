@@ -19,18 +19,8 @@ calc_driver_files <- function(cell_group_table_ind, dirname){
   return(unique(driver_files))
 }
 
-#' #' combine a bunction of .yml files that are the result of `sc_indicate` into
-#' #'   a single file
-#' merge_cell_group_files <- function(cell_group_files){
-#'   file_list <- lapply(cell_group_files$filename, function(x){
-#'     contents <- yaml::read_yaml(x) %>% unlist
-#'     hashes <- unname(contents)
-#'     filepaths <- names(contents)
-#'     data.frame(filepath = filepaths, hash = hashes)
-#'   })
-#'   return(do.call(rbind, file_list))
-#' }
-#'
+#' combine a bunction of .yml files that are the result of `sc_indicate` into
+#'   a single file
 merge_cell_group_files <- function(ind_out, cell_group_ind){
 
   # create a table of
