@@ -20,7 +20,7 @@ sources:
   - 4_params_munge/src/munge_secchi_model_data.R
   - 4_params_munge/src/munge_cd_from_nlcd.R
   - 4_params_munge/src/munge_wbic.R
-  - 4_params_munge/src/munge_ndgf.R
+  - 4_params_munge/src/munge_contours.R
 
 targets:
   4_params_munge:
@@ -33,9 +33,11 @@ targets:
       - 4_params_munge/out/mglp_mi_perc_bathy.rds.ind
       - 4_params_munge/out/wbic_bathy.rds.ind
       - 4_params_munge/out/ndgf_bathy.rds.ind
+      - 4_params_munge/out/iadnr_bathy.rds.ind
       - 4_params_munge/out/mglp_depths.rds.ind
       - 4_params_munge/out/wbic_depths.rds.ind
       - 4_params_munge/out/ndgf_depths.rds.ind
+
 
   4_params_munge/out/toha_varying_kw.rds.ind:
     command: munge_daily_secchi(target_name,
@@ -113,6 +115,15 @@ targets:
       mndow_poly_ind = '1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind')
   4_params_munge/out/mndow_perc_02_bathy.rds:
     command: gd_get('4_params_munge/out/mndow_perc_02_bathy.rds.ind')
+
+  4_params_munge/out/iadnr_bathy.rds.ind:
+    command: munge_iadnr_bathy(
+      out_ind = target_name,
+      iadnr_contour_ind = '1_crosswalk_fetch/out/iadnr_countours_sf.rds.ind',
+      iadnr_surface_ind = '1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind',
+      xwalk_ind = '2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds.ind')
+  4_params_munge/out/iadnr_bathy.rds:
+    command: gd_get('4_params_munge/out/iadnr_bathy.rds.ind')
 
   # Combine MN bathy files and add DOW ID
   4_params_munge/out/mndow_01_bathy.rds.ind:

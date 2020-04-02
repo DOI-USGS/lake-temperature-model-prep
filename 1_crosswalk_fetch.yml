@@ -23,6 +23,7 @@ targets:
       - 1_crosswalk_fetch/out/micorps_sites.xlsx.ind
       - 1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind
       - 1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind
+      - 1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind
 
   wqp_temperature_charnames:
     command: c(I(c(
@@ -113,6 +114,19 @@ targets:
     command: fetch_micorps_sites(target_name)
   1_crosswalk_fetch/out/micorps_sites.xlsx:
     command: gd_get('1_crosswalk_fetch/out/micorps_sites.xlsx.ind')
+
+  1_crosswalk_fetch/out/iadnr_countours_sf.rds.ind:
+    command: fetch_iadnr_lakes(target_name,
+      layer = I('lakes_bathymetry'),
+      zip_ind = '3_params_fetch/out/IA_lakes_bathymetry.zip.ind')
+  1_crosswalk_fetch/out/iadnr_countours_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/iadnr_countours_sf.rds.ind')
+
+  1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind:
+    command: slice_iadnr_contour(target_name,
+      contour_ind = '1_crosswalk_fetch/out/iadnr_countours_sf.rds.ind')
+  1_crosswalk_fetch/out/iadnr_lakes_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind')
 
   # Shapefile download available at https://www.nd.gov/gis/apps/Download/?clipping=Full&coord=LL83&format=SHAPE&layers=NDGAMEFISH.NDGF_LAKESVW
   # Before uploading, I edited the lake id column using: `mutate(LAKE = sprintf("ndgf_%s", LAKE)) %>% rename(site_id = LAKE)`

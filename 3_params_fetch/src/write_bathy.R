@@ -9,6 +9,11 @@ save_bathy <- function(out_ind, bathy_gd_location){
 
 }
 
+fetch_url <- function(out_ind, url){
+  data_file <- scipiper::as_data_file(out_ind)
+  download.file(url = url, destfile = data_file)
+  gd_put(out_ind, data_file)
+}
 
 
 

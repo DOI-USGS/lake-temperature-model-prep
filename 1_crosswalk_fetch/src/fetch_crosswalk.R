@@ -33,6 +33,46 @@ process_wbic_lakes <- function(file_out = '1_crosswalk_fetch/out/wbic_lakes_sf.r
 }
 
 
+#' we're using this contour shapefile because the other lake shapefile doesn't really
+#' have lake IDs, since most are empty. See issue here: https://github.com/USGS-R/lake-temperature-model-prep/issues/155
+#' If we used the other shapefile,
+fetch_iadnr_lakes <- function(out_ind, zip_ind, layer){
+
+  outfile <- as_data_file(out_ind)
+
+  zip_file <- sc_retrieve(zip_ind)
+
+  shp.path <- tempdir()
+  unzip(zip_file, exdir = shp.path)
+  #' requires sf version of at least 0.8:
+  #'
+  sf::st_read(shp.path, layer = layer, stringsAsFactors=FALSE) %>%
+    mutate(site_id = paste0('iadnr_', lakeCode)) %>%
+    group_by(site_id, CONTOUR) %>% summarize(geometry = st_union(geometry)) %>%
+    dplyr::select(site_id, CONTOUR, geometry) %>%
+    st_transform(x, crs = 4326) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+
+}
+
+slice_iadnr_contour <- function(out_ind, contour_ind){
+  outfile <- as_data_file(out_ind)
+
+  #' issue on row 1797; HEN45 CONTOUR ==12; 1799 HEN45 CONTOUR==15; 2500, LGR82, CONTOUR==34;
+  #' 2509; LGR82, CONTOUR==34 (another 34' contour); 2812; MIA68, CONTOUR==4
+  #' 2889; MOR59; CONTOUR==2
+
+  contours_sf <- sc_retrieve(contour_ind) %>% readRDS() %>%
+    group_by(site_id) %>% filter(CONTOUR == min(CONTOUR)) %>% ungroup() %>%
+    dplyr::select(-CONTOUR) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+}
+
+
 fetch_mndow_lakes <- function(ind_file, layer, dummy){
   data_file <- scipiper::as_data_file(ind_file)
 

@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind
+type: file
+hash: 0a25e5fc50df17e3155cb74c8f549139
+time: 2020-04-02 19:10:34 UTC
+depends:
+  1_crosswalk_fetch/out/iadnr_countours_sf.rds.ind: 7801da13b76eb5301f687db028e90cef
+fixed: 6b067d907db9d84bd27450e4972f29ba
+code:
+  functions:
+    slice_iadnr_contour: 65ee7bb97a047bea8eb8dbfbe0fc79f5
+
