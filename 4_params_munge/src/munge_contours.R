@@ -94,27 +94,25 @@ munge_ndgf_bathy <- function(out_ind, ndgf_contour_ind, ndgf_xwalk_ind, ndgf_sur
 
 munge_iadnr_bathy <- function(out_ind, iadnr_contour_ind, iadnr_surface_ind, xwalk_ind){
 
-  iadnr_surface <- sc_retrieve(iadnr_surface_ind) %>% readRDS %>%
-    mutate(depths = 0) %>% mutate(areas = as.numeric(st_area(st_polygonize(geometry)))) %>%
+  xwalk <- sc_retrieve(xwalk_ind) %>% readRDS()
+
+  iadnr_surface <- sc_retrieve(iadnr_surface_ind) %>% readRDS %>% group_by(site_id) %>%
+    summarise(depths = 0, areas = sum(as.numeric(st_area(geometry)))) %>%
     st_drop_geometry()
 
-  # none of these have a zero depth, so adding it as the min contour
   iadnr_contour <- sc_retrieve(iadnr_contour_ind) %>% readRDS %>%
-    rename(depths = CONTOUR) %>%
-    mutate(areas = as.numeric(st_area(geometry))) %>%
-    st_cast("MULTILINESTRING") %>%
-    rbind(iadnr_surface) %>%
+    mutate(depths = CONTOUR * 0.3048) %>% group_by(site_id, depths) %>%
+    summarise(areas = sum(as.numeric(st_area(geometry)))) %>%
+    st_drop_geometry() %>%
+    bind_rows(iadnr_surface) %>%
+    arrange(site_id, depths) %>% rename(IADNR_ID = site_id) %>% ungroup() %>%
+    left_join(xwalk, by = 'IADNR_ID') %>% filter(!is.na(site_id)) %>%
+    rename(other_ID = IADNR_ID)
 
-    arrange(site_id, depth)
 
+  data_file <- scipiper::as_data_file(out_ind)
 
-
-  browser()
-  sf::st_read(shp.path, layer = layer, stringsAsFactors=FALSE) %>%
-    mutate(site_id = paste0('iadnr_', lakeCode)) %>%
-    group_by(site_id) %>% slice(which.min(CONTOUR)) %>%
-    dplyr::select(site_id, geometry) %>% ungroup() %>%
-    st_transform(x, crs = 4326)
-
-  xwalk <- sc_retrieve(xwalk_ind) %>% readRDS()
+  collapse_multi_bathy(iadnr_contour) %>%
+    saveRDS(data_file)
+  gd_put(out_ind, data_file)
 }

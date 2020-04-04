@@ -35,22 +35,47 @@ process_wbic_lakes <- function(file_out = '1_crosswalk_fetch/out/wbic_lakes_sf.r
 
 #' we're using this contour shapefile because the other lake shapefile doesn't really
 #' have lake IDs, since most are empty. See issue here: https://github.com/USGS-R/lake-temperature-model-prep/issues/155
-#' If we used the other shapefile,
-fetch_iadnr_lakes <- function(out_ind, zip_ind, layer){
+#' remove_IDs is needed because some of the contours have empty geometries for one or more contours.
+#' Remove the whole lake in this case
+#'
+#'   #' see blodgett's code:
+# # library(sf)
+# # library(dplyr)
+# l <- sf::read_sf("~/Downloads/test.gpkg") %>%
+#   st_zm()
+# g <- lapply(1:nrow(l), function(x, l) {
+#
+#   try(return(st_cast(st_geometry(l)[[x]], "MULTIPOLYGON")))
+#
+#   st_multipolygon()
+# }, l = l)
+# g <- st_sfc(g, crs = st_crs(l))
+# st_geometry(l) <- g
+# l[which(is.na(st_dimension(st_geometry(l)))),]$lakeCode %>% unique()
+#' issue on row 1797; HEN45 CONTOUR ==12; 1799 HEN45 CONTOUR==15; 2500, LGR82, CONTOUR==34;
+#' 2509; LGR82, CONTOUR==34 (another 34' contour); 2812; MIA68, CONTOUR==4
+#' 2889; MOR59; CONTOUR==2
+fetch_iadnr_lakes <- function(out_ind, zip_ind, remove_IDs, layer){
 
   outfile <- as_data_file(out_ind)
 
   zip_file <- sc_retrieve(zip_ind)
-
+  #"iadnr_DBE43\r\nDBE43"
   shp.path <- tempdir()
   unzip(zip_file, exdir = shp.path)
   #' requires sf version of at least 0.8:
-  #'
   sf::st_read(shp.path, layer = layer, stringsAsFactors=FALSE) %>%
-    mutate(site_id = paste0('iadnr_', lakeCode)) %>%
-    group_by(site_id, CONTOUR) %>% summarize(geometry = st_union(geometry)) %>%
+    filter(!lakeCode %in% remove_IDs) %>%
+    sf::st_zm() %>% st_transform(crs = 4326) %>%
+    mutate(site_id = paste0('iadnr_', lakeCode), geometry = st_cast(geometry, "MULTIPOLYGON")) %>%
+    mutate(site_id = str_remove(site_id, '\r\nDBE43')) %>%
+    st_make_valid() %>%
+    filter(!(site_id == 'iadnr_CLE17' & CONTOUR == 15),
+           !(site_id == 'iadnr_STL11' & CONTOUR == 14),
+           !(site_id == 'iadnr_HAN06' & CONTOUR == 2),
+           !(site_id == 'iadnr_SPL30' & CONTOUR %in% 1:2),
+           !(site_id == 'iadnr_WOK30' & CONTOUR ==3)) %>%
     dplyr::select(site_id, CONTOUR, geometry) %>%
-    st_transform(x, crs = 4326) %>%
     saveRDS(file = outfile)
 
   gd_put(out_ind, outfile)
@@ -60,9 +85,6 @@ fetch_iadnr_lakes <- function(out_ind, zip_ind, layer){
 slice_iadnr_contour <- function(out_ind, contour_ind){
   outfile <- as_data_file(out_ind)
 
-  #' issue on row 1797; HEN45 CONTOUR ==12; 1799 HEN45 CONTOUR==15; 2500, LGR82, CONTOUR==34;
-  #' 2509; LGR82, CONTOUR==34 (another 34' contour); 2812; MIA68, CONTOUR==4
-  #' 2889; MOR59; CONTOUR==2
 
   contours_sf <- sc_retrieve(contour_ind) %>% readRDS() %>%
     group_by(site_id) %>% filter(CONTOUR == min(CONTOUR)) %>% ungroup() %>%

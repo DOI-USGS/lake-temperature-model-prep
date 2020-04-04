@@ -115,16 +115,17 @@ targets:
   1_crosswalk_fetch/out/micorps_sites.xlsx:
     command: gd_get('1_crosswalk_fetch/out/micorps_sites.xlsx.ind')
 
-  1_crosswalk_fetch/out/iadnr_countours_sf.rds.ind:
+  1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind:
     command: fetch_iadnr_lakes(target_name,
       layer = I('lakes_bathymetry'),
+      remove_IDs = I(c("HEN45", "LGR82", "MIA68", "MOR59", "NTW13", "RDL34", "SWA14", "THM88", "WIN87", "EOK30")),
       zip_ind = '3_params_fetch/out/IA_lakes_bathymetry.zip.ind')
-  1_crosswalk_fetch/out/iadnr_countours_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/iadnr_countours_sf.rds.ind')
+  1_crosswalk_fetch/out/iadnr_contours_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind')
 
   1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind:
     command: slice_iadnr_contour(target_name,
-      contour_ind = '1_crosswalk_fetch/out/iadnr_countours_sf.rds.ind')
+      contour_ind = '1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind')
   1_crosswalk_fetch/out/iadnr_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind')
 
