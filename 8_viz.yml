@@ -18,7 +18,6 @@ targets:
 
   8_viz:
     depends:
-      - 8_viz/out/lake_obs_counts.png
       - 8_viz/out/toha_lakes_summary_fig.html.ind
       - 8_viz/out/lakes_summary_fig.html.ind
 
@@ -29,12 +28,6 @@ targets:
       temp_obs_ind = '7b_temp_merge/out/temp_data_with_sources.feather.ind',
       nml_list_ind = '7_config_merge/out/nml_list.rds.ind')
 
-#### We expect the following to be out of date as of the transition to NHD-HR:
-#
-#  8_viz:
-#    depends:
-#     - 8_viz/inout/lakes_summary.feather.ind
-#
   # -- get WQP, coop data and merge -- #
   # -- removes (coarsely defined) duplicates -- #
   # -- removes egregious outliers in Jan/Feb (>10 deg C) and July/Aug (surface, <10 deg C)
