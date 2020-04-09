@@ -129,7 +129,11 @@ summarize_MN_toha_lake_data <- function(out_ind, mndow_xwalk_ind, lake_summary_i
     mutate(MNDOW_ID = sprintf("mndow_%s", DOW)) %>%
     rename(n_walleye_yrs = n_yrs) %>%
     left_join(mndow_xwalk) %>%
-    dplyr::select(site_id, MNDOW_ID, n_walleye_yrs)
+    dplyr::select(site_id, MNDOW_ID, n_walleye_yrs) %>%
+    # Remove sites with the same NHDHR ID but multiple MNDOWs
+    #   by taking the max of the walleye yrs
+    group_by(site_id) %>%
+    summarize(n_walleye_yrs = max(n_walleye_yrs))
 
   plant_priority_sites <- plant_priority_data[["site_id"]]
 
