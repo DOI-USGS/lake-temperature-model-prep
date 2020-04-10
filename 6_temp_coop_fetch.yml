@@ -47,7 +47,7 @@ targets:
   # update dummy_date if you know there are updates in google drive (e.g., new cooperator file)
   # that you want the peipline to recognize
   6_temp_coop_fetch/out/coop_all_files.rds.ind:
-    command: files_in_drive(out_ind = target_name, gd_path = coop_file_upload_location, dummy_date = I('2020-03-20'))
+    command: files_in_drive(out_ind = target_name, gd_path = coop_file_upload_location, dummy_date = I('2020-04-09'))
 
   6_temp_coop_fetch/out/coop_all_files.rds:
     command: gd_get('6_temp_coop_fetch/out/coop_all_files.rds.ind')
