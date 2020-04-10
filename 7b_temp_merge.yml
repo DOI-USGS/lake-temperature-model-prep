@@ -61,7 +61,7 @@ targets:
       out_ind = target_name)
 
   7b_temp_merge/in/source_metadata.csv:
-    command: require_local('7b_temp_merge/in/source_metadata.csv.ind')
+    command: gd_get('7b_temp_merge/in/source_metadata.csv.ind')
 
   # merge data with new source_ids
 
