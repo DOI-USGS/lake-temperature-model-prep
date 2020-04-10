@@ -34,7 +34,7 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
     filter(WBIC %in% unique(dat$WBIC)) %>%
     distinct() %>%
     group_by(WBIC) %>%
-    summarize(site_id = first(site_id))
+    dplyr::summarize(site_id = first(site_id))
 
   # dupes <- which(duplicated(wbics_in_dat$WBIC))
 
@@ -51,7 +51,7 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
     filter(DOW %in% unique(dat_filt_dow$DOW)) %>%
     distinct() %>%
     group_by(DOW) %>%
-    summarize(site_id = first(site_id)) # this is a bandaid for multiple site matches
+    dplyr::summarize(site_id = first(site_id)) # this is a bandaid for multiple site matches
 
   # dupes <- which(duplicated(dows_in_dat$DOW))
 
@@ -71,7 +71,7 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   # find which coop files have missing crosswalks
   dat_missing <- dat_all_linked %>%
     group_by(source) %>%
-    summarize(all_missing = all(is.na(site_id)),
+    dplyr::summarize(all_missing = all(is.na(site_id)),
               sum_missing = sum(is.na(site_id)))
 
   warning(paste0('Dropping ', sum(is.na(dat_all_linked$site_id)), ' temperature observations due to missing NHD ids.'))
