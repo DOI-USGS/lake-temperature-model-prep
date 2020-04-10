@@ -7,6 +7,9 @@ packages:
   - readxl
   - yaml
   - feather
+  - testit
+  - odbc
+  - Hmisc
 
 sources:
   - 7a_temp_coop_munge/src/parsing_task_fxns.R

@@ -43,11 +43,11 @@ fetch_mndow_lakes <- function(ind_file, layer, dummy){
 
   shp.path <- tempdir()
   unzip(zip_file, exdir = shp.path)
-
   shp <- sf::st_read(shp.path, layer = layer, stringsAsFactors=FALSE) %>%
         filter(!is.na(dowlknum),
          !dowlknum  %in% c("00000000", "16000100"),
-         wb_class %in% c("Artificial Basin", "Lake or Pond", "Mine Pit Lake", "Mine Pit Lake (NF)", "Natural Ore Mine", "Reservoir", "Riverine polygon"))
+         wb_class %in% c("Artificial Basin", "Lake or Pond", "Mine Pit Lake", "Mine Pit Lake (NF)", "Natural Ore Mine", "Reservoir", "Riverine polygon")) %>%
+  st_make_valid()
 
   # (16000100 is Lake Superior)
 
