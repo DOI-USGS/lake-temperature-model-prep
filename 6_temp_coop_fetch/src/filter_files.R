@@ -7,11 +7,5 @@ filter_coop_all <- function(in_ind) {
   gd_files <- readRDS(sc_retrieve(in_ind))
   filenames <- gd_files$name
 
-  keep_files <- grep('\\.xlsx|\\.txt|\\.csv|\\.accdb|\\.xls', filenames, value = TRUE)
-
-  # remove "explainer" files
-  keep_files <- keep_files[-grep('explainer', keep_files, ignore.case = T)]
-
-
-  return(keep_files)
+  return(filenames)
 }
