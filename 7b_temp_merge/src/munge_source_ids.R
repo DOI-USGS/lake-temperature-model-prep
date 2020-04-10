@@ -6,7 +6,7 @@
 munge_source_ids <- function() {
   sources <- all_dailies %>%
     group_by(source) %>%
-    summarize(n_obs = n()) %>%
+    dplyr::summarize(n_obs = n()) %>%
     mutate(source_id = case_when(
       grepl('historicalfiles', source) ~ 'MN_DNR_historical_files',
       grepl('Tenmile', source) ~ 'Tenmile_Lake_Bruce_Carlson',
@@ -59,7 +59,7 @@ summarize_sources <- function(metadata_ind, datin_ind, datout_ind){
 
   source_summary <- feather::read_feather(sc_retrieve(datin_ind)) %>%
     group_by(source_id) %>%
-    summarize(n_obs = n())
+    dplyr::summarize(n_obs = n())
 
   source_summary_out <-left_join(source_summary, metadata)
 
