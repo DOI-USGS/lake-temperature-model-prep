@@ -9,6 +9,7 @@ munge_daily_secchi <- function(out_ind, kw_files_zip_ind) {
   purrr::map(kw_files, function(x){
     read_csv(x, col_types = 'Dd') %>% mutate(site_id = str_remove(basename(x), pattern = '_kw.csv'))
   }) %>% purrr::reduce(bind_rows) %>%
+    group_by(site_id, time) %>% filter(row_number(Kd) == 1) %>% ungroup() %>%
     saveRDS(outfile)
 
   gd_put(out_ind, outfile)

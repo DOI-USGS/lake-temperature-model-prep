@@ -57,6 +57,7 @@ targets:
       '4_params_munge/out/mndow_perc_02_bathy.rds.ind',
       '4_params_munge/out/wbic_bathy.rds.ind',
       '4_params_munge/out/ndgf_bathy.rds.ind',
+      '4_params_munge/out/iadnr_bathy.rds.ind',
       '4_params_munge/out/mglp_mi_perc_bathy.rds.ind',
       '4_params_munge/out/lagos_depths.rds.ind',
       '4_params_munge/out/wbic_depths.rds.ind',
@@ -95,6 +96,7 @@ targets:
   7_config_merge/out/nml_Kw_values.rds.ind:
     command: munge_Kw(target_name,
       secchi_ind = '7a_wqp_munge/out/secchi_wqp_munged.feather.ind',
+      kw_varying_ind = '4_params_munge/out/toha_varying_kw.rds.ind',
       wqp_xwalk_ind = '2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind')
   7_config_merge/out/nml_Kw_values.rds:
     command: gd_get('7_config_merge/out/nml_Kw_values.rds.ind')

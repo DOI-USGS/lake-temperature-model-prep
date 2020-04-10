@@ -59,11 +59,12 @@ targets:
   #feature_NLDAS_cells:
   #  command: cells_containing_points_within(NLDAS_grid, new_feature_centroids, x_range = I(c(202,335)), y_range = I(c(127, 191)))
 
+  # figure out what to adjust with `st_bbox(filter(NLDAS_grid, y > 191 & y < 200, x > 220 & x < 260))`
   feature_NLDAS_cells:
-    command: cells_all(NLDAS_grid, x_range = I(c(202,335)), y_range = I(c(127,154))) # was c(127,154) and c(155, 191) had to do this in two chunks do to memory issues
+    command: cells_all(NLDAS_grid, x_range = I(c(166,201)), y_range = I(c(144,191))) # was c(127,154) and c(155, 191) had to do this in two chunks do to memory issues
 
   old_nldas_cells:
-    command: as_OPeNDAP_cells(old_feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m')))
+    command: as_OPeNDAP_cells(feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # switch back to old_feature_NLDAS_cells
 
   nldas_cells:
     command: as_OPeNDAP_cells(feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m')))
@@ -124,7 +125,7 @@ targets:
   "6_drivers/log/feather/6_fetch_new_cell_tasks.ind":
     command: scmake(I("6_fetch_new_cell_tasks.ind_promise"), remake_file = "6_fetch_new_cell_tasks.yml")
     depends:
-      - nldas_new_cells
+      - 6_drivers/log/6_fetch_new_cubes_tasks.ind
 
   "6_drivers/log/feather/6_fetch_append_cell_tasks.ind":
     command: loop_tasks(task_plan = append_cell_plan, task_makefile = "6_fetch_append_cell_tasks.yml")

@@ -1,15 +1,15 @@
 version: 0.3.0
 name: 8_viz/inout/summary_toha_sf.rds.ind
 type: file
-hash: 17841e99ffed3368b4dd122e27a0b31d
-time: 2020-03-05 01:54:08 UTC
+hash: 271f076bccea23da29ac05a1ed481443
+time: 2020-04-09 22:33:43 UTC
 depends:
   2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind: 92f9c3f5d352c96e01cfccf350d220b8
-  8_viz/inout/lakes_summary.feather.ind: 0a259aa4fc1d179a1282011c5d4705a6
+  8_viz/inout/lakes_summary.feather.ind: 387d6ca969b71b5bfef20be1a224953f
   8_viz/in/WAE_numYears_meanCPUE.csv.ind: 2e7ddf60e822ac6d7f773633946d4472
   8_viz/in/JakeWalsh_NHDIDs.csv.ind: ac551fee267b33a67c68cccb7d10276f
 fixed: d7faa530486b90c9fa385c7983fb72f5
 code:
   functions:
-    summarize_MN_toha_lake_data: c6fe6d70ff6d9ca121711c381fd3d4ef
+    summarize_MN_toha_lake_data: 912d94e9649b1d64c509d004e279f8a7
 

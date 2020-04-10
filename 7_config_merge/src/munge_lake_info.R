@@ -33,16 +33,23 @@ munge_cd_from_area <- function(out_ind, areas_ind){
   gd_put(out_ind, data_file)
 }
 
-munge_Kw <- function(out_ind, secchi_ind, wqp_xwalk_ind){
+munge_Kw <- function(out_ind, secchi_ind, kw_varying_ind, wqp_xwalk_ind){
+
+  data_file <- scipiper::as_data_file(out_ind)
 
   wqp_xwalk <- scipiper::sc_retrieve(wqp_xwalk_ind) %>% readRDS()
   Kw_data <- scipiper::sc_retrieve(secchi_ind) %>% feather::read_feather() %>%
     inner_join(wqp_xwalk, by = "MonitoringLocationIdentifier") %>% group_by(site_id) %>%
     summarise(Kw = 1.7/mean(secchi, na.rm = TRUE)) %>% filter(!is.na(Kw)) %>%
     dplyr::select(site_id, Kw)
-  # write, post, and promise the file is posted
-  data_file <- scipiper::as_data_file(out_ind)
-  saveRDS(Kw_data, data_file)
+
+  # only add the mean of the time-varying Kw value when there is no value already
+  # save file to .rds
+  scipiper::sc_retrieve(kw_varying_ind) %>% readRDS() %>% group_by(site_id) %>%
+    summarize(Kw = mean(Kd)) %>% filter(!(site_id %in% Kw_data$site_id)) %>% rbind(Kw_data, .) %>%
+    saveRDS(data_file)
+
+  # post and promise the file is posted
   gd_put(out_ind, data_file)
 }
 
