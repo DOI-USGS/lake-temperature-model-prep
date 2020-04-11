@@ -2,13 +2,13 @@ version: 0.3.0
 name: 4_params_munge/out/mndow_02_bathy.rds.ind
 type: file
 hash: a575c502d0858b911bb326be2f0f8f6a
-time: 2020-04-07 15:40:30 UTC
+time: 2020-04-11 00:16:55 UTC
 depends:
   3_params_fetch/in/new2_mndow_hypsos_m.zip.ind: b36583fa2c1a533615ce0f2e642cdcce
-  2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind: 92f9c3f5d352c96e01cfccf350d220b8
+  2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind: 9c763175bc27e7c7140f9cb1cb0e78b7
 fixed: 0cfa32f448f0a99da20d468a435ba312
 code:
   functions:
-    collapse_multi_bathy: 5bc1b5b0f04bbe175472b7c7cbd84570
+    collapse_multi_bathy: cbf973cf97dfe7e39a35801bf2431175
     munge_mndow_bathy: ada0d90aa621b79d0b42eb144ad72f37
 
