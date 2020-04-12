@@ -209,13 +209,14 @@ fetch_micorps_sites <- function(ind_file) {
 }
 
 #' use `dummy` to trigger rebuilds. I am using the date, as a light reminder of when it was changed
-fetch_wqp_lake_sites <- function(ind_file, characteristicName, dummy){
+fetch_wqp_lake_sites <- function(ind_file, characteristicName, bBox, dummy){
 
   message('warning, avoiding geojson output due to issue with services 2020-01-19
           hacking resultCount as 200')
 
   # when switching back in the future, seems lat and lon were the names for LatitudeMeasure & LongitudeMeasure
-  lake_sites_sf <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment", characteristicName = characteristicName) %>%
+  lake_sites_sf <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment", characteristicName = characteristicName,
+                                bBox = bBox) %>%
     mutate(resultCount = 200) %>%
     dplyr::select(site_id = MonitoringLocationIdentifier, resultCount, LatitudeMeasure, LongitudeMeasure) %>%
     st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326)
