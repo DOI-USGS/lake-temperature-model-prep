@@ -2,7 +2,7 @@
 merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_ind, lake_loc_ind, lake_data_ind,
                             lagos_xwalk_ind, MGLP_xwalk_ind, WBIC_xwalk_ind, Micorps_xwalk_ind,
                             MNDOW_xwalk_ind, Winslow_xwalk_ind, NDGF_xwalk_ind, kw_ind,
-                            meteo_ind, toha_varying_kw_ind){
+                            meteo_ind, meteo_files_ind, toha_varying_kw_ind, digitzing_hypos_ind){
 
   temp_dat <- feather::read_feather(temp_data_fl)
   lake_names <- readRDS(sc_retrieve(lake_names_ind))
@@ -13,8 +13,11 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
 
   kw_file_ids <- readRDS(sc_retrieve(toha_varying_kw_ind)) %>% pull(site_id) %>% unique()
   kw_val_ids <- readRDS(sc_retrieve(kw_ind))[["site_id"]]
+  local_meteo_files <- readRDS(sc_retrieve(meteo_files_ind))[["local_driver"]]
+
   meteo_file_ids <- readRDS(sc_retrieve(meteo_ind)) %>%
-    filter(file.exists(file.path('7_drivers_munge/out/',meteo_fl))) %>% pull(site_id)
+    filter(meteo_fl %in% local_meteo_files) %>% pull(site_id)
+  wi_digitizing_ids <- readRDS(sc_retrieve(digitzing_hypos_ind)) %>% pull(site_id)
 
   # Read xwalks
   lagos_xwalk <- readRDS(sc_retrieve(lagos_xwalk_ind))[["site_id"]]
@@ -70,10 +73,12 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
     }
     return(has_hypso)
   }) %>% unlist()
+  will_have_hypso <- all_lakes %in% wi_digitizing_ids
 
   metadata <- data.frame(site_id = all_lakes,
                          zmax = has_zmax,
                          hypsography = has_hypso,
+                         hypsography_digitizing = will_have_hypso,
                          kw = has_kw,
                          kw_file = has_kw_file,
                          meteo = has_meteo,
@@ -84,7 +89,13 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
     left_join(total_obs) %>%
     left_join(lake_days) %>%
     left_join(rename(lake_loc)) %>%
-    left_join(metadata)
+    left_join(metadata) %>%
+    mutate(obs_category = dplyr::case_when(
+      is.na(n_profiles) ~ 'none',
+      n_profiles < 10 ~ '< 10 profiles',
+      n_profiles < 50 & n_profiles >= 10 ~ '< 50 profiles',
+      n_profiles >= 50 ~ '50+ profiles'
+    ))
 
   all_real <- function(x) !all(is.na(x))
   lake_summary_w_xwalk <- lake_summary %>%
@@ -118,7 +129,11 @@ summarize_MN_toha_lake_data <- function(out_ind, mndow_xwalk_ind, lake_summary_i
     mutate(MNDOW_ID = sprintf("mndow_%s", DOW)) %>%
     rename(n_walleye_yrs = n_yrs) %>%
     left_join(mndow_xwalk) %>%
-    dplyr::select(site_id, MNDOW_ID, n_walleye_yrs)
+    dplyr::select(site_id, MNDOW_ID, n_walleye_yrs) %>%
+    # Remove sites with the same NHDHR ID but multiple MNDOWs
+    #   by taking the max of the walleye yrs
+    group_by(site_id) %>%
+    summarize(n_walleye_yrs = max(n_walleye_yrs))
 
   plant_priority_sites <- plant_priority_data[["site_id"]]
 

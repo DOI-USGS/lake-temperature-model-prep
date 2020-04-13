@@ -24,7 +24,7 @@ parse_Water_Temp <- function(inind, outind){
   dat <- feather::read_feather(sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml'))
   outfile <- as_data_file(outind)
 
-  dat_out <- dat %>%
+  data_out <- dat %>%
     filter(FlagV == "P", FlagG == "P", FlagS == 'P', FlagR == 'P', FlagF == 'P') %>%
     mutate(POSIXct = as.POSIXct(Date_Time, "%m/%d/%y %H:%M:%S", tz = "UTC"),
            time = strftime(POSIXct, format = '%H:%M'),

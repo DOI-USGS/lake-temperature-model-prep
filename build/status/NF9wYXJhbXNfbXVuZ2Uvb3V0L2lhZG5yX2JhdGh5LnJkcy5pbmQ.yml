@@ -1,0 +1,15 @@
+version: 0.3.0
+name: 4_params_munge/out/iadnr_bathy.rds.ind
+type: file
+hash: 6cb9b838e463ff4f8ff4bd8686cd54aa
+time: 2020-04-11 00:40:38 UTC
+depends:
+  1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind: 30c7c4d835c25e4fd6b399604594b7c0
+  1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind: 5f9622c5a75c57170aa8918567b3d5b7
+  2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds.ind: 1907d91e460a555538ae2d55d315fc38
+fixed: 4e57e83fd5ff321bd7efce2a318a21fe
+code:
+  functions:
+    collapse_multi_bathy: cbf973cf97dfe7e39a35801bf2431175
+    munge_iadnr_bathy: 50d2f2bb266cc9cc8478346f119fd37c
+

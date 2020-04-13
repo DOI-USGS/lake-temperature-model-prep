@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 7_drivers_munge/out/7_all_local_drivers.rds.ind
+type: file
+hash: 127864a0a066985f2fd36c28fe383332
+time: 2020-04-01 12:10:17 UTC
+depends:
+  7_drivers_munge/out/7_drivers_munge_tasks.ind: 9eb264b221415e64f64e16ef55430e2a
+fixed: d62f911005e93f5eee556e5f8e581457
+code:
+  functions:
+    index_local_drivers: 59afc7a8ad62670754e5325cd596a06d
+    parse_meteo_filepath: 118fdb46c1013d53909e6e508899c8b7
+

@@ -60,6 +60,7 @@ targets:
       source_metadata_loc,
       out_ind = target_name)
 
+  # this seems brittle - why aren't we using an indicator/cache pair?
   7b_temp_merge/in/source_metadata.csv:
     command: require_local('7b_temp_merge/in/source_metadata.csv.ind')
 

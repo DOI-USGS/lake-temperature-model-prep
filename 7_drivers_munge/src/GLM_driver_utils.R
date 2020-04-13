@@ -5,14 +5,8 @@ calc_feather_ind_files <- function(grid_cells, time_range, ind_dir){
     pull(filepath)
 }
 
-calc_cell_group_files <- function(grid_cells, time_range, ind_dir){
-  data.frame(variable = grid_cells$variables) %>%
-    mutate(filename = create_cellgroup_filename(t0 = time_range[1], t1 = time_range[2], variable = variable, dirname = ind_dir)) %>%
-    mutate(hash = sc_indicate("", data_file = filename)) %>% # have to hash, otherwise they will look unchanged
-    select(filename, hash)
-}
-
-calc_driver_files <- function(cell_group_table, dirname){
+calc_driver_files <- function(cell_group_table_ind, dirname){
+  cell_group_table <- sc_retrieve(cell_group_table_ind) %>% readRDS
   feather_files <- cell_group_table$filepath
   driver_files <- rep(NA_character_, length(feather_files))
   for (i in seq_len(length(feather_files))){
@@ -27,15 +21,28 @@ calc_driver_files <- function(cell_group_table, dirname){
 
 #' combine a bunction of .yml files that are the result of `sc_indicate` into
 #'   a single file
-merge_cell_group_files <- function(cell_group_files){
-  file_list <- lapply(cell_group_files$filename, function(x){
+merge_cell_group_files <- function(ind_out, cell_group_ind){
+
+  # create a table of
+  # filepath                             hash
+  # /Volumes/ThunderBlade/NLDAS_feather//NLDAS_time[0.359420]_x[220]_y[192]_var[dlwrfsfc].feather ab41a808b4517ccab80a4ddc675928d2
+  cell_group_ymls <- as_data_file(names(yaml::yaml.load_file(cell_group_ind)))
+
+  file_list <- lapply(cell_group_ymls, function(x){
     contents <- yaml::read_yaml(x) %>% unlist
     hashes <- unname(contents)
     filepaths <- names(contents)
     data.frame(filepath = filepaths, hash = hashes)
   })
-  return(do.call(rbind, file_list))
+
+  file_table <- do.call(rbind, file_list)
+  data_file <- as_data_file(ind_out)
+  saveRDS(file_table, file = data_file)
+
+  gd_put(ind_out)
 }
+
+
 create_meteo_filepath <- function(t0, t1, x, y, prefix = 'NLDAS', dirname){
   file.path(dirname, sprintf("%s_time[%1.0f.%1.0f]_x[%1.0f]_y[%1.0f].csv", prefix, t0, t1, x, y))
 }
@@ -54,7 +61,11 @@ filter_cell_group_table <- function(cell_group_table, pattern){
   filter(cell_group_table, grepl(pattern = pattern, x = filepath))
 }
 
-create_driver_task_plan <- function(driver_files, cell_group_table, data_dir, ind_dir){
+retrieve_and_readRDS <- function(in_ind){
+  sc_retrieve(in_ind) %>% readRDS
+}
+
+create_driver_task_plan <- function(driver_files, cell_group_table, ind_dir){
 
   # now use table...was ind_files
 
@@ -140,16 +151,36 @@ feathers_to_driver_file <- function(filepath, cell_group_table){
            RelHum = 100*spfh2m/qsat(AirTemp, pressfc*0.01),
            Rain = apcpsfc*24/1000) %>%
     mutate(Snow = ifelse(AirTemp < 0, Rain*10, 0), Rain = ifelse(AirTemp < 0, 0, Rain)) %>% #convert to m/day rate)
-    select(time, ShortWave, LongWave, AirTemp, RelHum, WindSpeed, Rain, Snow) %>% # now downsample?
+    dplyr::select(time, ShortWave, LongWave, AirTemp, RelHum, WindSpeed, Rain, Snow) %>% # now downsample?
     mutate(date = lubridate::as_date(time)) %>% group_by(date) %>%
     summarize(ShortWave = mean(ShortWave), LongWave = mean(LongWave),
               AirTemp = mean(AirTemp), RelHum = mean(RelHum),
               WindSpeed = mean(WindSpeed^3)^(1/3), Rain = mean(Rain), Snow = mean(Snow), n = length(time)) %>%
-    filter(n == 24) %>% rename(time = date) %>% select(-n)
+    filter(n == 24) %>% rename(time = date) %>% dplyr::select(-n)
 
   stopifnot(length(unique(diff(drivers_out$time))) == 1)
 
   readr::write_csv(x = drivers_out, path = filepath)
+}
+
+index_local_drivers <- function(ind_out, depends){
+
+  a_build_index <- yaml::yaml.load_file(depends) %>% names
+
+  # because all files in the "depends" come from the same replete_time_range,
+  # they have to have the same time index, hence we'll use the first:
+  time_range <- parse_meteo_filepath(a_build_index[1], 'time')
+  driver_dir <- dirname(a_build_index) %>% unique()
+
+  stopifnot(length(driver_dir) == 1)
+
+  data_file <- scipiper::as_data_file(ind_out)
+
+  tibble(local_driver = dir(driver_dir)) %>%
+    filter(str_detect(local_driver, sprintf('^NLDAS_time\\[%s.%s\\]', time_range[1], time_range[2]))) %>%
+    saveRDS(file = data_file)
+
+  gd_put(ind_out)
 }
 
 # from old MATLAB code:
