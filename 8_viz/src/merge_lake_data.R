@@ -5,6 +5,8 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
                             meteo_ind, meteo_files_ind, toha_varying_kw_ind, digitzing_hypos_ind){
 
   temp_dat <- feather::read_feather(temp_data_fl)
+  main_source <- temp_dat %>% group_by(site_id, source_id) %>% tally() %>%
+    slice(which.max(n)) %>% ungroup %>% dplyr::select(site_id, main_source = source_id)
   lake_names <- readRDS(sc_retrieve(lake_names_ind))
   lake_loc <- readRDS(sc_retrieve(lake_loc_ind))
   lake_data <- readRDS(sc_retrieve(lake_data_ind))
@@ -95,7 +97,8 @@ merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_in
       n_profiles < 10 ~ '< 10 profiles',
       n_profiles < 50 & n_profiles >= 10 ~ '< 50 profiles',
       n_profiles >= 50 ~ '50+ profiles'
-    ))
+    )) %>% left_join(main_source, by = 'site_id')
+
 
   all_real <- function(x) !all(is.na(x))
   lake_summary_w_xwalk <- lake_summary %>%
