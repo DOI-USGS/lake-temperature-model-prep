@@ -20,6 +20,7 @@ targets:
     depends:
       - 8_viz/out/toha_lakes_summary_fig.html.ind
       - 8_viz/out/lakes_summary_fig.html.ind
+      - 8_viz/out/lake_obs_counts.png
 
   # temp_obs_ind should not be in I() but AA can't build it locally on 1/15/2020 and so is skipping
   8_viz/out/lake_obs_counts.png:

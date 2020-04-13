@@ -80,6 +80,7 @@ rsconnect/
 # tmp coop munged files/indicators
 7a_temp_coop_munge/tmp/*
 build/status/N2FfdGVtcF9jb29wX211bmdlL3RtcC9*
+!7a_temp_coop_munge/tmp/parser_files.yml
 
 # tmp wqp munge indicators
 7a_temp_wqp_munge/tmp/*

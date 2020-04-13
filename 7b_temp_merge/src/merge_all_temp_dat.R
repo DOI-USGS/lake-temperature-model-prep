@@ -158,7 +158,7 @@ reduce_temp_data <- function(outind, inind) {
   # if site is missing, we assume a single site for that lake-date
   resolved_time_multiples <- dat_times_c %>%
     group_by(site_id, source, source_site_id, date, depth) %>%
-    summarize(temp = temp[which.min(hours_diff_noon)],
+    dplyr::summarize(temp = temp[which.min(hours_diff_noon)],
               time = time[which.min(hours_diff_noon)],
               source_id = source_id[which.min(hours_diff_noon)])
 
@@ -192,7 +192,7 @@ reduce_temp_data <- function(outind, inind) {
     mutate(which_keep = getmode(median_index)) %>%
     ungroup() %>%
     group_by(site_id, source, source_site_id, date, depth) %>%
-    summarize(temp = temp[first(which_keep)],
+    dplyr::summarize(temp = temp[first(which_keep)],
               source_id = first(source_id)) %>%
     ungroup() %>%
     filter(!is.na(temp))
@@ -226,12 +226,12 @@ reduce_temp_data <- function(outind, inind) {
   # first, create a table that shows the "quality" of each lake-source-site
   # if this site is present in any lake-date-depth combo, choose it
   top_source_sites <- group_by(bind_rows(reduced_multiples, singles), site_id, source, source_site_id, date) %>%
-    summarize(n_depths = n()) %>%
+    dplyr::summarize(n_depths = n()) %>%
     group_by(site_id, source, source_site_id) %>%
-    summarize(n_dates = n(),
+    dplyr::summarize(n_dates = n(),
               avg_n_depths = mean(n_depths)) %>%
     group_by(site_id) %>%
-    summarize(source = source[which.max(n_dates)],
+    dplyr::summarize(source = source[which.max(n_dates)],
               source_site_id = source_site_id[which.max(n_dates)],
               avg_n_depths = avg_n_depths[which.max(n_dates)],
               n_dates = max(n_dates)) %>%
@@ -241,9 +241,9 @@ reduce_temp_data <- function(outind, inind) {
     ungroup()
 
   top_daily_source_sites <- group_by(reduced_multiples, site_id, source, source_site_id, date) %>%
-    summarize(n_depths = n()) %>%
+    dplyr::summarize(n_depths = n()) %>%
     group_by(site_id, date) %>%
-    summarize(source = source[which.max(n_depths)],
+    dplyr::summarize(source = source[which.max(n_depths)],
               source_site_id = source_site_id[which.max(n_depths)]) %>%
     mutate(top_site_date = 1) %>%
     ungroup()
@@ -258,7 +258,7 @@ reduce_temp_data <- function(outind, inind) {
     # across all depths if available
     mutate(keep_source_site = ifelse(top_site %in% 1 | top_site_date %in% 1, TRUE, FALSE)) %>%
     group_by(site_id, date, depth) %>%
-    summarize(temp = ifelse(all(!(keep_source_site)), first(temp), temp[keep_source_site]),
+    dplyr::summarize(temp = ifelse(all(!(keep_source_site)), first(temp), temp[keep_source_site]),
               source = ifelse(all(!(keep_source_site)), first(source), source[keep_source_site]),
               source_site_id = ifelse(all(!(keep_source_site)), first(source_site_id), source_site_id[keep_source_site]),
               source_id = ifelse(all(!(keep_source_site)), first(source_id), source_id[keep_source_site])) %>%

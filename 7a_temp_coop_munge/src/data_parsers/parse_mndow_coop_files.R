@@ -21,76 +21,26 @@ parse_MPCA_temp_data_all <- function(inind, outind) {
 }
 
 parse_Water_Temp <- function(inind, outind){
-  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+  dat <- feather::read_feather(sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml'))
   outfile <- as_data_file(outind)
 
-
-
-  if (testit::has_error(Hmisc::mdb.get(infile), silent = T)) {
-
-    infile_full_path <- file.path(getwd(), infile)
-    file_connection <- odbcConnectAccess2007(infile_full_path)
-    lakes <- sqlTables(file_connection) %>%
-      filter(TABLE_TYPE == 'TABLE')
-    lakes <- lakes$TABLE_NAME
-    tables <- lapply(lakes, FUN = sqlFetch, channel = file_connection)
-    names(tables) <- lakes
-
-    data_out <- data.frame(DateTime = c(), time = c(), depth = c(), temp = c(), DOW = c())
-
-    for (lake in lakes){
-      data <- tables[[lake]] %>% as.data.frame %>%
-        filter(FlagV == "P", FlagG == "P", FlagS == 'P', FlagR == 'P', FlagF == 'P') %>%
-        mutate(POSIXct = as.POSIXct(Date_Time, "%m/%d/%y %H:%M:%S", tz = "UTC"),
-               time = strftime(POSIXct, format = '%H:%M'),
-               DateTime = as.Date(POSIXct),
-               DOW = DOWLKNUM, depth = Depth_m, temp = Water_Temp_C,
-               timezone = "UTC", site = String) %>%
-        dplyr::select(DateTime, time, timezone, depth, temp, DOW, site) %>%
-        arrange(DateTime)
-
-      data_out <- rbind(data_out, data)
-    }
-
-  } else {
-    tables <- Hmisc::mdb.get(infile)
-    lakes <- names(tables)
-
-    data_out <- data.frame(DateTime = c(), time = c(), depth = c(), temp = c(), DOW = c())
-
-    for (lake in lakes){
-      data <- tables[[lake]] %>% as.data.frame %>%
-        filter(FlagV == "P", FlagG == "P", FlagS == 'P', FlagR == 'P', FlagF == 'P') %>%
-        mutate(POSIXct = as.POSIXct(Date.Time, "%m/%d/%y %H:%M:%S", tz = "UTC"),
-               time = strftime(POSIXct, format = '%H:%M'),
-               DateTime = as.Date(POSIXct),
-               DOW = DOWLKNUM, depth = Depth.m, temp = Water.Temp.C,
-               timezone = "UTC", site = String) %>%
-        dplyr::select(DateTime, time, timezone, depth, temp, DOW, site) %>%
-        arrange(DateTime)
-
-      data_out <- rbind(data_out, data)
-    }
-  }
+  data_out <- dat %>%
+    filter(FlagV == "P", FlagG == "P", FlagS == 'P', FlagR == 'P', FlagF == 'P') %>%
+    mutate(POSIXct = as.POSIXct(Date_Time, "%m/%d/%y %H:%M:%S", tz = "UTC"),
+           time = strftime(POSIXct, format = '%H:%M'),
+           DateTime = as.Date(POSIXct),
+           DOW = DOWLKNUM, depth = Depth_m, temp = Water_Temp_C,
+           timezone = "UTC", site = String) %>%
+    dplyr::select(DateTime, time, timezone, depth, temp, DOW, site) %>%
+    arrange(DOW, DateTime, time, depth)
 
   saveRDS(object = data_out, file = outfile)
   sc_indicate(ind_file = outind, data_file =  outfile)
 }
 
 parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
-  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+  df <- feather::read_feather(sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml'))
   outfile <- as_data_file(outind)
-
-  infile_full_path <- file.path(getwd(), infile)
-  file_connection <- odbcConnectAccess2007(infile_full_path)
-
-  if (file_connection != -1){
-    df <- sqlFetch(file_connection, "State Waters - 11 feet")
-  } else {
-    con <- connect_to_access_dbi(infile)
-
-    df <- DBI::dbReadTable(con, "State Waters - 11 feet")
-  }
 
   #3 tables in database
   #need to add DOW for Red lake, add depth in m, convert to deg C
@@ -125,65 +75,15 @@ parse_MN_fisheries_all_temp_data_Jan2018 <- function(inind, outind) {
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
-# this uses package dbi to connect and comes from here: https://stackoverflow.com/questions/46458092/connection-from-access-to-r-via-dbi
-# use this if first attempt to connect to access fails
-connect_to_access_dbi <- function(db_file_path)  {
-  require(DBI)
-  # make sure that the file exists before attempting to connect
-  if (!file.exists(db_file_path)) {
-    stop("DB file does not exist at ", db_file_path)
-  }
-  # Assemble connection strings
-  dbq_string <- paste0("DBQ=", db_file_path)
-  driver_string <- "Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
-  db_connect_string <- paste0(driver_string, dbq_string)
-
-  myconn <- DBI::dbConnect(odbc::odbc(),
-                           .connection_string = db_connect_string)
-  return(myconn)
-}
 
 #these take hourly measurements - keeping the noon measurements to
 #downsample to daily
 parse_Cass_lake_emperature_Logger_Database_2008_to_present <- function(inind, outind) {
-  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+
+  raw <- feather::read_feather(sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml'))
   outfile <- as_data_file(outind)
 
-  infile_full_path <- file.path(getwd(), infile)
-  file_connection <- odbcConnect(infile_full_path)
 
-
-  if (file_connection != -1) {
-
-
-  cedar <- sqlFetch(file_connection, "Cedar Island_South (11 ft)") %>%
-    mutate(depth = feet_to_meters(11))
-  #two different instruments
-
-  knutron <- sqlFetch(file_connection, "Cass Logger near Knutron (27 ft)") %>%
-    mutate(depth = feet_to_meters(27)) %>%
-    rename(WaterTemp=WaterTempF)
-
-  }
-
-  # having trouble connecting to .accbd files across different comps
-  # check if cedar exists, if not, try a different approach
-  if (!('cedar' %in% objects())) {
-    # if the above didn't work to read in the access db, try a different approach
-
-
-    con <- connect_to_access_dbi(infile)
-
-    cedar <- DBI::dbReadTable(con, "Cedar Island_South (11 ft)")  %>%
-      mutate(depth = feet_to_meters(11))
-
-    knutron <- DBI::dbReadTable(con, "Cass Logger near Knutron (27 ft)") %>%
-      mutate(depth = feet_to_meters(27)) %>%
-      rename(WaterTemp=WaterTempF)
-
-  }
-
-  raw <- bind_rows(cedar, knutron)
   clean <- raw %>%
     mutate(temp = fahrenheit_to_celsius(WaterTemp),
                           time = strftime(Time, format="%H:%M"),

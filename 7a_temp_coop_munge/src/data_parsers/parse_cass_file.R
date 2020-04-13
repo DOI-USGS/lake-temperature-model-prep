@@ -19,6 +19,7 @@ parse_Cass_DO_and_Temp_Profiles <- function(inind, outind) {
                   temp = `Temp (C)`,
                   DOW = MN_DOW,
                   site = Site) %>%
+    dplyr::mutate(site = as.character(site)) %>%
     dplyr::arrange(site, DateTime, depth) %>%
     dplyr::filter(!is.na(depth), !is.na(temp)) %>%
     dplyr::select(DateTime, temp, depth, DOW, site)

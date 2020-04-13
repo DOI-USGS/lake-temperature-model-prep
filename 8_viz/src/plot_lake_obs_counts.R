@@ -10,7 +10,7 @@ plot_lake_obs_counts <- function(
   nml_list_ind = '7_config_merge/out/nml_list.rds.ind') {
 
   # Read the data
-  temp_data <- feather::read_feather(scipiper::as_data_file(temp_obs_ind)) # swap sc_retrieve for as_data_file once coop data is updated
+  temp_data <- feather::read_feather(scipiper::sc_retrieve(temp_obs_ind)) # swap sc_retrieve for as_data_file once coop data is updated
   nml_list <- readRDS(scipiper::sc_retrieve(nml_list_ind))
 
   # Generate table of relevant counts

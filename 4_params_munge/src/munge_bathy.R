@@ -31,7 +31,7 @@ collapse_multi_bathy <- function(data_in){
                    areas = approx(xout = z_all, x = this_bathy$depths, y = this_bathy$areas, rule = 2:1)$y,
                    depths = z_all, stringsAsFactors = FALSE)
       }) %>% reduce(rbind) %>%
-        group_by(depths, site_id) %>% summarize(areas = sum(areas, na.rm = TRUE)) %>%
+        group_by(depths, site_id) %>% dplyr::summarize(areas = sum(areas, na.rm = TRUE)) %>%
         dplyr::select(site_id, depths, areas)
     } else { # no need to combine
       summarized_bathy <- these_bathys %>% dplyr::select(site_id, depths, areas)
@@ -55,7 +55,7 @@ munge_mndow_perc_bathy <- function(out_ind, bathy_zip_ind, mndow_xwalk_ind, mndo
   # multiple matches to
 
   areas <- data.frame(MNDOW_ID = lakes$site_id, areas = as.numeric(st_area(lakes))) %>%
-                        group_by(MNDOW_ID) %>% summarize(areas_m2 = sum(areas), stringsAsFactors = FALSE)
+                        group_by(MNDOW_ID) %>% dplyr::summarize(areas_m2 = sum(areas), stringsAsFactors = FALSE)
 
   mndow_xwalk <- readRDS(sc_retrieve(mndow_xwalk_ind)) %>%
     left_join(areas, by = 'MNDOW_ID')

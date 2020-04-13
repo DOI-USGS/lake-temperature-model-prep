@@ -3,15 +3,13 @@ list_coop_files <- function(fileout, dirpath, dummy){
 }
 
 
-crosswalk_coop_dat <- function(outind = target_name,
-                               inind = '7a_temp_coop_munge/tmp/all_coop_dat.rds.ind',
+crosswalk_coop_dat <- function(outind = target_name, inind,
                                id_crosswalk, wbic_crosswalk, dow_crosswalk) {
 
-  infile <- scipiper::sc_retrieve(inind)
   outfile <- as_data_file(outind)
 
   # modify DOWs to add leading zero if not 8 characters long
-  dat <- readRDS(infile)
+  dat <- merge_coop_dat(inind)
 
 
   idfile <- sc_retrieve(id_crosswalk, remake_file = '2_crosswalk_munge.yml')
@@ -36,7 +34,7 @@ crosswalk_coop_dat <- function(outind = target_name,
     filter(WBIC %in% unique(dat$WBIC)) %>%
     distinct() %>%
     group_by(WBIC) %>%
-    summarize(site_id = first(site_id))
+    dplyr::summarize(site_id = first(site_id))
 
   # dupes <- which(duplicated(wbics_in_dat$WBIC))
 
@@ -53,7 +51,7 @@ crosswalk_coop_dat <- function(outind = target_name,
     filter(DOW %in% unique(dat_filt_dow$DOW)) %>%
     distinct() %>%
     group_by(DOW) %>%
-    summarize(site_id = first(site_id)) # this is a bandaid for multiple site matches
+    dplyr::summarize(site_id = first(site_id)) # this is a bandaid for multiple site matches
 
   # dupes <- which(duplicated(dows_in_dat$DOW))
 
@@ -73,7 +71,7 @@ crosswalk_coop_dat <- function(outind = target_name,
   # find which coop files have missing crosswalks
   dat_missing <- dat_all_linked %>%
     group_by(source) %>%
-    summarize(all_missing = all(is.na(site_id)),
+    dplyr::summarize(all_missing = all(is.na(site_id)),
               sum_missing = sum(is.na(site_id)))
 
   warning(paste0('Dropping ', sum(is.na(dat_all_linked$site_id)), ' temperature observations due to missing NHD ids.'))
