@@ -101,6 +101,8 @@ munge_indnr_bathy <- function(out_ind, contour_zip_ind, layer, lake_surface_ind,
                 "nhdhr_155469853", "nhdhr_155291260", "nhdhr_53447663", "nhdhr_96568183", "nhdhr_154247560", "nhdhr_123165957", "nhdhr_152100834",
                 "nhdhr_{b6e2754f-7918-48bb-b6c5-e426895ad360}", "nhdhr_78542897", "nhdhr_155351290", "nhdhr_155641189", "nhdhr_04549854-A785-4DB7-9FC1-A3DEEBB23C49",
                 "nhdhr_155642807", "nhdhr_155642356","nhdhr_{1DDD22E2-1723-4447-B1A0-57E008ED2F28}")
+  # I did monotonicity tests on each remaining site_id group and these failed. I didn't get into trying to isolate one or more contours that were responsible,
+  # instead rejecting the whole lake and creating a new mega-issue as https://github.com/USGS-R/lake-temperature-model-prep/issues/167
   failed_mono <- c('nhdhr_{13c737fd-517c-4f34-b813-79a31e833683}','nhdhr_{DF5F8AC1-4FD7-4D6D-9827-8692F742E74F}','nhdhr_120021837','nhdhr_123165517','nhdhr_145222228',
                    'nhdhr_145222944','nhdhr_155351274','nhdhr_155471071','nhdhr_155472807','nhdhr_155472809','nhdhr_155641743','nhdhr_155641907','nhdhr_155642885',
                    'nhdhr_49306509','nhdhr_53454933','nhdhr_56132527','nhdhr_62688605','nhdhr_96565971')
@@ -121,6 +123,10 @@ munge_indnr_bathy <- function(out_ind, contour_zip_ind, layer, lake_surface_ind,
     tibble(NHDID_WATE = names(NHDID_WATE_xwalk)[j], site_id_b = NHDID_WATE_xwalk[j])
   }) %>% purrr::reduce(bind_rows)
 
+  # this is a simple internal function to avoid binding a bunch of new rows to the
+  # tibble since _most_ lakes in the `lake_surface` tbl are _not_ in this IN-specific dataset
+  # this also keeps us from having to filter out lake IDs that only have surface area in the
+  # hypso calculations
   filter_id_and_bind <- function(existing_tbl, to_bind){
     filtered_new <- filter(to_bind, site_id %in% unique(existing_tbl$site_id))
     filtered_existing<- filter(existing_tbl, site_id %in% unique(filtered_new$site_id))
@@ -147,6 +153,7 @@ munge_indnr_bathy <- function(out_ind, contour_zip_ind, layer, lake_surface_ind,
     filter_id_and_bind(lake_surface) %>%
     filter(site_id != 'nhdhr_NA') %>%
     st_transform(crs = 4326) %>%
+    # remove all IDs that have failed either of our tests that were combined above
     filter(!site_id %in% drop_ids) %>%
     mutate(geometry = st_cast(geometry, "MULTIPOLYGON")) %>%
     st_make_valid() %>%
