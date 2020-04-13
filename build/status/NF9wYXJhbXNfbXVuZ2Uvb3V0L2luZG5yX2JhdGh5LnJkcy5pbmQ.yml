@@ -1,0 +1,14 @@
+version: 0.3.0
+name: 4_params_munge/out/indnr_bathy.rds.ind
+type: file
+hash: 679a4bf3d10faaa0a35949afde1f4e1d
+time: 2020-04-13 11:25:09 UTC
+depends:
+  3_params_fetch/out/IN_lakes_bathymetry.zip.ind: 76752756fcea696604ee0d059111fae1
+  1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind: 565683765472d08f5ebceda59889a202
+fixed: a148d6bdcc6292882b2c67f83e989c78
+code:
+  functions:
+    collapse_multi_bathy: cbf973cf97dfe7e39a35801bf2431175
+    munge_indnr_bathy: bea243f98707c9b165ec695fbd23a060
+

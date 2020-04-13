@@ -125,6 +125,19 @@ targets:
   4_params_munge/out/iadnr_bathy.rds:
     command: gd_get('4_params_munge/out/iadnr_bathy.rds.ind')
 
+  4_params_munge/out/indnr_bathy.rds.ind:
+    command: munge_indnr_bathy(
+      out_ind = target_name,
+      layer = I('Water_Bodies_Lakes_Bathymetry'),
+      contour_zip_ind = '3_params_fetch/out/IN_lakes_bathymetry.zip.ind',
+      lake_surface_ind = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      NHDID_WATE_xwalk = I(c('35035411' = 'nhdhr_{20e52ba4-e5d2-4baa-b77e-7d67bce868dc}',
+        '155639251' = 'nhdhr_{bf931c9f-63a2-425e-82af-0b8d75fd9b25}',
+        '35034609' = 'nhdhr_04549854-A785-4DB7-9FC1-A3DEEBB23C49')),
+      LAKE_NAME_xwalk = I(c('DEAM LAKE' = 'nhdhr_96568183', 'HUNTINGBURG LAKE' = 'nhdhr_62689235')))
+  4_params_munge/out/indnr_bathy.rds:
+    command: gd_get('4_params_munge/out/iadnr_bathy.rds.ind')
+
   # Combine MN bathy files and add DOW ID
   4_params_munge/out/mndow_01_bathy.rds.ind:
     command: munge_mndow_bathy(

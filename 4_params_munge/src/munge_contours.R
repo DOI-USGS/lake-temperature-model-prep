@@ -92,6 +92,77 @@ munge_ndgf_bathy <- function(out_ind, ndgf_contour_ind, ndgf_xwalk_ind, ndgf_sur
 }
 
 
+
+munge_indnr_bathy <- function(out_ind, contour_zip_ind, layer, lake_surface_ind, NHDID_WATE_xwalk, LAKE_NAME_xwalk){
+  data_file <- scipiper::as_data_file(out_ind)
+
+  # had at least one depth where the contours weren't able to be cast as polygons....this is a lot
+  bad_cast <- c("nhdhr_62691603", "nhdhr_62682699", "nhdhr_53461851", "nhdhr_90345054", "nhdhr_{28f2e7d4-ede1-46f3-9913-e7de0c9e1008}", "nhdhr_155471202",
+                "nhdhr_155469853", "nhdhr_155291260", "nhdhr_53447663", "nhdhr_96568183", "nhdhr_154247560", "nhdhr_123165957", "nhdhr_152100834",
+                "nhdhr_{b6e2754f-7918-48bb-b6c5-e426895ad360}", "nhdhr_78542897", "nhdhr_155351290", "nhdhr_155641189", "nhdhr_04549854-A785-4DB7-9FC1-A3DEEBB23C49",
+                "nhdhr_155642807", "nhdhr_155642356","nhdhr_{1DDD22E2-1723-4447-B1A0-57E008ED2F28}")
+  failed_mono <- c('nhdhr_{13c737fd-517c-4f34-b813-79a31e833683}','nhdhr_{DF5F8AC1-4FD7-4D6D-9827-8692F742E74F}','nhdhr_120021837','nhdhr_123165517','nhdhr_145222228',
+                   'nhdhr_145222944','nhdhr_155351274','nhdhr_155471071','nhdhr_155472807','nhdhr_155472809','nhdhr_155641743','nhdhr_155641907','nhdhr_155642885',
+                   'nhdhr_49306509','nhdhr_53454933','nhdhr_56132527','nhdhr_62688605','nhdhr_96565971')
+
+  drop_ids <- c(bad_cast, failed_mono)
+
+  lake_surface <- sc_retrieve(lake_surface_ind) %>% readRDS() %>%
+    rename(geometry = Shape) %>% sf::st_zm() %>%
+    mutate(depths = 0) %>% dplyr::select(site_id, depths, geometry)
+
+  zip_file <- sc_retrieve(contour_zip_ind)
+
+  names_tbl <- purrr::map(1:length(LAKE_NAME_xwalk), function(j) {
+    tibble(LAKE_NAME = names(LAKE_NAME_xwalk)[j], site_id_a = LAKE_NAME_xwalk[j])
+    }) %>% purrr::reduce(bind_rows)
+
+  ids_tbl <- purrr::map(1:length(NHDID_WATE_xwalk), function(j) {
+    tibble(NHDID_WATE = names(NHDID_WATE_xwalk)[j], site_id_b = NHDID_WATE_xwalk[j])
+  }) %>% purrr::reduce(bind_rows)
+
+  filter_id_and_bind <- function(existing_tbl, to_bind){
+    filtered_new <- filter(to_bind, site_id %in% unique(existing_tbl$site_id))
+    filtered_existing<- filter(existing_tbl, site_id %in% unique(filtered_new$site_id))
+    rbind(filtered_existing, filtered_new)
+  }
+
+  shp.path <- tempdir()
+  unzip(zip_file, exdir = shp.path)
+
+  #' still some bad geoms
+  #' requires sf version of at least 0.8:
+  sf::st_read(shp.path, layer = layer, stringsAsFactors=FALSE) %>%
+    sf::st_zm() %>%
+    mutate(site_id_c = paste0('nhdhr_', NHDID_WATE)) %>%
+    left_join(names_tbl, by = 'LAKE_NAME') %>%
+    left_join(ids_tbl, by = 'NHDID_WATE') %>%
+    # we want to order the columns so that dplyr::coalesce takes the first non-NA column
+    dplyr::select(site_id_a, site_id_b, site_id_c, everything()) %>%
+    mutate(site_id = coalesce(site_id_a, site_id_b, site_id_c)) %>%
+    dplyr::select(-site_id_a, -site_id_b, -site_id_c) %>%
+    # remove all sites that don't have any matches
+    mutate(depths = CONTOUR * 0.3048) %>% dplyr::select(site_id, geometry, depths) %>%
+    # add the canonical lakes that already have IDs in this dataset:
+    filter_id_and_bind(lake_surface) %>%
+    filter(site_id != 'nhdhr_NA') %>%
+    st_transform(crs = 4326) %>%
+    filter(!site_id %in% drop_ids) %>%
+    mutate(geometry = st_cast(geometry, "MULTIPOLYGON")) %>%
+    st_make_valid() %>%
+    group_by(site_id, depths) %>%
+    summarise(geometry = st_union(geometry), areas = sum(as.numeric(st_area(geometry)))) %>%
+    # there is no "other_id" in this case, but want to check monotonicity
+    st_drop_geometry() %>% mutate(other_ID = site_id) %>%
+    ungroup() %>%
+    collapse_multi_bathy() %>%
+    saveRDS(data_file)
+  message('warning, dropping ', length(drop_ids), ' from this hypsography dataset')
+  gd_put(out_ind, data_file)
+}
+
+
+
 munge_iadnr_bathy <- function(out_ind, iadnr_contour_ind, iadnr_surface_ind, xwalk_ind){
 
   xwalk <- sc_retrieve(xwalk_ind) %>% readRDS()

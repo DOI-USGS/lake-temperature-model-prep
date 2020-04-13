@@ -19,6 +19,7 @@ targets:
       - '3_params_fetch/in/Data_MGLP_TDOx_Models.csv.ind'
       - '3_params_fetch/in/mi_hypsography_mglpid.csv.ind'
       - '3_params_fetch/out/IA_lakes_bathymetry.zip.ind'
+      - '3_params_fetch/out/IN_lakes_bathymetry.zip.ind'
 
   3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip:
     command: gd_get('3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip.ind')
@@ -57,6 +58,12 @@ targets:
       url = I('http://iowageodata.s3.amazonaws.com/inlandWaters/lakes_bathymetry.zip'))
   3_params_fetch/out/IA_lakes_bathymetry.zip:
     command: gd_get('3_params_fetch/out/IA_lakes_bathymetry.zip.ind')
+
+  3_params_fetch/out/IN_lakes_bathymetry.zip.ind:
+    command: fetch_url(target_name,
+      url = I('https://opendata.arcgis.com/datasets/0ac283034cde4bb9bf8955eb5551be30_0.zip'))
+  3_params_fetch/out/IN_lakes_bathymetry.zip:
+    command: gd_get('3_params_fetch/out/IN_lakes_bathymetry.zip.ind')
 
   3_params_fetch/out/LAGOS_NE_depths.csv.ind:
     command: fetch_LAGOS_NE_depths(target_name)

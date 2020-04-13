@@ -40,6 +40,7 @@ rsconnect/
 **.nc.ind
 **_tasks.yml
 1_crosswalk_fetch/in/*.zip
+3_params_fetch/out/*.zip
 3_params_fetch/in/*.zip
 3_params_fetch/in/*.csv
 3_params_fetch/out/*.csv
