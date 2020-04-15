@@ -34,6 +34,8 @@ df$popup <- paste0("<table>",
                    df$n_obs,'</td></tr>',
                    "<tr><td># Profiles:</td><td>",
                    df$n_profiles,'</td></tr>',
+                   "<tr><td>Main data source:</td><td>",
+                   df$main_source,'</td></tr>',
                    "<tr><td>Crosswalked to:</td><td>",
                    df$Lake_Source,'</td></tr>',
                    '</table>')

@@ -101,12 +101,14 @@ targets:
     command: gd_get('1_crosswalk_fetch/out/wbic_lakes_sf.rds.ind')
 
   1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind:
-    command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_temperature_charnames, dummy = I('2020-01-13'))
+    command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_temperature_charnames,
+      bBox = I(c(-105.79725, 34.95527, -78.85268, 50.12992)), dummy = I('2020-01-13'))
   1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind')
 
   1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind:
-    command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_secchi_charnames, dummy = I('2020-01-18'))
+    command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_secchi_charnames,
+      bBox = I(c(-105.79725, 34.95527, -78.85268, 50.12992)), dummy = I('2020-01-18'))
   1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind')
 
