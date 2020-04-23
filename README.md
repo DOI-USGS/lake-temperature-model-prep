@@ -19,3 +19,42 @@ If new cooperator data is added, and you'd like to trigger a rebuild:
 If any of these files are changed / updated in this pipeline, remember to: 
   1. copy the update .rds file to the dependent pipeline's drive (which is hyperlinked above) and to _ALSO_
   2. copy the updated .ind file to the dependent pipeline's github repository (which is also hyperlinked above)
+  
+## Tallgrass
+
+Some targets need to be prepared here to support execution of `mntoha-data-release`:
+```
+1_crosswalk_fetch/out/canonical_lakes_sf.rds
+7b_temp_merge/out/temp_data_with_sources.feather
+```
+
+To build these targets, we need certain R packages. Here's a recipe for creating a sufficient conda environment:
+```sh
+conda create -n lakes_prep
+source activate lakes_prep
+conda install -c conda-forge r-raster r-readxl r-doMC r-leaflet r-sys r-e1071 r-class r-KernSmooth r-askpass r-classInt r-DBI r-fs r-openssl r-sf r-units r-curl r-gargle r-httr r-purrr r-uuid r-devtools r-dplyr r-tidyselect r-BH r-plogr r-optparse r-storr r-getopt r-readr r-tidyr r-feather r-lwgeom r-maps r-ncdf4 r-lubridate r-generics
+R
+install.packages(c('smoothr','googledrive'))
+devtools::install_github('USGS-R/lakeattributes')
+devtools::install_github('richfitz/remake')
+devtools::install_github('USGS-R/scipiper')
+install.packages(c('dataRetrieval', 'sbtools'))
+```
+
+In subsequent sessions, we can get going with:
+```sh
+ssh tallgrass.cr.usgs.gov
+cd /caldera/projects/usgs/water/iidd/datasci/lake-temp/lake-temperature-model-prep
+source activate lakes_prep
+```
+
+...but after all that, I'm stuck now on a need for Drive authentication and am just going
+to build locally and push back up to this repo.
+```r
+gd_get('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
+gd_get('7b_temp_merge/out/temp_data_with_sources.feather.ind')
+```
+```sh
+scp 1_crosswalk_fetch/out/canonical_lakes_sf.rds tallgrass.cr.usgs.gov:/caldera/projects/usgs/water/iidd/datasci/lake-temp/lake-temperature-model-prep/1_crosswalk_fetch/out/
+scp 7b_temp_merge/out/temp_data_with_sources.feather tallgrass.cr.usgs.gov:/caldera/projects/usgs/water/iidd/datasci/lake-temp/lake-temperature-model-prep/7b_temp_merge/out/
+```
