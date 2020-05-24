@@ -23,7 +23,7 @@ munge_wqp_temperature <- function(outind, wqp_ind){
     mutate(use.depth.code = ifelse(act.n>res.n, 'act','res')) %>%
     dplyr::select(OrganizationIdentifier, use.depth.code)
 
-  d = left_join(wqp_temp_data, activity.sites, by='OrganizationIdentifier') %>%
+  left_join(wqp_temp_data, activity.sites, by='OrganizationIdentifier') %>%
     mutate(raw.depth = case_when(
         use.depth.code == 'act' ~ `ActivityDepthHeightMeasure/MeasureValue`,
         use.depth.code == 'res' ~ as.numeric(`ResultDepthHeightMeasure/MeasureValue`) #as of 10/25/2019, the chars that will fail conversion are things like "Haugen Lake Littoral", "Burns Lake Littoral", "Littoral Zone Sample"
