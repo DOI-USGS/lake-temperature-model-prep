@@ -5,9 +5,9 @@ munge_wqp_temperature <- function(outind, wqp_ind){
 
   wqp_temp_data <- scipiper::sc_retrieve(wqp_ind) %>% readRDS()
   # from original lake temp repo: https://github.com/USGS-R/necsc-lake-modeling/blob/master/scripts/download_munge_wqp.R
-  max.temp <- 40 # threshold!
-  min.temp <- 0
-  max.depth <- 260
+  max_temp <- 40 # threshold!
+  min_temp <- 0
+  max_depth <- 260
 
   depth_unit_map <- data.frame(depth.units=c('meters','m','in','ft','feet','cm', 'mm', NA),
                                depth.convert = c(1,1,0.0254,0.3048,0.3048,0.01, 0.001, NA),
@@ -32,16 +32,17 @@ munge_wqp_temperature <- function(outind, wqp_ind){
         use.depth.code == 'act' ~ `ActivityDepthHeightMeasure/MeasureUnitCode`,
         use.depth.code == 'res' ~ `ResultDepthHeightMeasure/MeasureUnitCode`
       )) %>%
-    rename(Date=ActivityStartDate,
-           raw.value=ResultMeasureValue,
-           units=`ResultMeasure/MeasureUnitCode`,
+    rename(Date = ActivityStartDate,
+           raw_value = ResultMeasureValue,
+           units = `ResultMeasure/MeasureUnitCode`,
+           result_method = `ResultAnalyticalMethod/MethodIdentifier`,
            timezone = `ActivityStartTime/TimeZoneCode`) %>%
     mutate(time = substr(`ActivityStartTime/Time`, 0, 5)) %>%
-    dplyr::select(Date, time, timezone, raw.value, units, raw.depth, depth.units, MonitoringLocationIdentifier) %>%
+    dplyr::select(Date, time, timezone, raw_value, units, raw.depth, depth.units, MonitoringLocationIdentifier, result_method) %>%
     left_join(var_unit_map, by='units') %>%
     left_join(depth_unit_map, by='depth.units') %>%
-    mutate(wtemp=convert*(raw.value+offset), depth=raw.depth*depth.convert) %>%
-    filter(!is.na(wtemp), !is.na(depth), wtemp <= max.temp, wtemp >= min.temp, depth <= max.depth) %>%
+    mutate(wtemp = convert * (raw_value + offset), depth = raw.depth * depth.convert) %>%
+    filter(!is.na(wtemp), !is.na(depth), wtemp <= max_temp, wtemp >= min_temp, depth <= max_depth, !result_method %in% c('LAB TEMP','LAB')) %>%
     dplyr::select(Date, time, timezone, MonitoringLocationIdentifier, depth, wtemp) %>%
     feather::write_feather(outfile)
   gd_put(outind, outfile)
