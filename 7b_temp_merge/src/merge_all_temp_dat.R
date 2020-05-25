@@ -17,7 +17,7 @@ merge_temp_data <- function(outind, wqp_ind, coop_ind) {
   # before doing anything else
 
   f_all_dat <- dplyr::select(wqp_dat, date = Date, time, timezone, depth, temp = wtemp, site_id = id, source_id = MonitoringLocationIdentifier, source_site_id = MonitoringLocationIdentifier) %>%
-    mutate(source = 'wqp') %>%
+    mutate(source = sprintf('wqp_%s', source_id)) %>%
     bind_rows(dplyr::select(coop_dat, date = DateTime, time,
                             timezone, depth, temp, site_id, source_id = state_id,
                             source_site_id = site, source)) %>%
@@ -264,6 +264,7 @@ reduce_temp_data <- function(outind, inind) {
               source_id = ifelse(all(!(keep_source_site)), first(source_id), source_id[keep_source_site])) %>%
     ungroup() %>% arrange(site_id, date, depth)
 
+  singles <- mutate(singles, source = paste0(source, '_', source_id))
   all_dailies <- bind_rows(daily_vals, singles) %>%
     dplyr::select(site_id, date, depth, temp, source)
 
