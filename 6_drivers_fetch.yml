@@ -61,7 +61,7 @@ targets:
 
   # figure out what to adjust with `st_bbox(filter(NLDAS_grid, y > 191 & y < 200, x > 220 & x < 260))`
   feature_NLDAS_cells:
-    command: cells_all(NLDAS_grid, x_range = I(c(166,201)), y_range = I(c(144,191))) # was c(127,154) and c(155, 191) had to do this in two chunks do to memory issues
+    command: cells_all(NLDAS_grid, x_range = I(c(387, 408)), y_range = I(c(107,144))) # was c(127,154) and c(155, 191) had to do this in two chunks do to memory issues I(c(166,201)), y_range = I(c(144,191))
 
   old_nldas_cells:
     command: as_OPeNDAP_cells(feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # switch back to old_feature_NLDAS_cells
