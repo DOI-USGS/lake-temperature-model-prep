@@ -48,14 +48,14 @@ parse_winnie_files <- function(inind, outind) {
   time_cols <- grep('Time', names(raw_dat))
   temp_cols <- grep('Temp', names(raw_dat))
 
-  cleaned_dat <- as.data.frame(matrix(ncol = 3, nrow = 0))
-  names(cleaned_dat) <- c('DateTime', 'temp', 'depth')
+  cleaned_dat <- tibble(DateTime = POSIXct(),
+                        temp = double(),
+                        depth = double())
 
   # parse out different depths
   for (i in 1:length(depths)) {
     temp_dat <- dplyr::select(raw_dat, DateTime = time_cols[i], temp = temp_cols[i]) %>%
       mutate(depth = as.numeric(depths[i]))
-
     cleaned_dat <- bind_rows(cleaned_dat, temp_dat)
   }
 
@@ -107,14 +107,15 @@ parse_winnie_files <- function(inind, outind) {
   date_cols <- grep('Date', names(raw_dat))
 
 
-  cleaned_dat <- as.data.frame(matrix(ncol = 4, nrow = 0))
-  names(cleaned_dat) <- c('DateTime', 'Time', 'temp', 'depth')
+  cleaned_dat <- tibble(DateTime = POSIXct(),
+         Time = POSIXct(),
+         temp = double(),
+         depth = double())
 
   # parse out different depths
   for (i in 1:length(depths)) {
     temp_dat <- dplyr::select(raw_dat, DateTime = date_cols[i], Time = time_cols[i], temp = temp_cols[i]) %>%
       mutate(depth = as.numeric(depths[i]))
-
     cleaned_dat <- bind_rows(cleaned_dat, temp_dat)
   }
 
@@ -147,8 +148,10 @@ parse_winnie_files <- function(inind, outind) {
     depths <- gsub("\\d{4}", "", data_sheets)
     depths <- gsub("(^\\D*)([[:digit:]]{1,2})(\\s*.*)", "\\2", depths)
 
-    cleaned_dat <- as.data.frame(matrix(ncol = 4, nrow = 0))
-    names(cleaned_dat) <- c('DateTime', 'time', 'temp', 'depth')
+    cleaned_dat <- tibble(DateTime = POSIXct(),
+                          Time = POSIXct(),
+                          temp = double(),
+                          depth = double())
 
     for (i in 1:length(data_sheets)) {
 
@@ -193,8 +196,14 @@ parse_winnie_files <- function(inind, outind) {
   depths <- gsub("\\d{4}", "", data_sheets)
   depths <- gsub("(^\\D*)([[:digit:]]{1,2})(\\s*.*)", "\\2", depths)
 
-  cleaned_dat <- as.data.frame(matrix(ncol = 5, nrow = 0))
-  names(cleaned_dat) <- c('DateTime', 'time', 'am_pm', 'temp', 'depth')
+  cleaned_dat <- tibble(DateTime = POSIXct(),
+                        time = character(),
+                        am_pm = character(),
+                        temp = double(),
+                        depth = double(),
+                        hour = character(),
+                        minute = character(),
+                        timezone = character())
 
   for (i in 1:length(data_sheets)) {
 
@@ -208,7 +217,6 @@ parse_winnie_files <- function(inind, outind) {
              timezone = 'GMT-6') %>%
       mutate(hour = ifelse(am_pm == 'PM'&as.numeric(hour) != 12, as.character(as.numeric(hour) + 12), hour)) %>%
       mutate(time = paste0(hour, ':', minute))
-
     cleaned_dat <- bind_rows(cleaned_dat, temp_dat)
   }
 
