@@ -201,7 +201,7 @@ fetch_micorps_sites <- function(ind_file) {
   data_file <- scipiper::as_data_file(ind_file)
 
   # go get micorp data from gd
-  googledrive::drive_download(as_id('1cWPwBnbdw7YsOHwXL9OSn8yNlmHFXKDd'), path = data_file)
+  googledrive::drive_download(as_id('1cWPwBnbdw7YsOHwXL9OSn8yNlmHFXKDd'), path = data_file, overwrite = TRUE)
 
   # post to google drive and return an indicator file
   gd_put(ind_file, data_file)
@@ -213,7 +213,6 @@ fetch_wqp_lake_sites <- function(ind_file, characteristicName, bBox, dummy){
 
   message('warning, avoiding geojson output due to issue with services 2020-01-19
           hacking resultCount as 200')
-
   # when switching back in the future, seems lat and lon were the names for LatitudeMeasure & LongitudeMeasure
   lake_sites_sf <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment", characteristicName = characteristicName,
                                 bBox = bBox) %>%

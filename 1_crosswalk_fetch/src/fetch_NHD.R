@@ -54,7 +54,7 @@ filter_sf_lakes <- function(waterbodies_sf, min_size, remove_IDs = NULL, keep_ID
 }
 
 fetch_NHD_as_sf <- function(url){
-  dl_dest <- tempfile(pattern = "NHD_", tmpdir = tempdir(), fileext = ".zip")
+  dl_dest <- tempfile(pattern = "NHD_", tmpdir = tempdir(), fileext = "tmp_nhd.zip")
   unzip_dir <- tempfile(pattern = "NHD_unzip_", tmpdir = tempdir(), fileext = "")
   dir.create(unzip_dir)
 

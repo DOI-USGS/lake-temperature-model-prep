@@ -11,12 +11,12 @@ munge_micorps_crosswalk <- function(out_ind, site_ind, wqp_nhd_ind, wqp_latlong_
     distinct()
   wqp_latlong <- readRDS(sc_retrieve(wqp_latlong_ind))
 
-  latlong <- as.data.frame(st_coordinates(wqp_latlong)) %>%
-    mutate(MonitoringLocationIdentifier = wqp_latlong$MonitoringLocationIdentifier) %>%
+  latlong <- st_coordinates(wqp_latlong) %>% as.data.frame() %>%
+    mutate(MonitoringLocationIdentifier = wqp_latlong$site_id) %>%
     rename(LongitudeMeasure = X, LatitudeMeasure = Y) %>%
     distinct()
 
-  wqp_nhdLookup <- left_join(wqp_nhdLookup, latlong) %>%
+  wqp_nhdLookup <- left_join(wqp_nhdLookup, latlong, by = "MonitoringLocationIdentifier") %>%
     rename(id = site_id)
 
 
