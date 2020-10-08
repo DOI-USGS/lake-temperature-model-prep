@@ -239,15 +239,22 @@ cubes_to_cell_files <- function(filename, ..., cells, out_dir, nc_files = NULL, 
       sparse_nc_list[[feather_file]][time_indices] <- cell_data[x_start, y_start, ]
     }
   }
+  skip_write <- c()
   for (feather_file in file_info$filepath){
     data_out <- sparse_nc_list[[feather_file]]
-    if(any(is.na(data_out))){
+    if (all(is.na(data_out))){
+      # this cell is masked in the domain or missing all data
+      skip_write <- c(skip_write, feather_file)
+    } else if (any(is.na(data_out))){
+
       stop('cell has NA values after extracting data from cubes', call. = FALSE)
+    } else {
+      cell_out <- data.frame(x = data_out) %>% setNames(cell_var)
+      feather::write_feather(cell_out, feather_file)
     }
-    cell_out <- data.frame(x = data_out) %>% setNames(cell_var)
-    feather::write_feather(cell_out, feather_file)
   }
-  sc_indicate(filename, data_file = file_info$filepath)
+  write_files <- filter(file_info, !filepath %in% skip_write) %>% pull(filepath)
+  sc_indicate(filename, data_file = write_files)
   invisible(filename)
 }
 
