@@ -16,6 +16,18 @@ munge_wbic_bathy <- function(out_ind, bathy_zip_ind, wbic_xwalk_ind){
   gd_put(out_ind, data_file)
 }
 
+munge_simple_depth <- function(out_ind, ...){
+
+  data_file <- scipiper::as_data_file(out_ind)
+
+  data.frame(...) %>%
+    pivot_longer(cols = starts_with('nhdhr_'),
+                 names_to = "site_id",
+                 values_to = 'z_max') %>%
+    saveRDS(file = data_file)
+  gd_put(out_ind, data_file)
+}
+
 collapse_multi_bathy <- function(data_in){
   bathy_data <- purrr::map(unique(data_in$site_id), function(x){
 

@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 4_params_munge/out/NY_manual_depths.rds.ind
+type: file
+hash: 1097b80a580113b5dd53787e2721299a
+time: 2020-10-09 10:17:24 UTC
+depends: {}
+fixed: e23983cc36e3c27c4a03f71040ec0678
+code:
+  functions:
+    munge_simple_depth: df2d1c8d08db9b5b4b53b722d227832f
+

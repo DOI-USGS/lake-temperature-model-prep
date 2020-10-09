@@ -1,10 +1,10 @@
 version: 0.3.0
 name: 7_config_merge/out/nml_H_A_values.rds.ind
 type: file
-hash: 3f97f2d0188bc34005cab575f5583312
-time: 2020-10-07 10:33:12 UTC
+hash: 5d73fe18fece05a54062ad22ae2eef59
+time: 2020-10-09 10:39:56 UTC
 depends:
-  7_config_merge/out/canonical_lakes_area.rds.ind: 7dc206a7f77725a8757ea043f161bc10
+  7_config_merge/out/canonical_lakes_area.rds.ind: ac4ca0215157e18790143e08ca05f431
   4_params_munge/out/mndow_02_bathy.rds.ind: 709c3f880b9351e5747e651845896553
   4_params_munge/out/mndow_01_bathy.rds.ind: 32eba0c6495f965c82dd58b0f1de15ef
   4_params_munge/out/mndow_perc_bathy.rds.ind: 00621d437ffb16e9e7d5ad92abc061f1
@@ -18,6 +18,7 @@ depends:
   4_params_munge/out/wbic_depths.rds.ind: c0f3745ef8e5372bb629f59c77e207ec
   4_params_munge/out/mglp_depths.rds.ind: 543e757d52a89e37f736ab93756ef719
   4_params_munge/out/ndgf_depths.rds.ind: cf1f81f433b9c3114ce9ec017e101c32
+  4_params_munge/out/NY_manual_depths.rds.ind: 1097b80a580113b5dd53787e2721299a
 fixed: 37bf3ba36be40671d1febad554c5aece
 code:
   functions:
