@@ -40,7 +40,7 @@ targets:
       "Water transparency, Secchi disc")))
  #https://www.waterqualitydata.us/portal/#siteType=Lake%2C%20Reservoir%2C%20Impoundment&characteristicName=Depth%2C%20Secchi%20disk%20depth&characteristicName=Water%20transparency%2C%20Secchi%20disc&characteristicName=Depth%2C%20Secchi%20disk%20depth%20(choice%20list)&characteristicName=Secchi%20Reading%20Condition%20(choice%20list)&mimeType=tsv
   nhd_HR_download_plan:
-    command: create_nhd_HR_download_plan(I(c("North_Dakota","South_Dakota","Iowa","Michigan","Indiana","Illinois","Wisconsin", "Minnesota")),
+    command: create_nhd_HR_download_plan(I(c("North_Dakota","South_Dakota","Iowa","Michigan","Indiana","Illinois","Wisconsin", "Minnesota", "New_York")),
       min_size = I(40000))
 
   1_crosswalk_fetch_nhd_tasks.yml:
@@ -100,13 +100,13 @@ targets:
 
   1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind:
     command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_temperature_charnames,
-      bBox = I(c(-105.79725, 34.95527, -78.85268, 50.12992)), dummy = I('2020-01-13'))
+      bBox = I(c(-105.79725, 34.95527, -74, 50.12992)), dummy = I('2020-01-13'))
   1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind')
 
   1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind:
     command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_secchi_charnames,
-      bBox = I(c(-105.79725, 34.95527, -78.85268, 50.12992)), dummy = I('2020-01-18'))
+      bBox = I(c(-105.79725, 34.95527, -74, 50.12992)), dummy = I('2020-01-18'))
   1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind')
 

@@ -214,11 +214,26 @@ fetch_wqp_lake_sites <- function(ind_file, characteristicName, bBox, dummy){
   message('warning, avoiding geojson output due to issue with services 2020-01-19
           hacking resultCount as 200')
   # when switching back in the future, seems lat and lon were the names for LatitudeMeasure & LongitudeMeasure
-  lake_sites_sf <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment", characteristicName = characteristicName,
-                                bBox = bBox) %>%
+
+  # this is breaking with a single bbox query when adding DRB...uggg
+  bbox1 <- bBox
+  bbox1[3] <- bbox1[1] + diff(bBox[c(1,3)])/2
+  bbox2 <- bBox
+  bbox2[1] <- bbox1[3]
+
+  lake_sites_sf1 <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment", characteristicName = characteristicName,
+                                bBox = bbox1) %>%
     mutate(resultCount = 200) %>%
     dplyr::select(site_id = MonitoringLocationIdentifier, resultCount, LatitudeMeasure, LongitudeMeasure) %>%
     st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326)
+
+  lake_sites_sf2 <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment", characteristicName = characteristicName,
+                                 bBox = bbox2) %>%
+    mutate(resultCount = 200) %>%
+    dplyr::select(site_id = MonitoringLocationIdentifier, resultCount, LatitudeMeasure, LongitudeMeasure) %>%
+    st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326)
+
+  lake_sites_sf <- rbind(lake_sites_sf1, lake_sites_sf2)
 
   data_file <- scipiper::as_data_file(ind_file)
   saveRDS(lake_sites_sf, data_file)
