@@ -1,8 +1,8 @@
 version: 0.3.0
 name: 6_temp_coop_fetch/in/mendota_daily_buoy.csv.ind
 type: file
-hash: 8de59dcbd05c0f4649adaf40ae88a2d2
-time: 2018-09-24 15:06:59 UTC
+hash: 20c7a7553cef73c6bcdf5504729c37c9
+time: 2020-10-07 14:41:25 UTC
 depends: {}
 fixed: febe5d70fc7b78381876a489221be46b
 code:
