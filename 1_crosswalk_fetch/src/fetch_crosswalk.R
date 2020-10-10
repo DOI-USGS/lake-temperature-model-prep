@@ -211,6 +211,8 @@ fetch_micorps_sites <- function(ind_file) {
 #' use `dummy` to trigger rebuilds. I am using the date, as a light reminder of when it was changed
 fetch_wqp_lake_sites <- function(ind_file, characteristicName, bBox, dummy){
 
+  data_file <- scipiper::as_data_file(ind_file)
+
   message('warning, avoiding geojson output due to issue with services 2020-01-19
           hacking resultCount as 200')
   # when switching back in the future, seems lat and lon were the names for LatitudeMeasure & LongitudeMeasure
@@ -221,21 +223,16 @@ fetch_wqp_lake_sites <- function(ind_file, characteristicName, bBox, dummy){
   bbox2 <- bBox
   bbox2[1] <- bbox1[3]
 
-  lake_sites_sf1 <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment", characteristicName = characteristicName,
-                                bBox = bbox1) %>%
-    mutate(resultCount = 200) %>%
-    dplyr::select(site_id = MonitoringLocationIdentifier, resultCount, LatitudeMeasure, LongitudeMeasure) %>%
-    st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326)
-
   lake_sites_sf2 <- whatWQPsites(siteType = "Lake, Reservoir, Impoundment", characteristicName = characteristicName,
-                                 bBox = bbox2) %>%
+                                bBox = bbox2)
+
+  whatWQPsites(siteType = "Lake, Reservoir, Impoundment", characteristicName = characteristicName,
+                                 bBox = bbox1) %>%
+  rbind(lake_sites_sf2) %>%
     mutate(resultCount = 200) %>%
     dplyr::select(site_id = MonitoringLocationIdentifier, resultCount, LatitudeMeasure, LongitudeMeasure) %>%
-    st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326)
+    st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326) %>%
+    saveRDS(data_file)
 
-  lake_sites_sf <- rbind(lake_sites_sf1, lake_sites_sf2)
-
-  data_file <- scipiper::as_data_file(ind_file)
-  saveRDS(lake_sites_sf, data_file)
   gd_put(ind_file, data_file)
 }

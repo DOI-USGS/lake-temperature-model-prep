@@ -1,12 +1,12 @@
 version: 0.3.0
 name: 1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind
 type: file
-hash: 7b39001864d0b3a7f4306eb4ab044b04
-time: 2020-10-09 00:26:44 UTC
+hash: b9ad632fa367a39c2de2b8dcb423ec3c
+time: 2020-10-10 03:00:54 UTC
 depends:
   wqp_secchi_charnames: 992326512fc3e6fbcb92452ebbc00850
-fixed: 7c741d7cf2d494f655a442aecbae3b13
+fixed: c30e3bbff452f6593b5c7844f418b69c
 code:
   functions:
-    fetch_wqp_lake_sites: 75150b676db41b8e7a6755af6a51ae8a
+    fetch_wqp_lake_sites: be8834050fe13916b439444ad9f8a65e
 

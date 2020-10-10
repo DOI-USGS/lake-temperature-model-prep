@@ -1,10 +1,10 @@
 version: 0.3.0
 name: 6_wqp_fetch/inout/wqptemp_partitions.feather.ind
 type: file
-hash: 5ffca2d364d66d2082f95df22e61debb
-time: 2020-10-09 00:31:16 UTC
+hash: 49f14dce86bb9b1fff6a8d5e236b0bad
+time: 2020-10-10 01:58:51 UTC
 depends:
-  2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind: 685ce44d74e536d79838219046651aae
+  2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind: d4ba66d8c0892ee025957cf3a478c866
   wqp_temperature_charnames: bb20e88bd4d46ed2cf9d1d1471da69a7
   6_wqp_fetch/cfg/wqp_partition_config.yml: daca1ec6c141650ed48a4e6b54b59cb6
 fixed: 403d4118c90f0a0094942f80fd39e393
