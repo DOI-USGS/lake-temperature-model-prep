@@ -18,8 +18,8 @@ targets:
   6_temp_coop_fetch:
     depends:
       - 6_temp_coop_fetch/downloads/long_term_ntl.csv.ind
-      - 6_temp_coop_fetch/downloads/mendota_daily_buoy.csv.ind
-      - 6_temp_coop_fetch/downloads/mendota_temps_long.csv.ind
+      # THIS IS FAILING TO DOWNLOAD - 6_temp_coop_fetch/downloads/mendota_daily_buoy.csv.ind
+      # THIS IS FAILING TO DOWNLOAD - - 6_temp_coop_fetch/downloads/mendota_temps_long.csv.ind
       - 6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind
 
   # -- download LTER files and push to GD -- #
@@ -33,7 +33,7 @@ targets:
 
   6_temp_coop_fetch/downloads/mendota_daily_buoy.csv.ind:
     command: download_and_indicate(in_ind = target_name,
-              url = I("https://lter.limnology.wisc.edu/sites/default/files/data/ntl130_1_v5.csv"),
+              url = I("https://lter.limnology.wisc.edu/sites/default/files/data/ntl130_1_v7.csv"),
               push_location = coop_file_upload_location)
 
   6_temp_coop_fetch/downloads/mendota_temps_long.csv.ind:

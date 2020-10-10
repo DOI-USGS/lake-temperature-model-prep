@@ -37,11 +37,21 @@ targets:
       - 4_params_munge/out/mglp_depths.rds.ind
       - 4_params_munge/out/wbic_depths.rds.ind
       - 4_params_munge/out/ndgf_depths.rds.ind
+      - 4_params_munge/out/NY_manual_depths.rds.ind
 
 
   4_params_munge/out/toha_varying_kw.rds.ind:
     command: munge_daily_secchi(target_name,
       kw_files_zip_ind = '3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip.ind')
+
+  # nhdhr_151957878: Pepacton Reservoir; nhdhr_120022743: Cannonsville Reservoir; nhdhr_149269381: Neversink Reservoir; nhdhr_61790779: Rondout Reservoir
+  # nhdhr_120022795: Lake Wallenpaupack; nhdhr_120023042: Beltzville Lake; nhdhr_25920192: Prompton Lake; nhdhr_26148662: Mongaup Falls Reservoir
+  # nhdhr_120022908: Lake Nockamixon
+  4_params_munge/out/NY_manual_depths.rds.ind:
+    command: munge_simple_depth(target_name, nhdhr_151957878 = 55, nhdhr_120022743 = 42.672, nhdhr_149269381 = 53, nhdhr_61790779 = 53.3,
+      nhdhr_120022795 = 18, nhdhr_120023042 = 38.4048, nhdhr_25920192 = 11.2776, nhdhr_26148662 = 9.7536, nhdhr_120022908 = 27.432)
+  4_params_munge/out/NY_manual_depths.rds:
+    command: gd_get('4_params_munge/out/NY_manual_depths.rds.ind')
 
   4_params_munge/out/toha_varying_kw.rds:
     command: gd_get('4_params_munge/out/toha_varying_kw.rds.ind')
