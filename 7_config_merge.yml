@@ -33,20 +33,14 @@ targets:
   7_config_merge/out/canonical_lakes_area.rds.ind:
     command: munge_lake_area(target_name,
       lakes_ind = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
-  7_config_merge/out/canonical_lakes_area.rds:
-    command: gd_get('7_config_merge/out/canonical_lakes_area.rds.ind')
 
   7_config_merge/out/nml_cd_values.rds.ind:
     command: munge_cd_from_area(target_name,
       areas_ind = '7_config_merge/out/canonical_lakes_area.rds.ind')
-  7_config_merge/out/nml_cd_values.rds:
-    command: gd_get('7_config_merge/out/nml_cd_values.rds.ind')
 
   7_config_merge/out/nml_lat_lon_values.rds.ind:
     command: munge_lat_lon(target_name,
       centroids_ind = '2_crosswalk_munge/out/centroid_lakes_sf.rds.ind')
-  7_config_merge/out/nml_lat_lon_values.rds:
-    command: gd_get('7_config_merge/out/nml_lat_lon_values.rds.ind')
 
   7_config_merge/out/nml_H_A_values.rds.ind:
     command: munge_H_A(target_name,
@@ -65,26 +59,18 @@ targets:
       '4_params_munge/out/mglp_depths.rds.ind',
       '4_params_munge/out/ndgf_depths.rds.ind',
       '4_params_munge/out/NY_manual_depths.rds.ind')
-  7_config_merge/out/nml_H_A_values.rds:
-    command: gd_get('7_config_merge/out/nml_H_A_values.rds.ind')
 
   7_config_merge/out/nml_len_wid_values.rds.ind:
     command: munge_wid_len(target_name,
       areas_ind = '7_config_merge/out/canonical_lakes_area.rds.ind')
-  7_config_merge/out/nml_len_wid_values.rds:
-    command: gd_get('7_config_merge/out/nml_len_wid_values.rds.ind')
 
   7_config_merge/out/nml_lake_depth_values.rds.ind:
     command: munge_lake_depth(target_name,
       '7_config_merge/out/nml_H_A_values.rds.ind')
-  7_config_merge/out/nml_lake_depth_values.rds:
-    command: gd_get('7_config_merge/out/nml_lake_depth_values.rds.ind')
 
   7_config_merge/out/nml_layer_thick_values.rds.ind:
     command: munge_layer_thick(target_name,
       lake_depth_ind = '7_config_merge/out/nml_lake_depth_values.rds.ind')
-  7_config_merge/out/nml_layer_thick_values.rds:
-    command: gd_get('7_config_merge/out/nml_layer_thick_values.rds.ind')
 
   7_config_merge/out/nml_meteo_fl_values.rds.ind:
     command: munge_meteo_fl(target_name,
@@ -92,16 +78,12 @@ targets:
       lake_depth_ind = '7_config_merge/out/nml_lake_depth_values.rds.ind',
       sf_grid = NLDAS_grid,
       time_range = replete_time_range)
-  7_config_merge/out/nml_meteo_fl_values.rds:
-    command: gd_get('7_config_merge/out/nml_meteo_fl_values.rds.ind')
 
   7_config_merge/out/nml_Kw_values.rds.ind:
     command: munge_Kw(target_name,
       secchi_ind = '7a_wqp_munge/out/secchi_wqp_munged.feather.ind',
       kw_varying_ind = '4_params_munge/out/toha_varying_kw.rds.ind',
       wqp_xwalk_ind = '2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind')
-  7_config_merge/out/nml_Kw_values.rds:
-    command: gd_get('7_config_merge/out/nml_Kw_values.rds.ind')
 
   7_config_merge/out/nml_list.rds.ind:
     command: build_nml_list('7_config_merge/out/nml_H_A_values.rds.ind',
@@ -113,5 +95,3 @@ targets:
       '7_config_merge/out/nml_meteo_fl_values.rds.ind',
       '7_config_merge/out/nml_Kw_values.rds.ind',
       target_name)
-  7_config_merge/out/nml_list.rds:
-    command: gd_get('7_config_merge/out/nml_list.rds.ind')

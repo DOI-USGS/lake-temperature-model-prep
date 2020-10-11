@@ -36,8 +36,6 @@ targets:
       inventory_ind = '2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind',
       wqp_charnames = wqp_temperature_charnames,
       wqp_partition_cfg = '6_wqp_fetch/cfg/wqp_partition_config.yml')
-  6_wqp_fetch/inout/wqptemp_partitions.feather:
-    command: gd_get('6_wqp_fetch/inout/wqptemp_partitions.feather.ind')
 
   6_wqp_fetch/inout/wqpsecchi_partitions.feather.ind:
     command: partition_wqp_inventory(
@@ -45,8 +43,6 @@ targets:
       inventory_ind = '2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind',
       wqp_charnames = wqp_secchi_charnames,
       wqp_partition_cfg = '6_wqp_fetch/cfg/wqp_partition_config.yml')
-  6_wqp_fetch/inout/wqpsecchi_partitions.feather:
-    command: gd_get('6_wqp_fetch/inout/wqpsecchi_partitions.feather.ind')
 
   # -- pull the data ---
 
@@ -64,8 +60,6 @@ targets:
   6_wqp_fetch/out/wqp_temperature_data.rds.ind:
     command: loop_tasks(task_plan=wqp_temp_pull_plan, task_makefile='6_wqp_fetch_temperature_tasks.yml',
       num_tries=I(30), sleep_on_error=I(20))
-  6_wqp_fetch/out/wqp_temperature_data.rds:
-    command: gd_get('6_wqp_fetch/out/wqp_temperature_data.rds.ind')
 
   wqp_secchi_pull_plan:
     command: plan_wqp_pull(partitions_ind='6_wqp_fetch/inout/wqpsecchi_partitions.feather.ind',
@@ -79,5 +73,3 @@ targets:
   6_wqp_fetch/out/wqp_secchi_data.rds.ind:
     command: loop_tasks(task_plan=wqp_secchi_pull_plan, task_makefile='6_wqp_fetch_secchi_tasks.yml',
       num_tries=I(30), sleep_on_error=I(20))
-  6_wqp_fetch/out/wqp_secchi_data.rds:
-    command: gd_get('6_wqp_fetch/out/wqp_secchi_data.rds.ind')

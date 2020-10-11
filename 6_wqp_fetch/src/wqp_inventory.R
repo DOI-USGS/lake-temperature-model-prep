@@ -19,7 +19,7 @@ partition_wqp_inventory <- function(partitions_ind, inventory_ind, wqp_charnames
   # Read in the inventory, crosswalk & config
 
   constituent_name <- basename(partitions_ind) %>% strsplit('[_]') %>% .[[1]] %>% head(1)
-  wqp_inventory <- readRDS(sc_retrieve(inventory_ind, remake_file = '2_crosswalk_munge.yml'))
+  wqp_inventory <- readRDS(sc_retrieve(inventory_ind))
 
   wqp_partition_config <- yaml::yaml.load_file(wqp_partition_cfg)
 

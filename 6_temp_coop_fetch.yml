@@ -49,9 +49,6 @@ targets:
   6_temp_coop_fetch/out/coop_all_files.rds.ind:
     command: files_in_drive(out_ind = target_name, gd_path = coop_file_upload_location, dummy_date = I('2020-04-10a'))
 
-  6_temp_coop_fetch/out/coop_all_files.rds:
-    command: gd_get('6_temp_coop_fetch/out/coop_all_files.rds.ind')
-
   coop_wants:
     command: filter_coop_all('6_temp_coop_fetch/out/coop_all_files.rds.ind')
 
