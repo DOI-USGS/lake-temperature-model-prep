@@ -2,7 +2,7 @@ version: 0.3.0
 name: 6_wqp_fetch/out/wqp_secchi_data.rds.ind
 type: file
 hash: a746a53989b95ffcef06f6a27d818ba0
-time: 2020-10-11 15:22:48 UTC
+time: 2020-10-11 21:01:04 UTC
 depends:
   wqp_secchi_pull_plan: 66f6298da33382df8fc37093695c4161
   6_wqp_fetch_secchi_tasks.yml: e7f34232c57aa528a0f90954cff723ac

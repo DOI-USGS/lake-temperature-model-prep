@@ -2,7 +2,7 @@ version: 0.3.0
 name: 6_wqp_fetch/inout/wqpsecchi_partitions.feather.ind
 type: file
 hash: 2bb3bd8e1f0a64ec56a3d0ed61243943
-time: 2020-10-11 14:47:22 UTC
+time: 2020-10-11 20:35:55 UTC
 depends:
   2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind: 8c5c31b3b7e32b19086f3050931c31c0
   wqp_secchi_charnames: 992326512fc3e6fbcb92452ebbc00850

@@ -46,6 +46,3 @@ targets:
   7_drivers_munge/out/7_all_local_drivers.rds.ind:
     command: index_local_drivers(target_name,
       depends = "7_drivers_munge/out/7_drivers_munge_tasks.ind")
-
-  7_drivers_munge/out/7_all_local_drivers.rds:
-    command: gd_get('7_drivers_munge/out/7_all_local_drivers.rds.ind')

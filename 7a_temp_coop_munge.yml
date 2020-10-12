@@ -51,6 +51,3 @@ targets:
       id_crosswalk = '2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind',
       wbic_crosswalk = '2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind',
       dow_crosswalk = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
-
-  7a_temp_coop_munge/out/all_coop_dat_linked.feather:
-    command: gd_get('7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind')

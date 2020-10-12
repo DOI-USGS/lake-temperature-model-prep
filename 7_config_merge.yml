@@ -58,7 +58,8 @@ targets:
       '4_params_munge/out/wbic_depths.rds.ind',
       '4_params_munge/out/mglp_depths.rds.ind',
       '4_params_munge/out/ndgf_depths.rds.ind',
-      '4_params_munge/out/NY_manual_depths.rds.ind')
+      '4_params_munge/out/NY_manual_depths.rds.ind',
+      '4_params_munge/out/MO_manual_depths.rds.ind')
 
   7_config_merge/out/nml_len_wid_values.rds.ind:
     command: munge_wid_len(target_name,

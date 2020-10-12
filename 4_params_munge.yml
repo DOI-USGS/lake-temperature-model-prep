@@ -51,6 +51,14 @@ targets:
     command: munge_simple_depth(target_name, nhdhr_151957878 = 55, nhdhr_120022743 = 42.672, nhdhr_149269381 = 53, nhdhr_61790779 = 53.3,
       nhdhr_120022795 = 18, nhdhr_120023042 = 38.4048, nhdhr_25920192 = 11.2776, nhdhr_26148662 = 9.7536, nhdhr_120022908 = 27.432)
 
+  # nhdhr_120032270: Lake of the Ozarks; nhdhr_12003253: Bull Shoals Lake; nhdhr_120032180: Mark Twain Lake
+  # nhdhr_106716325: Stockton Lake; nhdhr_168123531: Lake Taneycomo; nhdhr_120032495: Lake Wappapello
+  # nhdhr_105341319: Norfork Lake; nhdhr_120032884: Table Rock Lake
+  4_params_munge/out/MO_manual_depths.rds.ind:
+    command: munge_simple_depth(target_name, nhdhr_120032270 = 40, nhdhr_12003253 = 64, nhdhr_120032180 = 25.9,
+      nhdhr_106716325 = 32.004, nhdhr_168123531 = 15.5448, nhdhr_120032495 = 14.3256, nhdhr_105341319 = 53.9496,
+      nhdhr_120032884 = 67.056)
+
   4_params_munge/out/nlcd_2011_buffers.rds.ind:
     command: munge_nlcd_buffers(target_name,
       lake_buffer_ind = '2_crosswalk_munge/out/buffered_lakes_sf.rds.ind',
