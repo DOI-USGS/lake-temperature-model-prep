@@ -12,76 +12,19 @@ sources:
 targets:
   3_params_fetch:
     depends:
-      - '3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip.ind'
-      - '3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip.ind'
-      - '3_params_fetch/out/nlcd_classes.rds.ind'
-      - '3_params_fetch/out/LAGOS_NE_depths.csv.ind'
-      - '3_params_fetch/in/Data_MGLP_TDOx_Models.csv.ind'
-      - '3_params_fetch/in/mi_hypsography_mglpid.csv.ind'
-      - '3_params_fetch/out/IA_lakes_bathymetry.zip.ind'
-      - '3_params_fetch/out/IN_lakes_bathymetry.zip.ind'
-
-  3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip:
-    command: gd_get('3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip.ind')
-
-  3_params_fetch/in/mi_hypsography_mglpid.csv:
-    command: gd_get('3_params_fetch/in/mi_hypsography_mglpid.csv.ind')
-
-  3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip:
-    command: gd_get('3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip.ind')
+      - 3_params_fetch/out/IA_lakes_bathymetry.zip.ind
+      - 3_params_fetch/out/IN_lakes_bathymetry.zip.ind
 
   3_params_fetch/out/nlcd_classes.rds.ind:
     command: fetch_nlcd_classes(target_name)
-  3_params_fetch/out/nlcd_classes.rds:
-    command: gd_get('3_params_fetch/out/nlcd_classes.rds.ind')
-
-  3_params_fetch/in/WI_Waterbodies.tsv:
-    command: gd_get('3_params_fetch/in/WI_Waterbodies.tsv.ind')
-
-  3_params_fetch/in/mndow_percentage_hypsos.zip:
-    command: gd_get('3_params_fetch/in/mndow_percentage_hypsos.zip.ind')
-
-  3_params_fetch/in/mndow_percentage_02_hypsos.zip:
-    command: gd_get('3_params_fetch/in/mndow_percentage_02_hypsos.zip.ind')
-
-  3_params_fetch/in/mndow_hypsos_m-20191024.zip:
-    command: gd_get('3_params_fetch/in/mndow_hypsos_m-20191024.zip.ind')
-
-  3_params_fetch/in/new2_mndow_hypsos_m.zip:
-    command: gd_get('3_params_fetch/in/new2_mndow_hypsos_m.zip.ind')
-
-  3_params_fetch/in/WBIC_hypsos_lakeattributes.zip:
-    command: gd_get('3_params_fetch/in/WBIC_hypsos_lakeattributes.zip.ind')
 
   3_params_fetch/out/IA_lakes_bathymetry.zip.ind:
     command: fetch_url(target_name,
       url = I('http://iowageodata.s3.amazonaws.com/inlandWaters/lakes_bathymetry.zip'))
-  3_params_fetch/out/IA_lakes_bathymetry.zip:
-    command: gd_get('3_params_fetch/out/IA_lakes_bathymetry.zip.ind')
 
   3_params_fetch/out/IN_lakes_bathymetry.zip.ind:
     command: fetch_url(target_name,
       url = I('https://opendata.arcgis.com/datasets/0ac283034cde4bb9bf8955eb5551be30_0.zip'))
-  3_params_fetch/out/IN_lakes_bathymetry.zip:
-    command: gd_get('3_params_fetch/out/IN_lakes_bathymetry.zip.ind')
-
-  3_params_fetch/out/LAGOS_NE_depths.csv:
-    command: gd_get('3_params_fetch/out/LAGOS_NE_depths.csv.ind')
-
-  3_params_fetch/out/LAGOS_NE_secchi.csv:
-    command: gd_get('3_params_fetch/out/LAGOS_NE_secchi.csv.ind')
-
-  3_params_fetch/in/Data_MGLP_TDOx_Models.csv:
-    command: gd_get('3_params_fetch/in/Data_MGLP_TDOx_Models.csv.ind')
 
   3_params_fetch/out/nlcd_classes_canopyheight.rds.ind:
     command: fetch_nlcd_classes_canopyheight(target_name)
-  3_params_fetch/out/nlcd_classes_canopyheight.rds:
-    command: gd_get('3_params_fetch/out/nlcd_classes.rds.ind')
-
-  # Shapefile download available at https://www.nd.gov/gis/apps/Download/?clipping=Full&coord=LL83&format=SHAPE&layers=NDGAMEFISH.LAKE_CONTOURS
-  3_params_fetch/out/ndgf_lake_contours.rds:
-    command: gd_get('3_params_fetch/out/ndgf_lake_contours.rds.ind')
-  # Shapefile download available at https://www.nd.gov/gis/apps/Download/?clipping=Full&coord=LL83&format=SHAPE&layers=NDGAMEFISH.LAKE_MAXIMUMDEPTH
-  3_params_fetch/out/ndgf_lake_maxdepth.rds:
-    command: gd_get('3_params_fetch/out/ndgf_lake_maxdepth.rds.ind')

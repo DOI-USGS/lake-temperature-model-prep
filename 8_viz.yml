@@ -34,12 +34,7 @@ targets:
   # -- removes egregious outliers in Jan/Feb (>10 deg C) and July/Aug (surface, <10 deg C)
   # -- returns all times -- ##
 
-  # List from Holly of WI lakes that are having hypsos digitized
-  # I xwalked to nhd ids (using "2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds")
-  # Then I uloaded file to GD and then ran a gd_confirm_posted
-  # The resulting RDS file is used in the summary step
-  8_viz/in/WI_hypso_list.rds:
-    command: gd_get("8_viz/in/WI_hypso_list.rds.ind")
+
 
   # update with booleans for:
   # has meteo, max depth, hypso, kw, kw_file, obs...
@@ -64,26 +59,10 @@ targets:
       toha_varying_kw_ind = "4_params_munge/out/toha_varying_kw.rds.ind",
       digitzing_hypos_ind = "8_viz/in/WI_hypso_list.rds.ind")
 
-  8_viz/inout/lakes_summary.feather:
-    command: gd_get('8_viz/inout/lakes_summary.feather.ind')
-
   8_viz/out/lakes_summary_fig.html.ind:
     command: render_html(filename_md = 'lake_data_map.Rmd', out_ind = target_name)
     depends:
       - 8_viz/inout/lakes_summary.feather.ind
-
-  8_viz/out/lakes_summary_fig.html:
-    command: gd_get('8_viz/out/lakes_summary_fig.html.ind')
-
-  ##### Adding summary and visual of data that we are thinking of using for TOHA
-
-  # These datasets help visualize and summarize the data we are using for TOHA models.
-  # They were downloaded from here: https://drive.google.com/drive/u/4/folders/13w3QDXicjHVymVW1NeyJpJqVRZ7KvlTD
-  # Then uploaded to this pipeline GD folder & then incorporated into the pipeline using `gd_confirm_posted`.
-  8_viz/in/WAE_numYears_meanCPUE.csv:
-    command: gd_get("8_viz/in/WAE_numYears_meanCPUE.csv.ind")
-  8_viz/in/JakeWalsh_NHDIDs.csv:
-    command: gd_get("8_viz/in/JakeWalsh_NHDIDs.csv.ind")
 
   8_viz/inout/summary_toha_sf.rds.ind:
     command: summarize_MN_toha_lake_data(
@@ -93,13 +72,7 @@ targets:
       walleye_count_ind = "8_viz/in/WAE_numYears_meanCPUE.csv.ind",
       plant_priority_ind = "8_viz/in/JakeWalsh_NHDIDs.csv.ind")
 
-  8_viz/inout/summary_toha_sf.rds:
-    command: gd_get('8_viz/inout/summary_toha_sf.rds.ind')
-
   8_viz/out/toha_lakes_summary_fig.html.ind:
     command: render_html(filename_md = 'toha_lake_data_map.Rmd', out_ind = target_name)
     depends:
       - 8_viz/inout/summary_toha_sf.rds.ind
-
-  8_viz/out/toha_lakes_summary_fig.html:
-    command: gd_get('8_viz/out/toha_lakes_summary_fig.html.ind')

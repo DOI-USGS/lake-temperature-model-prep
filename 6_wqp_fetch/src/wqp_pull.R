@@ -16,7 +16,7 @@ plan_wqp_pull <- function(partitions_ind, wqp_charnames_obj) {
     tmp='6_wqp_fetch/tmp',
     out='6_wqp_fetch/out',
     log='6_wqp_fetch/log')
-  partitions <- feather::read_feather(scipiper::sc_retrieve(partitions_ind, remake_file = '6_wqp_fetch.yml'))
+  partitions <- feather::read_feather(scipiper::sc_retrieve(partitions_ind))
 
   # after all wanted data have been pulled, this function will be called but
   # doesn't need to create anything much, so just return NULL

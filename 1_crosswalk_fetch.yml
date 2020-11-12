@@ -40,7 +40,8 @@ targets:
       "Water transparency, Secchi disc")))
  #https://www.waterqualitydata.us/portal/#siteType=Lake%2C%20Reservoir%2C%20Impoundment&characteristicName=Depth%2C%20Secchi%20disk%20depth&characteristicName=Water%20transparency%2C%20Secchi%20disc&characteristicName=Depth%2C%20Secchi%20disk%20depth%20(choice%20list)&characteristicName=Secchi%20Reading%20Condition%20(choice%20list)&mimeType=tsv
   nhd_HR_download_plan:
-    command: create_nhd_HR_download_plan(I(c("North_Dakota","South_Dakota","Iowa","Michigan","Indiana","Illinois","Wisconsin", "Minnesota", "New_York", "Pennsylvania")),
+    command: create_nhd_HR_download_plan(I(c("North_Dakota","South_Dakota","Iowa","Michigan","Indiana","Illinois","Wisconsin",
+      "Minnesota", "New_York", "Pennsylvania", "Missouri")),
       min_size = I(40000))
 
   1_crosswalk_fetch_nhd_tasks.yml:
@@ -50,30 +51,20 @@ targets:
 
   1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind:
     command: loop_tasks(nhd_HR_download_plan, '1_crosswalk_fetch_nhd_tasks.yml')
-  1_crosswalk_fetch/out/canonical_lakes_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
+
 
   1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind:
     command: fetch_mndow_lakes(
       ind_file = target_name,
       dummy = I("2019-08-20"),
       layer = I("dnr_hydro_features_all"))
-  1_crosswalk_fetch/out/mndow_lakes_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind')
 
   1_crosswalk_fetch/out/winslow_lakes_sf.rds.ind:
     command: fetch_sb_wfs(
       ind_file = target_name,
       sb_id = I('57d97341e4b090824ffb0e6f'),
       layer = I('model_lakes'))
-  1_crosswalk_fetch/out/winslow_lakes_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/winslow_lakes_sf.rds.ind')
 
-  1_crosswalk_fetch/in/MGLP_lakes.zip:
-    command: gd_get('1_crosswalk_fetch/in/MGLP_lakes.zip.ind')
-
-  1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip:
-    command: gd_get('1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind')
 
   1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind:
     command: LAGOS_zip_to_sf(
@@ -81,8 +72,6 @@ targets:
       layer = I("LAGOS_NE_All_Lakes_4ha"),
       zip_ind = '1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind',
       states = I(c("IA", "IN", "SD", "ND", "MI", "MN", "WI", "IL")))
-  1_crosswalk_fetch/out/LAGOS_lakes_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind')
 
   1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind:
     command: MGLP_zip_to_sf(
@@ -90,49 +79,25 @@ targets:
       gdb_file = I("MGLP_model_data&results.gdb"),
       zip_ind = '1_crosswalk_fetch/in/MGLP_lakes.zip.ind',
       states = I(c("IA", "IN", "SD", "ND", "MI", "MN", "WI", "IL")))
-  1_crosswalk_fetch/out/MGLP_lakes_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind')
-
-  # see https://data-wi-dnr.opendata.arcgis.com/datasets/0128cce2c06342218725f1069031a4fa for WI hydrolayer
-
-  1_crosswalk_fetch/out/wbic_lakes_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/wbic_lakes_sf.rds.ind')
 
   1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind:
     command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_temperature_charnames,
       bBox = I(c(-105.79725, 34.95527, -74, 50.12992)), dummy = I('2020-10-09'))
-  1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind')
 
   1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind:
     command: fetch_wqp_lake_sites(target_name, characteristicName = wqp_secchi_charnames,
       bBox = I(c(-105.79725, 34.95527, -74, 50.12992)), dummy = I('2020-10-09'))
-  1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind')
 
   1_crosswalk_fetch/out/micorps_sites.xlsx.ind:
     command: fetch_micorps_sites(target_name)
-  1_crosswalk_fetch/out/micorps_sites.xlsx:
-    command: gd_get('1_crosswalk_fetch/out/micorps_sites.xlsx.ind')
 
   1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind:
     command: fetch_iadnr_lakes(target_name,
       layer = I('lakes_bathymetry'),
       remove_IDs = I(c("HEN45", "LGR82", "MIA68", "MOR59", "NTW13", "RDL34", "SWA14", "THM88", "WIN87", "EOK30")),
       zip_ind = '3_params_fetch/out/IA_lakes_bathymetry.zip.ind')
-  1_crosswalk_fetch/out/iadnr_contours_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind')
 
   1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind:
     command: slice_iadnr_contour(target_name,
       contour_ind = '1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind')
-  1_crosswalk_fetch/out/iadnr_lakes_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind')
 
-  # Shapefile download available at https://www.nd.gov/gis/apps/Download/?clipping=Full&coord=LL83&format=SHAPE&layers=NDGAMEFISH.NDGF_LAKESVW
-  # Before uploading, I edited the lake id column using: `mutate(LAKE = sprintf("ndgf_%s", LAKE)) %>% rename(site_id = LAKE)`
-  # Note that the other NDGF resources have some lakes that do not appear in NDGF_LAKESVW
-  #   NDGF_LAKE_CONTOURS has 16 that don't appear in LAKESVW
-  #   NDGF_Lake_MaximumDepth has 22 that don't apepar in LAKESVW
-  1_crosswalk_fetch/out/ndgf_lakesvw.rds:
-    command: gd_get('1_crosswalk_fetch/out/ndgf_lakesvw.rds.ind')

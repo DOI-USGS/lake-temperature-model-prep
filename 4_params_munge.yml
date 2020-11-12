@@ -50,54 +50,45 @@ targets:
   4_params_munge/out/NY_manual_depths.rds.ind:
     command: munge_simple_depth(target_name, nhdhr_151957878 = 55, nhdhr_120022743 = 42.672, nhdhr_149269381 = 53, nhdhr_61790779 = 53.3,
       nhdhr_120022795 = 18, nhdhr_120023042 = 38.4048, nhdhr_25920192 = 11.2776, nhdhr_26148662 = 9.7536, nhdhr_120022908 = 27.432)
-  4_params_munge/out/NY_manual_depths.rds:
-    command: gd_get('4_params_munge/out/NY_manual_depths.rds.ind')
 
-  4_params_munge/out/toha_varying_kw.rds:
-    command: gd_get('4_params_munge/out/toha_varying_kw.rds.ind')
+  # nhdhr_120032270: Lake of the Ozarks; nhdhr_12003253: Bull Shoals Lake; nhdhr_120032180: Mark Twain Lake
+  # nhdhr_106716325: Stockton Lake; nhdhr_168123531: Lake Taneycomo; nhdhr_120032495: Lake Wappapello
+  # nhdhr_105341319: Norfork Lake; nhdhr_120032884: Table Rock Lake
+  4_params_munge/out/MO_manual_depths.rds.ind:
+    command: munge_simple_depth(target_name, nhdhr_120032270 = 40, nhdhr_12003253 = 64, nhdhr_120032180 = 25.9,
+      nhdhr_106716325 = 32.004, nhdhr_168123531 = 15.5448, nhdhr_120032495 = 14.3256, nhdhr_105341319 = 53.9496,
+      nhdhr_120032884 = 67.056)
 
   4_params_munge/out/nlcd_2011_buffers.rds.ind:
     command: munge_nlcd_buffers(target_name,
       lake_buffer_ind = '2_crosswalk_munge/out/buffered_lakes_sf.rds.ind',
       nlcd_zip_ind = '3_params_fetch/in/nlcd_2011_landcover_2011_edition_2014_10_10.zip.ind',
       nlcd_classes_ind = '3_params_fetch/out/nlcd_classes.rds.ind')
-  4_params_munge/out/nlcd_2011_buffers.rds:
-    command: gd_get('4_params_munge/out/nlcd_2011_buffers.rds.ind')
 
   4_params_munge/out/mglp_depths.rds.ind:
     command: mglp_depths_from_TDOx(target_name,
       TDOx_ind = '3_params_fetch/in/Data_MGLP_TDOx_Models.csv.ind',
       mglp_xwalk_ind = '2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind')
-  4_params_munge/out/mglp_depths.rds:
-    command: gd_get('4_params_munge/out/mglp_depths.rds.ind')
 
   4_params_munge/out/lagos_secchi.rds.ind:
     command: munge_lagos_secchi(target_name,
       lagos_secchi_ind = '3_params_fetch/out/LAGOS_NE_secchi.csv.ind',
       lagos_xwalk_ind = '2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind')
-  4_params_munge/out/lagos_secchi.rds:
-    command: gd_get('4_params_munge/out/lagos_secchi.rds.ind')
 
   4_params_munge/out/lagos_depths.rds.ind:
     command: munge_lagos_depths(target_name,
       lagos_depths_ind = '3_params_fetch/out/LAGOS_NE_depths.csv.ind',
       lagos_xwalk_ind = '2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind')
-  4_params_munge/out/lagos_depths.rds:
-    command: gd_get('4_params_munge/out/lagos_depths.rds.ind')
 
   4_params_munge/out/wbic_depths.rds.ind:
     command: munge_wbic_depths(target_name,
       wbic_wbodies_ind = '3_params_fetch/in/WI_Waterbodies.tsv.ind',
       wbic_xwalk_ind = '2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind')
-  4_params_munge/out/wbic_depths.rds:
-    command: gd_get('4_params_munge/out/wbic_depths.rds.ind')
 
   4_params_munge/out/ndgf_depths.rds.ind:
     command: munge_ndgf_depths(target_name,
       ndgf_depths_ind = '3_params_fetch/out/ndgf_lake_maxdepth.rds.ind',
       ndgf_xwalk_ind = '2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind')
-  4_params_munge/out/ndgf_depths.rds:
-    command: gd_get('4_params_munge/out/ndgf_depths.rds.ind')
 
   4_params_munge/out/mglp_mi_perc_bathy.rds.ind:
     command: munge_mglp_mi_perc_bathy(
@@ -105,8 +96,6 @@ targets:
       bathy_csv_ind = '3_params_fetch/in/mi_hypsography_mglpid.csv.ind',
       mglp_xwalk_ind = '2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind',
       lake_poly_ind = '1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind')
-  4_params_munge/out/mglp_mi_perc_bathy.rds:
-    command: gd_get('4_params_munge/out/mglp_mi_perc_bathy.rds.ind')
 
   4_params_munge/out/mndow_perc_bathy.rds.ind:
     command: munge_mndow_perc_bathy(
@@ -114,8 +103,6 @@ targets:
       bathy_zip_ind = '3_params_fetch/in/mndow_percentage_hypsos.zip.ind',
       mndow_xwalk_ind = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind',
       mndow_poly_ind = '1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind')
-  4_params_munge/out/mndow_perc_bathy.rds:
-    command: gd_get('4_params_munge/out/mndow_perc_bathy.rds.ind')
 
   4_params_munge/out/mndow_perc_02_bathy.rds.ind:
     command: munge_mndow_perc_bathy(
@@ -123,8 +110,6 @@ targets:
       bathy_zip_ind = '3_params_fetch/in/mndow_percentage_02_hypsos.zip.ind',
       mndow_xwalk_ind = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind',
       mndow_poly_ind = '1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind')
-  4_params_munge/out/mndow_perc_02_bathy.rds:
-    command: gd_get('4_params_munge/out/mndow_perc_02_bathy.rds.ind')
 
   4_params_munge/out/iadnr_bathy.rds.ind:
     command: munge_iadnr_bathy(
@@ -132,8 +117,6 @@ targets:
       iadnr_contour_ind = '1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind',
       iadnr_surface_ind = '1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind',
       xwalk_ind = '2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds.ind')
-  4_params_munge/out/iadnr_bathy.rds:
-    command: gd_get('4_params_munge/out/iadnr_bathy.rds.ind')
 
   4_params_munge/out/indnr_bathy.rds.ind:
     command: munge_indnr_bathy(
@@ -145,8 +128,6 @@ targets:
         '155639251' = 'nhdhr_{bf931c9f-63a2-425e-82af-0b8d75fd9b25}',
         '35034609' = 'nhdhr_04549854-A785-4DB7-9FC1-A3DEEBB23C49')),
       LAKE_NAME_xwalk = I(c('DEAM LAKE' = 'nhdhr_96568183', 'HUNTINGBURG LAKE' = 'nhdhr_62689235')))
-  4_params_munge/out/indnr_bathy.rds:
-    command: gd_get('4_params_munge/out/iadnr_bathy.rds.ind')
 
   # Combine MN bathy files and add DOW ID
   4_params_munge/out/mndow_01_bathy.rds.ind:
@@ -154,23 +135,17 @@ targets:
       out_ind = target_name,
       bathy_zip_ind = '3_params_fetch/in/mndow_hypsos_m-20191024.zip.ind',
       mndow_xwalk_ind = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
-  4_params_munge/out/mndow_01_bathy.rds:
-    command: gd_get('4_params_munge/out/mndow_01_bathy.rds.ind')
 
   4_params_munge/out/mndow_02_bathy.rds.ind:
     command: munge_mndow_bathy(
       out_ind = target_name,
       bathy_zip_ind = '3_params_fetch/in/new2_mndow_hypsos_m.zip.ind',
       mndow_xwalk_ind = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
-  4_params_munge/out/mndow_02_bathy.rds:
-    command: gd_get('4_params_munge/out/mndow_02_bathy.rds.ind')
 
   4_params_munge/out/wbic_bathy.rds.ind:
     command: munge_wbic_bathy(target_name,
       bathy_zip_ind = '3_params_fetch/in/WBIC_hypsos_lakeattributes.zip.ind',
       wbic_xwalk_ind = '2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind')
-  4_params_munge/out/wbic_bathy.rds:
-    command: gd_get('4_params_munge/out/wbic_bathy.rds.ind')
 
   4_params_munge/out/ndgf_bathy.rds.ind:
     command: munge_ndgf_bathy(target_name,
@@ -178,5 +153,3 @@ targets:
       ndgf_xwalk_ind = '2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind',
       ndgf_surface_sf_ind = '1_crosswalk_fetch/out/ndgf_lakesvw.rds.ind',
       crs = I(26915))
-  4_params_munge/out/ndgf_bathy.rds:
-    command: gd_get('4_params_munge/out/ndgf_bathy.rds.ind')

@@ -9,7 +9,6 @@ packages:
 sources:
   - 7b_temp_merge/src/merge_all_temp_dat.R
   - 7b_temp_merge/src/munge_source_ids.R
-  - lib/src/require_local.R
 
 targets:
 
@@ -30,18 +29,12 @@ targets:
       wqp_ind = '7a_wqp_munge/out/temp_wqp_munged_linked.feather.ind',
       coop_ind = '7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind')
 
-  7b_temp_merge/out/merged_temp_data_alltimes.feather:
-    command: gd_get('7b_temp_merge/out/merged_temp_data_alltimes.feather.ind')
-
 
   # -- resolve multiple unique obs per lake/date/depth -- ##
   7b_temp_merge/out/merged_temp_data_daily.feather.ind:
     command: reduce_temp_data(
       outind = target_name,
       inind = '7b_temp_merge/out/merged_temp_data_alltimes.feather.ind')
-
-  7b_temp_merge/out/merged_temp_data_daily.feather:
-    command: gd_get('7b_temp_merge/out/merged_temp_data_daily.feather.ind')
 
   # -- clean up data sources for data release -- #
 
@@ -60,10 +53,6 @@ targets:
       source_metadata_loc,
       out_ind = target_name)
 
-  # this seems brittle - why aren't we using an indicator/cache pair?
-  7b_temp_merge/in/source_metadata.csv:
-    command: require_local('7b_temp_merge/in/source_metadata.csv.ind')
-
   # merge data with new source_ids
 
   7b_temp_merge/out/temp_data_with_sources.feather.ind:
@@ -72,15 +61,9 @@ targets:
       metadata_ind = '7b_temp_merge/in/source_metadata.csv.ind',
       datout_ind = target_name)
 
-  7b_temp_merge/out/temp_data_with_sources.feather:
-    command: gd_get('7b_temp_merge/out/temp_data_with_sources.feather.ind')
-
   # create a metadata file for data release
   7b_temp_merge/out/source_metadata_for_release.csv.ind:
     command: summarize_sources(
       datin_ind = '7b_temp_merge/out/temp_data_with_sources.feather.ind',
       metadata_ind = '7b_temp_merge/in/source_metadata.csv.ind',
       datout_ind = target_name)
-
-  7b_temp_merge/out/source_metadata_for_release.csv:
-    command: gd_get('7b_temp_merge/out/source_metadata_for_release.csv.ind')
