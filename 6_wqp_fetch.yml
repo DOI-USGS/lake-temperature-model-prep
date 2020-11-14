@@ -8,11 +8,12 @@ packages:
   - feather
   - scipiper
   - yaml
+  - MESS
 
 sources:
   - 6_wqp_fetch/src/wants_haves_needs.R
   - 6_wqp_fetch/src/wqp_inventory.R
-  - 6_wqp_fetch/src/wqp_pull.R
+  - 6_wqp_fetch/src/fetch_wqp_data.R
   - lib/src/require_local.R
 
 targets:
@@ -56,10 +57,16 @@ targets:
     command: create_wqp_pull_makefile(makefile=target_name, task_plan=wqp_temp_pull_plan,
       final_targets = I('6_wqp_fetch/out/wqp_temperature_data.rds.ind'))
 
-  # run the data pulls
   6_wqp_fetch/out/wqp_temperature_data.rds.ind:
-    command: loop_tasks(task_plan=wqp_temp_pull_plan, task_makefile='6_wqp_fetch_temperature_tasks.yml',
-      num_tries=I(30), sleep_on_error=I(20))
+    command: fetch_wqp_data(target_name, characteristicName = wqp_temperature_charnames,
+      site_ind = '2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind',
+      dummy = I('2020-11-14'), max_results = 500000,
+     '6_wqp_fetch/src/fetch_wqp_data.R')
+
+  # run the data pulls
+  #6_wqp_fetch/out/wqp_temperature_data.rds.ind:
+  #  command: loop_tasks(task_plan=wqp_temp_pull_plan, task_makefile='6_wqp_fetch_temperature_tasks.yml',
+  #    num_tries=I(30), sleep_on_error=I(20))
 
   wqp_secchi_pull_plan:
     command: plan_wqp_pull(partitions_ind='6_wqp_fetch/inout/wqpsecchi_partitions.feather.ind',

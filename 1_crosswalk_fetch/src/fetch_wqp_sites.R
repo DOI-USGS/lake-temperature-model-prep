@@ -48,11 +48,11 @@ fetch_wqp_sites <- function(out_ind, characteristicName, sf_ind, box_res, dummy,
   loop_tasks(task_plan = task_plan, task_makefile = remakefile)
 
   gd_put(out_ind, target_name)
-  # clean up/delete task remakefile here?
+  file.remove(remakefile)
 }
 
 
-get_wqp_data <- function(characteristicName, ...){
+get_wqp_data <- function(characteristicName, dummy, ...){
 
   # see issue https://github.com/USGS-R/dataRetrieval/issues/544
   charnames <- str_split(characteristicName, '\\|')[[1]]
