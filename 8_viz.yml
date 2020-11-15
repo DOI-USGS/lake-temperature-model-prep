@@ -13,6 +13,7 @@ sources:
   - 8_viz/src/merge_lake_data.R
   - 8_viz/src/render_html.R
   - 8_viz/src/plot_lake_obs_counts.R
+  - 8_viz/src/count_lake_obs.R
 
 targets:
 

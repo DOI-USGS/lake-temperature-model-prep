@@ -1,4 +1,4 @@
-fetch_wqp_data <- function(out_ind, characteristicName, site_ind, dummy, ..., max_results = 500000, max_sites = 199) {
+fetch_wqp_data <- function(out_ind, characteristicName, site_ind, dummy, ..., max_results = 500000, max_sites = 99) {
 
   data_tmp_dir <- dirname(out_ind) %>% str_replace('out', 'tmp')
   target_name <- scipiper::as_data_file(out_ind)
