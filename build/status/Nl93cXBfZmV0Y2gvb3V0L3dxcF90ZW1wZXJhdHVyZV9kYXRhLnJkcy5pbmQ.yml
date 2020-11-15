@@ -1,14 +1,14 @@
 version: 0.3.0
 name: 6_wqp_fetch/out/wqp_temperature_data.rds.ind
 type: file
-hash: 8b9317a1bd8d8e49611de05f49f0c809
-time: 2020-11-15 15:03:28 UTC
+hash: acc51c551928ee1fec72e89ecf6f6559
+time: 2020-11-15 18:57:02 UTC
 depends:
   wqp_temperature_charnames: bb20e88bd4d46ed2cf9d1d1471da69a7
   2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind: b2e214c0211a41cafc02e037654e8f8d
-  6_wqp_fetch/src/fetch_wqp_data.R: c25d0d4370caa18fa4c535c55d734782
-fixed: 7bd21a37c8e530bf4321928796cf27a5
+  6_wqp_fetch/src/fetch_wqp_data.R: e5e3e859ad22e45d3d9441dd0754139a
+fixed: 7579534c93978d970a3e7bd493453d2d
 code:
   functions:
-    fetch_wqp_data: 85dcc83358188e6c2171bbdae8e5cb52
+    fetch_wqp_data: c95161bc52cf068324d17accdae288be
 
