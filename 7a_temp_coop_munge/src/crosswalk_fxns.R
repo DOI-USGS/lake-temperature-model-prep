@@ -12,18 +12,18 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   dat <- merge_coop_dat(inind)
 
 
-  idfile <- sc_retrieve(id_crosswalk, remake_file = '2_crosswalk_munge.yml')
+  idfile <- sc_retrieve(id_crosswalk)
   id2nhd <- readRDS(idfile)
   id2nhd <- rename(id2nhd, site_id = id)
   id2nhd <- distinct(id2nhd)
 
-  wbicfile <- sc_retrieve(wbic_crosswalk, remake_file = '2_crosswalk_munge.yml')
+  wbicfile <- sc_retrieve(wbic_crosswalk)
   wbic2nhd <- readRDS(wbicfile)
   wbic2nhd$WBIC <- gsub('WBIC_', '', as.character(wbic2nhd$WBIC_ID))
   wbic2nhd <- distinct(wbic2nhd) # get rid of duplicated obs
 
 
-  dowfile <- sc_retrieve(dow_crosswalk, remake_file = '2_crosswalk_munge.yml')
+  dowfile <- sc_retrieve(dow_crosswalk)
   dow2nhd <- readRDS(dowfile)
   dow2nhd$DOW <- gsub('mndow_', '', as.character(dow2nhd$MNDOW_ID))
   dow2nhd <- distinct(dow2nhd) # get rid of duplicated obs

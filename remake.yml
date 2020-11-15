@@ -1,6 +1,8 @@
 target_default: everything
 
 include:
+  - 1_crosswalk_fetch.yml
+  - 2_crosswalk_munge.yml
   - 3_params_fetch.yml
   - 4_params_munge.yml
   - 6_wqp_fetch.yml

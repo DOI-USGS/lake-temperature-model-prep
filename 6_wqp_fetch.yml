@@ -1,6 +1,5 @@
 target_default: 6_wqp_fetch
 
-include: 2_crosswalk_munge.yml
 
 packages:
   - dataRetrieval
@@ -11,10 +10,7 @@ packages:
   - MESS
 
 sources:
-  - 6_wqp_fetch/src/wants_haves_needs.R
-  - 6_wqp_fetch/src/wqp_inventory.R
   - 6_wqp_fetch/src/fetch_wqp_data.R
-  - lib/src/require_local.R
 
 targets:
   6_wqp_fetch:
@@ -23,60 +19,15 @@ targets:
       - 6_wqp_fetch/out/wqp_secchi_data.rds.ind
 
 
-  # make a plan for how to partition the inventory into separate data pulls, keeping track of previous dats pulls.
-  # partitions_archive is altered each time we iterate through the wants-haves-needs-pull process.
-  # at first the file doesn't exist and so is created by initialize_partitions_archive.
-  # once the file does exist, the .ind file will be "rebuilt" by remake, but initialize_partitions_archive will do nothing.
-  # the important changes to the partitions_archive actually happen as a side effect in partition_wqp_inventory,
-  # which appends any new partition info to partitions_archive each time it runs. these updates
-  # will cause rebuilds of wqp_haves and wqp_needs, but if no data files have actually been pulled,
-  # those files will be unchanged and will not drive a repull of the inventory.
-  6_wqp_fetch/inout/wqptemp_partitions.feather.ind:
-    command: partition_wqp_inventory(
-      partitions_ind=target_name,
-      inventory_ind = '2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind',
-      wqp_charnames = wqp_temperature_charnames,
-      wqp_partition_cfg = '6_wqp_fetch/cfg/wqp_partition_config.yml')
-
-  6_wqp_fetch/inout/wqpsecchi_partitions.feather.ind:
-    command: partition_wqp_inventory(
-      partitions_ind=target_name,
-      inventory_ind = '2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind',
-      wqp_charnames = wqp_secchi_charnames,
-      wqp_partition_cfg = '6_wqp_fetch/cfg/wqp_partition_config.yml')
-
-  # -- pull the data ---
-
-  # prepare a remake-style plan for running each state as a separate
-  # remake target in a separate remake file (tasks_1_wqp.yml)
-  wqp_temp_pull_plan:
-    command: plan_wqp_pull(partitions_ind='6_wqp_fetch/inout/wqptemp_partitions.feather.ind',
-      wqp_charnames_obj = I('wqp_temperature_charnames'))
-
-  6_wqp_fetch_temperature_tasks.yml:
-    command: create_wqp_pull_makefile(makefile=target_name, task_plan=wqp_temp_pull_plan,
-      final_targets = I('6_wqp_fetch/out/wqp_temperature_data.rds.ind'))
-
   6_wqp_fetch/out/wqp_temperature_data.rds.ind:
     command: fetch_wqp_data(target_name, characteristicName = wqp_temperature_charnames,
       site_ind = '2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind',
       dummy = I('2020-11-14'), max_results = 500000,
      '6_wqp_fetch/src/fetch_wqp_data.R')
 
-  # run the data pulls
-  #6_wqp_fetch/out/wqp_temperature_data.rds.ind:
-  #  command: loop_tasks(task_plan=wqp_temp_pull_plan, task_makefile='6_wqp_fetch_temperature_tasks.yml',
-  #    num_tries=I(30), sleep_on_error=I(20))
-
-  wqp_secchi_pull_plan:
-    command: plan_wqp_pull(partitions_ind='6_wqp_fetch/inout/wqpsecchi_partitions.feather.ind',
-      wqp_charnames_obj = I('wqp_secchi_charnames'))
-
-  6_wqp_fetch_secchi_tasks.yml:
-    command: create_wqp_pull_makefile(makefile=target_name, task_plan=wqp_secchi_pull_plan,
-      final_targets = I('6_wqp_fetch/out/wqp_secchi_data.rds.ind'))
-
-  # run the data pulls
   6_wqp_fetch/out/wqp_secchi_data.rds.ind:
-    command: loop_tasks(task_plan=wqp_secchi_pull_plan, task_makefile='6_wqp_fetch_secchi_tasks.yml',
-      num_tries=I(30), sleep_on_error=I(20))
+    command: fetch_wqp_data(target_name, characteristicName = wqp_secchi_charnames,
+      site_ind = '2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind',
+      dummy = I('2020-11-14'), max_results = 500000,
+     '6_wqp_fetch/src/fetch_wqp_data.R')
+
