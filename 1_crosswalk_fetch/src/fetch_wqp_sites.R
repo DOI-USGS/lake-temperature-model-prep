@@ -59,13 +59,14 @@ get_wqp_data <- function(characteristicName, dummy, ...){
 
   result <- tryCatch({
     whatWQPdata(characteristicName = charnames, siteType = "Lake, Reservoir, Impoundment", ...) %>%
-      dplyr::select(MonitoringLocationIdentifier, lat, lon, resultCount)
+      dplyr::select(MonitoringLocationIdentifier, OrganizationIdentifier, lat, lon, resultCount)
   }, error = function(err) {
     #check that this is the expected error
     if(err$message == "arguments imply differing number of rows: 1, 0"){
       # no results
       return(tibble(
         MonitoringLocationIdentifier = character(),
+        OrganizationIdentifier = character(),
         lat = numeric(), lon = numeric(),
         resultCount = numeric()))
     } else {
@@ -80,7 +81,8 @@ get_wqp_data <- function(characteristicName, dummy, ...){
 
 bind_group_sites <- function(fileout, ...){
 
-  bind_rows(...) %>% dplyr::select(site_id = MonitoringLocationIdentifier, resultCount, lat, lon) %>%
+
+  bind_rows(...) %>% dplyr::select(site_id = MonitoringLocationIdentifier, OrganizationIdentifier, resultCount, lat, lon) %>%
     st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
     saveRDS(fileout)
 }
