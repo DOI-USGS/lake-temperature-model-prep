@@ -1,6 +1,5 @@
 target_default: 2_crosswalk_munge
 
-include: 1_crosswalk_fetch.yml
 
 packages:
   - dplyr
