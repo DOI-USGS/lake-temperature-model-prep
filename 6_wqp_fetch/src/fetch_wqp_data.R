@@ -72,7 +72,7 @@ fetch_wqp_data <- function(out_ind, characteristicName, site_ind, dummy, ..., ma
   loop_tasks(task_plan = task_plan, task_makefile = remakefile, n_cores = 1)
 
   gd_put(out_ind, target_name)
-  file.remove(remakefile)
+  file.remove(remakefile, wqp_site_file)
 }
 
 filter_wqp_sites <- function(wqp_site_file, task_name){
