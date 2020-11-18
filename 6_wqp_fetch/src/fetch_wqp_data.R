@@ -149,8 +149,8 @@ pull_wqp_data <- function(data_file, wqp_sites, characteristicName, dummy){
   # first pull using readWQPdata, then if that fails, try POST
   wqp_dat <- suppressMessages(wqp_POST(wqp_args))
 
-  if (wqp_sites$pull_org){
-    wqp_dat <- filter(wqp_dat, MonitoringLocationIdentifier %in% c(wqp_sites$MonitoringLocationIdentifier))
+  if (wqp_sites$pull_org[1]){
+    wqp_dat <- filter(wqp_dat, MonitoringLocationIdentifier %in% wqp_sites$MonitoringLocationIdentifier)
   }
   saveRDS(wqp_dat, data_file)
 }
