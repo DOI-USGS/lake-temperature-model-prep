@@ -25,18 +25,17 @@ fetch_wqp_data <- function(out_ind, characteristicName, site_ind, dummy, ..., ma
   wqp_good_sites <- filter(wqp_sites, !MonitoringLocationIdentifier %in% bad_sites) %>%
     arrange(desc(resultCount)) %>%
     mutate(task_num = MESS::cumsumbinning(x = resultCount, threshold = max_results, maxgroupsize = max_sites),
-           task_name = paste0("pull_", task_num))
+           task_name = paste0("pull_", task_num),
+           pull_org = FALSE)
 
   # now create partitions for the organizations for the 'bad' ids, and append but make MonitoringLocationIdentifier NA
   wqp_site_table <- filter(wqp_sites, MonitoringLocationIdentifier %in% bad_sites) %>% group_by(OrganizationIdentifier) %>%
-    summarize(
-      resultCount = sum(resultCount), .groups = 'drop') %>%
-    mutate(MonitoringLocationIdentifier = NA_character_,
-           site_id = NA_character_,
-           task_num = max(wqp_good_sites$task_num)+row_number(), task_name = paste0("pull_", task_num)) %>%
-    dplyr::select(site_id, MonitoringLocationIdentifier, OrganizationIdentifier, everything()) %>%
+    mutate(task_num = max(wqp_good_sites$task_num)+cur_group_id(),
+           task_name = paste0("pull_", task_num),
+           pull_org = TRUE) %>% ungroup() %>%
     filter(!str_detect(OrganizationIdentifier, '/')) %>%
-    rbind(wqp_good_sites, .)
+    rbind(wqp_good_sites, .) %>%
+    arrange(task_num)
 
   wqp_site_file <- paste0(pull_type, '_site_table.rds') %>% file.path(data_tmp_dir, .)
   saveRDS(wqp_site_table, file = wqp_site_file)
@@ -97,7 +96,6 @@ filter_wqp_sites <- function(wqp_site_file, task_name){
 wqp_POST <- function(wqp_args_list){
   wqp_url <- "https://www.waterqualitydata.us/data/Result/search"
 
-
   post_body = jsonlite::toJSON(wqp_args_list, pretty = TRUE)
 
   download_location <- tempfile(pattern = ".zip")
@@ -136,14 +134,14 @@ pull_wqp_data <- function(data_file, wqp_sites, characteristicName, dummy){
 
   charnames <- str_split(characteristicName, '\\|')[[1]]
 
-
   # prepare the arguments to pass to readWQPdata
   wqp_args <- list()
   wqp_args$characteristicName <- charnames
-  if (is.na(wqp_sites$MonitoringLocationIdentifier[1])){
-    wqp_args$siteid <- pull(wqp_sites, MonitoringLocationIdentifier)
-  } else {
+
+  if (wqp_sites$pull_org[1]){
     wqp_args$organization <- pull(wqp_sites, OrganizationIdentifier)
+  } else {
+    wqp_args$siteid <- pull(wqp_sites, MonitoringLocationIdentifier)
   }
 
 
@@ -151,6 +149,9 @@ pull_wqp_data <- function(data_file, wqp_sites, characteristicName, dummy){
   # first pull using readWQPdata, then if that fails, try POST
   wqp_dat <- suppressMessages(wqp_POST(wqp_args))
 
+  if (wqp_sites$pull_org){
+    wqp_dat <- filter(wqp_dat, MonitoringLocationIdentifier %in% c(wqp_sites$MonitoringLocationIdentifier))
+  }
   saveRDS(wqp_dat, data_file)
 }
 
