@@ -44,7 +44,7 @@ fetch_wqp_data <- function(out_ind, characteristicName, site_ind, dummy, ..., ma
   sites_step <- create_task_step(
     step_name = 'separate',
     target_name = function(task_name, step_name, ...) {
-      sprintf('%s_sites', task_name)
+      sprintf('%s_sites_%s', task_name, pull_type)
     },
     command = function(task_name, ...){
 
@@ -58,8 +58,8 @@ fetch_wqp_data <- function(out_ind, characteristicName, site_ind, dummy, ..., ma
       sprintf('%s/%s_%s.rds', data_tmp_dir, pull_type, task_name)
     },
     command = function(task_name, ...){
-      sprintf("pull_wqp_data(target_name, wqp_sites = %s_sites,
-      characteristicName = I('%s'), dummy = I('%s'))", task_name, paste(characteristicName, collapse = "|"), dummy)
+      sprintf("pull_wqp_data(target_name, wqp_sites = %s_sites_%s,
+      characteristicName = I('%s'), dummy = I('%s'))", task_name, pull_type, paste(characteristicName, collapse = "|"), dummy)
     }
   )
 
@@ -79,7 +79,7 @@ fetch_wqp_data <- function(out_ind, characteristicName, site_ind, dummy, ..., ma
     final_targets = target_name,
     finalize_funs = 'bind_write_rds',
     tickquote_combinee_objects=TRUE,
-    as_promises=FALSE)
+    as_promises=TRUE)
 
   loop_tasks(task_plan = task_plan, task_makefile = remakefile, n_cores = 1)
 
