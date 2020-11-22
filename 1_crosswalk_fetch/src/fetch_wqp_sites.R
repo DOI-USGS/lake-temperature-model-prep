@@ -1,7 +1,8 @@
 fetch_wqp_sites <- function(out_ind, characteristicName, sf_ind, box_res, dummy, ...) {
 
   target_name <- scipiper::as_data_file(out_ind)
-  remakefile <- basename(target_name) %>% tools::file_path_sans_ext() %>% paste0('_tasks.yml')
+  base_task_type <- basename(target_name) %>% tools::file_path_sans_ext()
+  remakefile <- base_task_type %>% paste0('_tasks.yml')
   sources <- c(...)
 
   sf_geometry <- readRDS(scipiper::sc_retrieve(sf_ind))
@@ -16,13 +17,13 @@ fetch_wqp_sites <- function(out_ind, characteristicName, sf_ind, box_res, dummy,
   download_step <- create_task_step(
     step_name = 'download',
     target_name = function(task_name, step_name, ...) {
-      sprintf('%s_data', task_name)
+      sprintf('%s_%s', task_name, base_task_type)
     },
     command = function(task_name, ...){
       this_idx <- as.numeric(str_remove(task_name, 'bbox_'))
       this_bbox <- st_bbox(bbox_grid[this_idx]) %>% paste(collapse = ',')
 
-      sprintf("get_wqp_data(characteristicName = I('%s'),
+      sprintf("get_wqp_sites(characteristicName = I('%s'),
       bBox = I('%s'), dummy = I('%s'))", paste(characteristicName, collapse = "|"), this_bbox, dummy)
     }
   )
@@ -43,7 +44,7 @@ fetch_wqp_sites <- function(out_ind, characteristicName, sf_ind, box_res, dummy,
     final_targets = target_name,
     finalize_funs = 'bind_group_sites',
     tickquote_combinee_objects=TRUE,
-    as_promises=FALSE)
+    as_promises=TRUE)
 
   loop_tasks(task_plan = task_plan, task_makefile = remakefile)
 
@@ -52,7 +53,7 @@ fetch_wqp_sites <- function(out_ind, characteristicName, sf_ind, box_res, dummy,
 }
 
 
-get_wqp_data <- function(characteristicName, dummy, ...){
+get_wqp_sites <- function(characteristicName, dummy, ...){
 
   # see issue https://github.com/USGS-R/dataRetrieval/issues/544
   charnames <- str_split(characteristicName, '\\|')[[1]]
