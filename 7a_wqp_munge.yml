@@ -33,3 +33,9 @@ targets:
       outind = target_name,
       wqp_munged = '7a_wqp_munge/out/temp_wqp_munged.feather.ind',
       wqp_crosswalk = '2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind')
+
+  7a_wqp_munge/out/secchi_wqp_munged_linked.feather.ind:
+    command: crosswalk_wqp_dat(
+      outind = target_name,
+      wqp_munged = '7a_wqp_munge/out/secchi_wqp_munged.feather.ind',
+      wqp_crosswalk = '2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind')
