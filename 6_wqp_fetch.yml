@@ -22,12 +22,12 @@ targets:
   6_wqp_fetch/out/wqp_temperature_data.rds.ind:
     command: fetch_wqp_data(target_name, characteristicName = wqp_temperature_charnames,
       site_ind = '2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind',
-      dummy = I('2020-11-15'),
+      dummy = I('2020-11-21'),
      '6_wqp_fetch/src/fetch_wqp_data.R')
 
   6_wqp_fetch/out/wqp_secchi_data.rds.ind:
     command: fetch_wqp_data(target_name, characteristicName = wqp_secchi_charnames,
       site_ind = '2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind',
-      dummy = I('2020-11-15'),
+      dummy = I('2020-11-21'),
      '6_wqp_fetch/src/fetch_wqp_data.R')
 
