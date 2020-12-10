@@ -78,8 +78,7 @@ targets:
     command: MGLP_zip_to_sf(
       out_ind = target_name,
       gdb_file = I("MGLP_model_data&results.gdb"),
-      zip_ind = '1_crosswalk_fetch/in/MGLP_lakes.zip.ind',
-      states = I(c("IA", "IN", "SD", "ND", "MI", "MN", "WI", "IL", "NY", "PA", "MO")))
+      zip_ind = '1_crosswalk_fetch/in/MGLP_lakes.zip.ind')
 
   1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind:
     command: fetch_wqp_sites(target_name, characteristicName = wqp_temperature_charnames,
