@@ -33,20 +33,32 @@ munge_cd_from_area <- function(out_ind, areas_ind){
   gd_put(out_ind, data_file)
 }
 
-munge_Kw <- function(out_ind, secchi_ind, kw_varying_ind, wqp_xwalk_ind){
+munge_Kw <- function(out_ind, kw_varying_ind, ...){
+
+  secchi_files <- c(...)
 
   data_file <- scipiper::as_data_file(out_ind)
-
-  wqp_xwalk <- scipiper::sc_retrieve(wqp_xwalk_ind) %>% readRDS()
-  Kw_data <- scipiper::sc_retrieve(secchi_ind) %>% feather::read_feather() %>%
-    inner_join(wqp_xwalk, by = "MonitoringLocationIdentifier") %>% group_by(site_id) %>%
-    summarise(Kw = 1.7/mean(secchi, na.rm = TRUE)) %>% filter(!is.na(Kw)) %>%
-    dplyr::select(site_id, Kw)
+  Kw_data <- tibble(site_id = character(), Kw = numeric())
+  for (secchi_file in secchi_files){
+    if (str_detect(secchi_file, 'munged_linked')){
+      # hmm....not sure why crosswalk_wqp_dat changes `site_id` to `id`. Probably to avoid clash later?
+      # changing it back here in a kind of hacky way
+      secchi_data <- scipiper::sc_retrieve(secchi_file) %>%
+        feather::read_feather() %>% rename(site_id = id)
+    } else {
+      # ugg, and different file formats? we'll need to get consistent here
+      secchi_data <- scipiper::sc_retrieve(secchi_file) %>% readRDS()
+    }
+    Kw_data <- secchi_data %>%
+      group_by(site_id) %>%
+      summarise(Kw = 1.7/mean(secchi, na.rm = TRUE), .groups = 'drop') %>% filter(!is.na(Kw)) %>%
+      dplyr::select(site_id, Kw) %>% rbind(Kw_data)
+  }
 
   # only add the mean of the time-varying Kw value when there is no value already
   # save file to .rds
   scipiper::sc_retrieve(kw_varying_ind) %>% readRDS() %>% group_by(site_id) %>%
-    summarize(Kw = mean(Kd)) %>% filter(!(site_id %in% Kw_data$site_id)) %>% rbind(Kw_data, .) %>%
+    summarize(Kw = mean(Kd), .groups = 'drop') %>% filter(!(site_id %in% Kw_data$site_id)) %>% rbind(Kw_data, .) %>%
     saveRDS(data_file)
 
   # post and promise the file is posted
@@ -82,7 +94,7 @@ munge_H_A <- function(out_ind, areas_ind, ...){
       H_A[use_ids] <- lapply(X = use_ids, FUN = function(x) {
         filter(depth_data, site_id == x) %>% arrange(desc(depths)) %>%
           mutate(H = crest_height - depths) %>% dplyr::select(H, A = areas) %>% # duplicate values of H
-          group_by(H) %>% summarize(A = mean(A)) %>% ungroup()
+          group_by(H) %>% summarize(A = mean(A), .groups = 'drop') %>% ungroup()
       })
     } else { # is max depth
       H_A[use_ids] <- lapply(X = use_ids, FUN = function(x) {

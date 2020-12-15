@@ -300,6 +300,9 @@ targets:
   7a_wqp_munge/out/temp_wqp_munged_linked.feather:
     command: gd_get('7a_wqp_munge/out/temp_wqp_munged_linked.feather.ind')
 
+  7a_wqp_munge/out/secchi_wqp_munged_linked.feather:
+    command: gd_get('7a_wqp_munge/out/secchi_wqp_munged_linked.feather.ind')
+
   7a_temp_coop_munge/out/all_coop_dat_linked.feather:
     command: gd_get('7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind')
 

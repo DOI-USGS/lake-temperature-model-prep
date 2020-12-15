@@ -1,11 +1,11 @@
 version: 0.3.0
 name: 1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind
 type: file
-hash: 76e3049f8141a14e83c3afbed09fb89b
-time: 2020-10-07 10:08:53 UTC
+hash: 2b164f0e548965e0779022dcda352525
+time: 2020-12-09 16:53:01 UTC
 depends:
   1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind: 874c85601dfe8043f6487bc8ac1a540e
-fixed: 01b5576fab04e79672af8ce790dd5cd9
+fixed: 6808adceeff6ca6e451c163092e512e5
 code:
   functions:
     LAGOS_zip_to_sf: bb3336202b31a0eda904e948cabdd1ad
