@@ -52,7 +52,8 @@ munge_Kw <- function(out_ind, kw_varying_ind, ...){
     Kw_data <- secchi_data %>%
       group_by(site_id) %>%
       summarise(Kw = 1.7/mean(secchi, na.rm = TRUE), .groups = 'drop') %>% filter(!is.na(Kw)) %>%
-      dplyr::select(site_id, Kw) %>% rbind(Kw_data)
+      dplyr::select(site_id, Kw) %>% rbind(Kw_data) %>%
+      group_by(site_id) %>% summarise(Kw = mean(Kw), .groups = 'drop')
   }
 
   # only add the mean of the time-varying Kw value when there is no value already
