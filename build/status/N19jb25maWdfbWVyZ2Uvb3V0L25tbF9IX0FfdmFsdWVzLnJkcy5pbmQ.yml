@@ -1,8 +1,8 @@
 version: 0.3.0
 name: 7_config_merge/out/nml_H_A_values.rds.ind
 type: file
-hash: 04b780e6918765775ded7b2fb4162591
-time: 2020-12-10 17:49:25 UTC
+hash: 828345fb40f888ba657b2dd4b6d3b084
+time: 2021-01-14 18:14:54 UTC
 depends:
   7_config_merge/out/canonical_lakes_area.rds.ind: f67c157f7da1560fca3d5205b3b59293
   4_params_munge/out/mndow_02_bathy.rds.ind: 709c3f880b9351e5747e651845896553
@@ -13,6 +13,7 @@ depends:
   4_params_munge/out/ndgf_bathy.rds.ind: ea08e81ec97533399cebae9b52536fab
   4_params_munge/out/iadnr_bathy.rds.ind: c35237ff29425292e04acb52f7dccbbe
   4_params_munge/out/indnr_bathy.rds.ind: 9addf57bdd678d493f462a1a4e06a402
+  4_params_munge/out/DRB_reservoirs_bathy.rds.ind: 71555aad8f5b90d0eb21c290fa64fd58
   4_params_munge/out/mglp_mi_perc_bathy.rds.ind: ca5962d21dc09ef04e12809e01ecc6d1
   4_params_munge/out/lagos_depths.rds.ind: 93eeba4c1dc67a333d13d7e159f96858
   4_params_munge/out/wbic_depths.rds.ind: c0f3745ef8e5372bb629f59c77e207ec
@@ -23,5 +24,5 @@ depends:
 fixed: 37bf3ba36be40671d1febad554c5aece
 code:
   functions:
-    munge_H_A: e96e5f1bac48bacded1efb6a9699100d
+    munge_H_A: 2352d5bb0021f91b758cf42667ca1c8c
 

@@ -118,9 +118,9 @@ munge_sb_bathy <- function(out_ind, in_ind, drb_xwalk) {
 
   dat <- readRDS(sc_retrieve(in_ind)) %>%
     mutate(site_id = as.character(drb_xwalk[reservoir]), # add nhdid
-          depth = 0.3048*`Elevation, ft NAVD88`, # feet to meters
+          depths = 0.3048*`Elevation, ft NAVD88`, # feet to meters
            areas = 0.0929*`Area, ft2`) %>% # square feet to square meters
-    dplyr::select(site_id, depth, areas)
+    dplyr::select(site_id, depths, areas)
 
   saveRDS(dat, as_data_file(out_ind))
   gd_put(out_ind)

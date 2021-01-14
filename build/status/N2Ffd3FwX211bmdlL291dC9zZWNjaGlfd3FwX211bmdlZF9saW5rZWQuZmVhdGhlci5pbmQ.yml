@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 7a_wqp_munge/out/secchi_wqp_munged_linked.feather.ind
+type: file
+hash: cfe22c53eb29d938545510c731ccd228
+time: 2021-01-14 20:34:43 UTC
+depends:
+  7a_wqp_munge/out/secchi_wqp_munged.feather.ind: 4923f661cac2b1a3204bdc064260c9ce
+  2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind: b030f6eccf124200ed8334d9acf8b4f2
+fixed: 1cc95753ba5b49d0613a4ac82ba8004b
+code:
+  functions:
+    crosswalk_wqp_dat: 999941bcd0a1f7833dd03ae9015e76c4
+
