@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 6_nwis_fetch/out/drb_reservoirs_temps.rds.ind
+type: file
+hash: 9d9edff975782abb838ac742f08c0687
+time: 2021-01-12 20:28:15 UTC
+depends:
+  reservoir_sites: 942d1d83c7e8d6f3154d52f4a4e0460e
+fixed: 771d91524cf84eb40d6b9e3e75f19b96
+code:
+  functions:
+    retrieve_reservoir_data: 52964641221d8e8e79f4e0ff5262e834
+
