@@ -10,14 +10,22 @@ sources:
 targets:
   6_nwis_fetch:
     depends:
-      - 6_nwis_fetch/out/drb_reservoir_temps.rds
+      - 6_nwis_fetch/out/drb_reservoirs_waterlevel.rds.ind
+      - 6_nwis_fetch/out/drb_reservoirs_temps.rds.ind
 
   # for now just Cannonsville and Pepacton
-  reservoir_sites:
+  reservoir_temp_sites:
     command: c(I(c('01424997', '01414750')))
 
-  6_nwis_fetch/out/drb_reservoirs_waterlevel.rds.ind:
-    command: retrieve_reservoir_data(out_ind = target_name, site_id = reservoir_sites, parameter = I('62615'))
+  # there are some older USGS sites with longer records of water levels
+  # these are for Cannonsville and Pepacton
+  reservoir_waterlevel_sites:
+    command: c(I(c('01424997', '01416900')))
 
+  # this returns 2013-present water levels
+  6_nwis_fetch/out/drb_reservoirs_waterlevel.rds.ind:
+    command: retrieve_reservoir_data(out_ind = target_name, site_id = reservoir_waterlevel_sites, parameter = I('62614'), service = I('dv'), stat = I('00011'))
+
+  # this returns paired water temp and water level observations
   6_nwis_fetch/out/drb_reservoirs_temps.rds.ind:
-    command: retrieve_reservoir_data(out_ind = target_name, site_id = reservoir_sites, parameter = I('00010'))
+    command: retrieve_reservoir_data(out_ind = target_name, site_id = reservoir_temp_sites, parameter = I(c('00010', '62615')), service = I('uv'))
