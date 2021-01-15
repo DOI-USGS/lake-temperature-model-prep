@@ -306,6 +306,9 @@ targets:
   7a_nwis_munge/out/drb_reservoirs_temp_munged.rds:
     command: gd_get('7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind')
 
+  7a_nwis_munge/out/drb_reservoirs_waterlevels_munged.rds:
+    command: gd_get('7a_nwis_munge/out/drb_reservoirs_waterlevels_munged.rds.ind')
+
   7a_wqp_munge/out/temp_wqp_munged.feather:
     command: gd_get('7a_wqp_munge/out/temp_wqp_munged.feather.ind')
 
@@ -336,6 +339,9 @@ targets:
 
   7b_temp_merge/out/source_metadata_for_release.csv:
     command: gd_get('7b_temp_merge/out/source_metadata_for_release.csv.ind')
+
+  7b_temp_merge/out/drb_daily_reservoir_temps.rds:
+    command: gd_get('7b_temp_merge/out/drb_daily_reservoir_temps.rds.ind')
 
   #### 8_viz ####
   # List from Holly of WI lakes that are having hypsos digitized

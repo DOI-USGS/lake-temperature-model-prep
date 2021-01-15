@@ -33,7 +33,6 @@ munge_nwis_temperature <- function(in_ind, out_ind, xwalk){
 
   dat_out <- temp_dat_long %>%
     mutate(depth = 0.3048*(surface_elevation - measurement_elevation), # convert to depth in meters
-           time = format(dateTime, '%H:%M'),
            timezone = tz_cd,
            date = as.Date(dateTime),
            site_id = as.character(xwalk[site_no])) %>% # add nhdhr
@@ -49,9 +48,47 @@ munge_nwis_temperature <- function(in_ind, out_ind, xwalk){
     # but still want to preserve actual depth
     mutate(depth_category = mean(depth, na.rm = TRUE)) %>% # create a single depth per sensor per day
     ungroup() %>%
-    dplyr::select(date, time, timezone, depth, depth_category, temp = value, site_id, source_id = site_no)
+    dplyr::select(date, dateTime, timezone, depth, depth_category, temp = value, site_id, source_id = site_no)
 
   saveRDS(dat_out, as_data_file(out_ind))
   gd_put(out_ind)
+}
+
+munge_nwis_waterlevel <- function(out_ind, temp_ind, levels_ind, xwalk) {
+
+  temp <- readRDS(sc_retrieve(temp_ind))
+  levels <- readRDS(sc_retrieve(levels_ind)) %>%
+    rename(surface_elevation_lt = X_62614_00011) %>%
+    mutate(site_id = as.character(xwalk[site_no]))
+
+  # get daily water level from temp data
+  daily_levels <- temp %>%
+    mutate(Date = as.Date(dateTime)) %>%
+    group_by(site_no, Date) %>%
+    summarize(surface_elevation_rec = mean(X_62615_00000, na.rm = TRUE)) %>%
+    mutate(site_id = as.character(xwalk[site_no])) %>% ungroup()
+
+  compare <- full_join(levels, daily_levels, by = c('site_id', 'Date'))
+
+  # methods are slightly different
+  # need to find the adjustment for the most recent method
+  # to fill in for the lt measurements
+  adjust <- compare %>%
+    filter(!is.na(surface_elevation_lt) & !is.na(surface_elevation_rec)) %>%
+    mutate(ratio = surface_elevation_lt/surface_elevation_rec) %>%
+    group_by(site_id) %>%
+    summarize(ratio = mean(ratio, na.rm = TRUE))
+
+  full_record <- compare %>%
+    left_join(adjust) %>%
+    mutate(surface_elevation = ifelse(is.na(surface_elevation_lt), surface_elevation_rec*ratio, surface_elevation_lt)) %>%
+    mutate(surface_elevation_m = 0.3048*surface_elevation,
+           source_id = ifelse(is.na(site_no.x), site_no.y, site_no.x)) %>%
+    dplyr::select(site_id, source_id, date = Date, surface_elevation_m) %>% ungroup()
+
+  saveRDS(full_record, as_data_file(out_ind))
+  gd_put(out_ind)
+
+
 }
 

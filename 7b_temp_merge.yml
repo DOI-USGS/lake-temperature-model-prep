@@ -67,3 +67,11 @@ targets:
       datin_ind = '7b_temp_merge/out/temp_data_with_sources.feather.ind',
       metadata_ind = '7b_temp_merge/in/source_metadata.csv.ind',
       datout_ind = target_name)
+
+  ## reservoir data - reduce to dailies
+  ## leaving this seperate since 1) there are some oddities with depth data from reservoirs
+  ## and 2) in eastern time zone, and above selects noon of central time
+  ## not a huge but this lets us select noon local time
+
+  7b_temp_merge/out/drb_daily_reservoir_temps.rds.ind:
+    command: reduce_reservoir_data(target_name, '7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind')
