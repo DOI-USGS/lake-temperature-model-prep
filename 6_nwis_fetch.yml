@@ -15,7 +15,7 @@ targets:
 
   # for now just Cannonsville and Pepacton
   reservoir_temp_sites:
-    command: c(I(c('01424997', '01414750')))
+    command: c(I(c('01423910', '01414750')))
 
   # there are some older USGS sites with longer records of water levels
   # these are for Cannonsville and Pepacton

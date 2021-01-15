@@ -1,0 +1,33 @@
+target_default: 7a_nwis_munge
+
+packages:
+  - scipiper
+  - dplyr
+
+sources:
+  - 7a_nwis_munge/src/munge_reservoir_data.R
+
+targets:
+
+  7a_nwis_munge:
+    depends:
+
+
+  # -- munge NWIS temperature records for reservoirs -- #
+  # Cannonsville: '01423910' or 'nhdhr_120022743'; Pepacton: '01414750' = 'nhdhr_151957878'
+  7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind:
+    command: munge_nwis_temperature(
+      out_ind = target_name,
+      in_ind = '6_nwis_fetch/out/drb_reservoirs_temps.rds.ind',
+      xwalk = I(c('01423910' = 'nhdhr_120022743', '01414750' = 'nhdhr_151957878')))
+
+  # looks like surface elevation records come from multiple sites
+  # the measurements from the site without temperature are dvs but appear
+  # to take a while to be approved
+  # the measurments from the temp site are not as long term, but can gap fill in near term
+  7a_nwis_munge/out/drb_reservoirs_waterlevels_munged:
+    command: munge_nwis_waterlevel(
+      outind = target_name,
+      temp_ind = '6_nwis_fetch/out/drb_reservoirs_temps.rds.ind',
+      levels_ind = '6_nwis_fetch/out/drb_reservoirs_waterlevels.rds.ind',
+      xwalk = I(c('01423910' = 'nhdhr_120022743', '01414750' = 'nhdhr_151957878', '01424997' = 'nhdhr_120022743', '01416900' = 'nhdhr_151957878')))

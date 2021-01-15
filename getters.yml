@@ -259,10 +259,10 @@ targets:
 
   #### 6_nwis_fetch ####
   6_nwis_fetch/out/drb_reservoirs_waterlevel.rds:
-    command: gd_get('6_wqp_fetch/out/drb_reservoirs_waterlevel.rds.ind')
+    command: gd_get('6_nwis_fetch/out/drb_reservoirs_waterlevel.rds.ind')
 
   6_nwis_fetch/out/drb_reservoirs_temps.rds:
-    command: gd_get('6_wqp_fetch/out/drb_reservoirs_temps.rds.ind')
+    command: gd_get('6_nwis_fetch/out/drb_reservoirs_temps.rds.ind')
 
   #### 7_config_merge ####
 
@@ -303,6 +303,8 @@ targets:
     command: gd_get('7_config_merge/out/nml_list.rds.ind')
 
   #### 7_munge ####
+  7a_nwis_munge/out/drb_reservoirs_temp_munged.rds:
+    command: gd_get('7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind')
 
   7a_wqp_munge/out/temp_wqp_munged.feather:
     command: gd_get('7a_wqp_munge/out/temp_wqp_munged.feather.ind')
