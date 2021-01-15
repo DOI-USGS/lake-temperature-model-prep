@@ -4,20 +4,9 @@ library(tidyr)
 library(tidyverse)
 
 #### reading the reservoirs elevation and temp data. .
-munge_reservoir_data <- function(elev_data, temp_data){
+munge_nwis_temperature <- function(temp_data){
                                  #out_ind) {
-  elev_data_mod <- elev_data %>%
-    #### extracting the date from dateTime column.
-    mutate(date = lubridate::date(dateTime)) %>%
-    #### removing unnecessary columns.
-    select(-c(X_.backup.from.radar._62615_00000,
-              X_.backup.from.radar._62615_00000_cd)) %>%
-    group_by(date) %>%
-    #### find the average daily elevation.
-    mutate(daily_average_elevation = mean(X_62615_00000)) %>%
-    rename(surface_elevation = X_62615_00000,
-           surface_elevation_cd = X_62615_00000_cd) %>%
-    ungroup()
+
 
   temp_data_mod <- temp_data %>%
     renameNWISColumns()
