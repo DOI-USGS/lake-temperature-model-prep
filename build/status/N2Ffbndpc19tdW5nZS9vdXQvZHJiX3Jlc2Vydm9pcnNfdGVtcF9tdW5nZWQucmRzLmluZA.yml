@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind
+type: file
+hash: e7da4aca9bedbd98e99971994ccf80f3
+time: 2021-01-15 15:46:52 UTC
+depends:
+  6_nwis_fetch/out/drb_reservoirs_temps.rds.ind: 290de56a60a6af713ac3c12149e52e20
+fixed: 59af19820fbf8ff4c60ce450d0af17dc
+code:
+  functions:
+    munge_nwis_temperature: 2dfc1172d7f8d3ddd5f7f3aba1dab739
+

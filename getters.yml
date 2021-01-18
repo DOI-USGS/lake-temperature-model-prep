@@ -170,6 +170,9 @@ targets:
   3_params_fetch/out/nlcd_classes_canopyheight.rds:
     command: gd_get('3_params_fetch/out/nlcd_classes.rds.ind')
 
+  3_params_fetch/out/DRB_reservoirs_bathymetry.rds:
+    command: gd_get('3_params_fetch/out/DRB_reservoirs_bathymetry.rds.ind')
+
   # Shapefile download available at https://www.nd.gov/gis/apps/Download/?clipping=Full&coord=LL83&format=SHAPE&layers=NDGAMEFISH.LAKE_CONTOURS
   3_params_fetch/out/ndgf_lake_contours.rds:
     command: gd_get('3_params_fetch/out/ndgf_lake_contours.rds.ind')
@@ -184,6 +187,9 @@ targets:
 
   4_params_munge/out/MO_manual_depths.rds:
     command: gd_get('4_params_munge/out/MO_manual_depths.rds.ind')
+
+  4_params_munge/out/DRB_reservoirs_bathy.rds:
+    command: gd_get('4_params_munge/out/DRB_reservoirs_bathy.rds.ind')
 
   4_params_munge/out/toha_varying_kw.rds:
     command: gd_get('4_params_munge/out/toha_varying_kw.rds.ind')
@@ -251,6 +257,13 @@ targets:
   6_wqp_fetch/out/wqp_secchi_data.rds:
     command: gd_get('6_wqp_fetch/out/wqp_secchi_data.rds.ind')
 
+  #### 6_nwis_fetch ####
+  6_nwis_fetch/out/drb_reservoirs_waterlevel.rds:
+    command: gd_get('6_nwis_fetch/out/drb_reservoirs_waterlevel.rds.ind')
+
+  6_nwis_fetch/out/drb_reservoirs_temps.rds:
+    command: gd_get('6_nwis_fetch/out/drb_reservoirs_temps.rds.ind')
+
   #### 7_config_merge ####
 
   7_drivers_munge/out/cell_group_table.rds:
@@ -290,6 +303,11 @@ targets:
     command: gd_get('7_config_merge/out/nml_list.rds.ind')
 
   #### 7_munge ####
+  7a_nwis_munge/out/drb_reservoirs_temp_munged.rds:
+    command: gd_get('7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind')
+
+  7a_nwis_munge/out/drb_reservoirs_waterlevels_munged.rds:
+    command: gd_get('7a_nwis_munge/out/drb_reservoirs_waterlevels_munged.rds.ind')
 
   7a_wqp_munge/out/temp_wqp_munged.feather:
     command: gd_get('7a_wqp_munge/out/temp_wqp_munged.feather.ind')
@@ -321,6 +339,9 @@ targets:
 
   7b_temp_merge/out/source_metadata_for_release.csv:
     command: gd_get('7b_temp_merge/out/source_metadata_for_release.csv.ind')
+
+  7b_temp_merge/out/drb_daily_reservoir_temps.rds:
+    command: gd_get('7b_temp_merge/out/drb_daily_reservoir_temps.rds.ind')
 
   #### 8_viz ####
   # List from Holly of WI lakes that are having hypsos digitized
