@@ -3,11 +3,13 @@ target_default: 3_params_fetch
 packages:
   - dplyr
   - scipiper
+  - sbtools
 
 sources:
   - 3_params_fetch/src/fetch_nlcd.R
   - 3_params_fetch/src/fetch_LAGOS.R
   - 3_params_fetch/src/write_bathy.R
+  - 3_params_fetch/src/fetch_sb.R
 
 targets:
   3_params_fetch:
@@ -25,6 +27,11 @@ targets:
   3_params_fetch/out/IN_lakes_bathymetry.zip.ind:
     command: fetch_url(target_name,
       url = I('https://opendata.arcgis.com/datasets/0ac283034cde4bb9bf8955eb5551be30_0.zip'))
+
+  # ScienceBase data release with Pepacton, Cannonsvillve, Neversink, and Rondout bathymetry
+  3_params_fetch/out/DRB_reservoirs_bathymetry.rds.ind:
+    command: fetch_sb(target_name,
+      sb_ids = I(c('580692cce4b0824b2d1d4240', '580695fee4b0824b2d1d425d', '58069bcae4b0824b2d1d428b', '58069930e4b0824b2d1d4272')))
 
   3_params_fetch/out/nlcd_classes_canopyheight.rds.ind:
     command: fetch_nlcd_classes_canopyheight(target_name)

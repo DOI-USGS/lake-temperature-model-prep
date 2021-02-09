@@ -276,6 +276,27 @@ reduce_temp_data <- function(outind, inind) {
 
 }
 
+reduce_reservoir_data <- function(outind, inind) {
+  # group by depth category
+  # select value closest to noon
+  dat <- readRDS(sc_retrieve(inind)) %>%
+    mutate(dateTime_est = as.POSIXct(dateTime, tz = 'America/New_York'),
+           time = format(dateTime, '%H:%M'),
+           time_hm = lubridate::hm(time),
+           hours_minus_noon = time_hm$hour - 12,
+           minutes_decimal = time_hm$minute/60,
+           hours_diff_noon = abs(hours_minus_noon + minutes_decimal)) %>% arrange(site_id, date, depth_category)
 
+  dat_out <- dat %>%
+    group_by(site_id, date, depth_category) %>%
+    slice_min(hours_diff_noon) %>%
+    ungroup() %>%
+    dplyr::select(site_id, source_id, date, depth, temp)
+
+  saveRDS(dat_out, as_data_file(outind))
+  gd_put(outind)
+
+
+}
 
 

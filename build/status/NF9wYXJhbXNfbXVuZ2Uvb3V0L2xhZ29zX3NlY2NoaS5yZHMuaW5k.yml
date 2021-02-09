@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 4_params_munge/out/lagos_secchi.rds.ind
+type: file
+hash: 75a2fab6a9de0b3f3356e4737ee98ef6
+time: 2020-12-09 17:15:32 UTC
+depends:
+  3_params_fetch/out/LAGOS_NE_secchi.csv.ind: 25594224bde1aa3c0d63696ccb4a696d
+  2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind: b1921472727ee56f6b9ac5c22d8bdd4e
+fixed: 84280f9db743c5a3158e73f2c447879a
+code:
+  functions:
+    munge_lagos_secchi: 71458105ed0309f3899b066622db5fd7
+

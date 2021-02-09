@@ -2,15 +2,15 @@ version: 0.3.0
 name: 7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind
 type: file
 hash: 8e2d53df3bd9db9cb88e4180dd91e289
-time: 2020-10-08 15:01:58 UTC
+time: 2020-11-15 01:00:24 UTC
 depends:
   7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind: 6a462408190a982580e1d72824f630be
-  2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind: e7773bff25a23a646a0b8ccd4a5346e0
+  2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind: 00b69ffc42bb33c2c75928590caba071
   2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind: cf89f28f5bd717a25651f837c6aea0d1
   2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind: b04e05cf75a12fa5fe2f452986462a1f
 fixed: bbc18283bf2df758a8402aa1d8e19048
 code:
   functions:
-    crosswalk_coop_dat: 39a46823c0e2dbb500301547b1f488fb
+    crosswalk_coop_dat: c82fc498e25a6b07c9c18bc461ab62af
     merge_coop_dat: dc79d2fae7d5d7c4d98468b0470fc8bc
 

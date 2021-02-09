@@ -1,13 +1,17 @@
 target_default: everything
 
 include:
+  - 1_crosswalk_fetch.yml
+  - 2_crosswalk_munge.yml
   - 3_params_fetch.yml
   - 4_params_munge.yml
   - 6_wqp_fetch.yml
+  - 6_nwis_fetch.yml
   - 6_temp_coop_fetch.yml
   - 6_drivers_fetch.yml
   - 7a_temp_coop_munge.yml
   - 7a_wqp_munge.yml
+  - 7a_nwis_munge.yml
   - 7b_temp_merge.yml
   - 7_config_merge.yml
   - 7_drivers_munge.yml
@@ -18,8 +22,10 @@ targets:
     depends:
       - 7_drivers_munge
       - 6_wqp_fetch
+      - 6_nwis_fetch
       - 6_temp_coop_fetch
       - 7a_temp_coop_munge
       - 7a_wqp_munge
+      - 7a_nwis_munge
       - 7b_temp_merge
       - 8_viz

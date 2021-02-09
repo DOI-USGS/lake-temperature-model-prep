@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 7b_temp_merge/out/drb_daily_reservoir_temps.rds.ind
+type: file
+hash: 56832e13b017b616ebed0c109855fff8
+time: 2021-01-15 15:49:54 UTC
+depends:
+  7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind: e7da4aca9bedbd98e99971994ccf80f3
+fixed: 5d2d38007a165b8836954705dbf2a316
+code:
+  functions:
+    reduce_reservoir_data: 422bcaddc6be820d223aaced20bacd97
+
