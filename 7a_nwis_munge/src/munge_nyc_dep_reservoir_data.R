@@ -11,18 +11,26 @@ munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
            hour = lubridate::hour(dateTime))
 
   sites_near_dam <- dat %>%
-    filter(source_id %in% c('1WDC','1EDP')) %>%
+    filter(source_id %in% c('1WDC','1EDP'))
+
+  cannonsville_dates <- filter(dat, source_id %in% '1WDC') %>%
+    select(date) %>% unique()
+
+  pepacton_dates <- filter(dat, source_id %in% '1EDP') %>%
+    select(date) %>% unique()
+
+  dates_count <- dat %>%
+    filter(!source_id %in% '1WDC' & !date %in% cannonsville_dates &
+             !source_id %in% '1EDP' & !date %in% pepacton_dates) %>%
     group_by(site_id, source_id) %>%
-    summarize(n_days_measured = length(unique(date)))
+    mutate(n_dates = length(unique(date))) %>%
+    ungroup()
 
-  dam_sites_dates <- sites_near_dam$date
+  #max_dates_count <- max(dates_count$n_dates)
 
-  sites_non_dam<- dat %>%
-    #mutate(hour = lubridate::hour(dateTime)) %>%
-    filter(!site_id %in% c('1WDC','1EDP')) %>%
-    group_by(site_id, source_id) %>%
-    summarize(n_days_measured = length(unique(date)))
-
+  sites_max_dates <- dates_count %>%
+    group_by(site_id, date) %>%
+    slice(which.max(n_dates))
 
   dat_out <- dat %>%
     # Selecting columns to order and rename them.
