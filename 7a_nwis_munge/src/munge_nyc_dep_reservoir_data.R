@@ -12,15 +12,16 @@ munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
 
   sites_near_dam <- dat %>%
     filter(source_id %in% c('1WDC','1EDP')) %>%
-    group_by(site_id, date, source_id) %>%
-    summarize(n_profile = length(unique(profile_id)))
+    group_by(site_id, source_id) %>%
+    summarize(n_days_measured = length(unique(date)))
 
   dam_sites_dates <- sites_near_dam$date
 
   sites_non_dam<- dat %>%
-    filter(!date %in% dam_sites_dates) %>%
-    group_by(site_id, date, source_id) %>%
-    summarize(n_profile = length(unique(profile_id)))
+    #mutate(hour = lubridate::hour(dateTime)) %>%
+    filter(!site_id %in% c('1WDC','1EDP')) %>%
+    group_by(site_id, source_id) %>%
+    summarize(n_days_measured = length(unique(date)))
 
 
   dat_out <- dat %>%
