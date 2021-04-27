@@ -1,60 +1,66 @@
 
 munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
 
-
   dat <- readxl::read_xlsx(in_ind) %>%
     # Removing unnecessary columns.
-    dplyr::select(-c(`Surface Elevation (ft.)`, `Thermocline (m)`, `Profile Id`,
+    dplyr::select(-c(`Surface Elevation (ft.)`, `Thermocline (m)`,
                      Analyte, Units, Qualifier)) %>%
     filter(!is.na(Value)) %>% # Filtering the NA temperature values.
     mutate(date =  as.Date(`Sample Date`), # Creating date column.
            site_id = as.character(xwalk[Reservoir])) %>%
-    rename(source_id = Site, dateTime = `Sample Date`,
+    rename(source_id = Site, profile_id = `Profile Id`, dateTime = `Sample Date`,
            depth = `Depth (m)`, temp = Value)
 
   # Filtering the sites near the dam (start with "1")
-  cannonsville_dam_site <- filter(dat, source_id %in% '1WDC')
-  pepacton_dam_site <- filter(dat, source_id %in% '1EDP')
+  dam_dat <- filter(dat, source_id %in% c('1WDC', '1EDP')) %>%
+    mutate(hour = lubridate::hour(dateTime),
+           difference_from_noon = abs(hour-12)) %>%
+    # these sites are sometimes measured >1/day
+    group_by(site_id, source_id, date) %>%
+    filter(profile_id == profile_id[which.min(difference_from_noon)])
+
+  # did we reduce down to a single profile per reservoir-date?
+  summary(group_by(dam_dat, site_id, date) %>% summarize(n_prof = length(unique(profile_id))))
 
   # Selecting the unique dates associated with the sites near dam.
-  cannonsville_dates <- unique(cannonsville_dam_site$date)
-  pepacton_dates <- unique(pepacton_dam_site$date)
+  cannonsville_dates <- unique(dam_dat$date[dam_dat$Reservoir == 'Cannonsville'])
+  pepacton_dates <- unique(dam_dat$date[dam_dat$Reservoir == 'Pepacton'])
 
   # Filtering out the dam sites and dates associated with them.
-  dates_count <- dat %>%
-    filter(!source_id %in% '1WDC' & !date %in% cannonsville_dates &
-             !source_id %in% '1EDP' & !date %in% pepacton_dates) %>%
+  alt_sites <- dat %>%
+    filter(!(Reservoir %in% 'Cannonsville' & date %in% cannonsville_dates) &
+             !(Reservoir %in% 'Pepacton' & date %in% pepacton_dates)) %>%
     # Grouping by reservoir and site to get the dates of measurement per reservoir/ site.
     group_by(site_id, source_id) %>%
     mutate(n_dates = length(unique(date))) %>%
-    ungroup()
-
-  # Finding the site with the maximum number of days with observation (n_dates).
-  max_dates <- dates_count %>%
     group_by(site_id, date) %>%
     filter(n_dates == max(n_dates)) %>%
-    ungroup()
+    # handle duplicated n_dates values by reducing again to the first source_id
+    filter(source_id == unique(source_id)[1])
 
-  # Selecting the site with maximum n_dates.
-  sites_max_dates <- unique(max_dates$source_id)
-
-  # Filtering the data to one profile per day per reservoir per site.
-  daily_profile <- dat %>%
-    # Filtering to the sites with the maximum n_dates
-    filter(source_id %in% sites_max_dates) %>%
-    # Binding the sites near dam.
-    bind_rows(cannonsville_dam_site) %>%
-    bind_rows(pepacton_dam_site) %>%
+  # Reducing to one profile per day per reservoir
+  # by selecting profile closest to noon
+  daily_alt_dat <- alt_sites %>%
     # Selecting the profile closest to noon.
     mutate(hour = lubridate::hour(dateTime),
            difference_from_noon = abs(hour - 12)) %>%
     group_by(site_id, date) %>%
-    filter(difference_from_noon == min(difference_from_noon))
+    filter(profile_id == profile_id[which.min(difference_from_noon)])
+
+  # bind data and select rows
+  dat_out <- bind_rows(dam_dat, daily_alt_dat)
+
+  # is there a single profile per site_id, date?
+  summary(group_by(dat_out, site_id, date) %>% summarize(n_prof = length(unique(profile_id))))
+
+  # did we maintain the same number of unique dates per reservoir from the original data?
+  length(unique(dat$date[dat$Reservoir == 'Cannonsville'])) == length(unique(dat_out$date[dat_out$Reservoir == 'Cannonsville']))
+  length(unique(dat$date[dat$Reservoir == 'Pepacton'])) == length(unique(dat_out$date[dat_out$Reservoir == 'Pepacton']))
 
   # The munged dataframe has site_id, source_id, date, depth, temp columns.
-  dat_out <- daily_profile %>%
+  dat_out <- dat_out %>%
     # Selecting columns to order and rename them.
-    dplyr::select(date, dateTime, depth, temp, site_id, source_id)
+    dplyr::select(site_id, source_id, date, dateTime, depth, temp)
 
   saveRDS(dat_out, as_data_file(out_ind))
   gd_put(out_ind)
