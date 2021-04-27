@@ -16,15 +16,15 @@ munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
   cannonsville_dam_site <- filter(dat, source_id %in% '1WDC')
   pepacton_dam_site <- filter(dat, source_id %in% '1EDP')
 
-  # Selecting the unique dates associated with the near dam sites.
+  # Selecting the unique dates associated with the sites near dam.
   cannonsville_dates <- unique(cannonsville_dam_site$date)
   pepacton_dates <- unique(pepacton_dam_site$date)
 
-  # Filtering the dam sites and dates associated with them.
+  # Filtering out the dam sites and dates associated with them.
   dates_count <- dat %>%
     filter(!source_id %in% '1WDC' & !date %in% cannonsville_dates &
              !source_id %in% '1EDP' & !date %in% pepacton_dates) %>%
-    # Grouping by reservoir and site to get the number of days of observation per reservoir/ site.
+    # Grouping by reservoir and site to get the dates of measurement per reservoir/ site.
     group_by(site_id, source_id) %>%
     mutate(n_dates = length(unique(date))) %>%
     ungroup()
