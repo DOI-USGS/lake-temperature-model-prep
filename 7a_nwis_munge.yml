@@ -47,6 +47,6 @@ targets:
   7a_nwis_munge/out/reservoir_combined_temperature_data.rds.ind:
     command: combine_reservoirs_temperature(
       out_ind = target_name,
-      drb_in = '7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind',
+      drb_ind = '7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind',
       nyc_dep_ind = '7a_nwis_munge/out/NYC_DEP_reservoir_temperature_data.rds.ind')
 
