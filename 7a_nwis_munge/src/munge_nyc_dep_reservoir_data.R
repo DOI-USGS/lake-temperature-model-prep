@@ -59,3 +59,14 @@ munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
   saveRDS(dat_out, as_data_file(out_ind))
   gd_put(out_ind)
 }
+
+# Function to combine the drb_reservoirs_temp and nyc_dep_temp data.
+combine_reservoirs_temperature <- function(drb_ind, nyc_dep_ind, out_ind) {
+
+  drb_reservoirs_temps <- readRDS(sc_retrieve(drb_ind))
+  nyc_det_reservoirs_temps <- readRDS(sc_retrieve(nyc_dep_ind))
+
+  dat_out <- bind_rows(drb_reservoirs_temps, nyc_det_reservoirs_temps)
+  saveRDS(dat_out, as_data_file(out_ind))
+  gd_put(out_ind)
+}
