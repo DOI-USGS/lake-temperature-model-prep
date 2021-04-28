@@ -306,16 +306,16 @@ targets:
   7a_nwis_munge/out/drb_reservoirs_temp_munged.rds:
     command: gd_get('7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind')
 
-  7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx.ind:
-    command: gd_get('7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx.ind')
-
   7a_nwis_munge/out/drb_reservoirs_waterlevels_munged.rds:
     command: gd_get('7a_nwis_munge/out/drb_reservoirs_waterlevels_munged.rds.ind')
 
-  7a_nwis_munge/out/NYC_DEP_reservoir_temperature_data.rds.ind:
+  7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx:
+    command: gd_get('7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx.ind')
+
+  7a_nwis_munge/out/NYC_DEP_reservoir_temperature_data.rds:
     command: gd_get('7a_nwis_munge/out/NYC_DEP_reservoir_temperature_data.rds.ind')
 
-  7a_nwis_munge/out/reservoir_combined_temperature_data.rds.ind:
+  7a_nwis_munge/out/reservoir_combined_temperature_data.rds:
     command: gd_get('7a_nwis_munge/out/reservoir_combined_temperature_data.rds.ind')
 
   7a_wqp_munge/out/temp_wqp_munged.feather:
