@@ -306,6 +306,9 @@ targets:
   7a_nwis_munge/out/drb_reservoirs_temp_munged.rds:
     command: gd_get('7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind')
 
+  7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx.ind:
+    command: gd_get('7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx.ind')
+
   7a_nwis_munge/out/drb_reservoirs_waterlevels_munged.rds:
     command: gd_get('7a_nwis_munge/out/drb_reservoirs_waterlevels_munged.rds.ind')
 
