@@ -1,7 +1,7 @@
 
 munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
 
-  dat <- readxl::read_xlsx(in_ind) %>%
+  dat <- readxl::read_xlsx(sc_retrieve(in_ind)) %>%
     # Removing unnecessary columns.
     dplyr::select(-c(`Surface Elevation (ft.)`, `Thermocline (m)`,
                      Analyte, Units, Qualifier)) %>%
