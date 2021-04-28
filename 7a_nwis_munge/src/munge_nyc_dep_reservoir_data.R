@@ -1,5 +1,5 @@
 
-munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
+munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
 
   dat <- readxl::read_xlsx(sc_retrieve(in_ind)) %>%
     # Removing unnecessary columns.
@@ -10,7 +10,7 @@ munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
            site_id = as.character(xwalk[Reservoir])) %>%
     rename(source_id = Site, profile_id = `Profile Id`, dateTime = `Sample Date`,
            depth = `Depth (m)`, temp = Value)
-  browser()
+
   # Filtering the sites near the dam (start with "1")
   dam_dat <- filter(dat, source_id %in% c('1WDC', '1EDP')) %>%
     mutate(hour = lubridate::hour(dateTime),
@@ -68,17 +68,19 @@ munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
 
 
 # Function to combine the drb_reservoirs_temp and nyc_dep_temp data.
-combine_reservoirs_temperature <- function(drb_ind, nyc_dep_ind, out_ind) {
+combine_reservoirs_temperature <- function(out_ind, drb_ind, nyc_dep_ind) {
 
   drb_reservoirs_temps <- readRDS(sc_retrieve(drb_ind))
 
-  nyc_det_reservoirs_temps <- readRDS(sc_retrieve(nyc_dep_ind))
+  nyc_dep_reservoirs_temps <- readRDS(sc_retrieve(nyc_dep_ind))
 
-  combine_dat <- bind_rows(drb_reservoirs_temps, nyc_det_reservoirs_temps)
+  combine_dat <- bind_rows(drb_reservoirs_temps, nyc_dep_reservoirs_temps)
 
-  n_occur <- data.frame(table(combine_dat$date))
-  n_occur[n_occur$Freq > 1,]
-  combine_dat[combine_dat$date %in% n_occur$Var1[n_occur$Freq > 1],]
+  # # checking if there's a single profile per site_id, date.
+  # n_date_occur <- combine_dat %>% group_by(site_id, date) %>%
+  #   summarize(n_dates = length(unique(date)))
+  # #n_date_occur[n_date_occur$n_dates > 1,]
+  # overlapping_dates <- combine_dat[combine_dat$date %in% n_date_occur$n_dates > 1,]
 
   saveRDS(combine_dat, as_data_file(out_ind))
   gd_put(out_ind)
