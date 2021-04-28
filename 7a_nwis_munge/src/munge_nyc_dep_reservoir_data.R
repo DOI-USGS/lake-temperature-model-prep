@@ -10,7 +10,7 @@ munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
            site_id = as.character(xwalk[Reservoir])) %>%
     rename(source_id = Site, profile_id = `Profile Id`, dateTime = `Sample Date`,
            depth = `Depth (m)`, temp = Value)
-
+  browser()
   # Filtering the sites near the dam (start with "1")
   dam_dat <- filter(dat, source_id %in% c('1WDC', '1EDP')) %>%
     mutate(hour = lubridate::hour(dateTime),
@@ -66,13 +66,20 @@ munge_nyc_dep_temperature <- function(in_ind, out_ind, xwalk) {
   gd_put(out_ind)
 }
 
+
 # Function to combine the drb_reservoirs_temp and nyc_dep_temp data.
 combine_reservoirs_temperature <- function(drb_ind, nyc_dep_ind, out_ind) {
 
   drb_reservoirs_temps <- readRDS(sc_retrieve(drb_ind))
+
   nyc_det_reservoirs_temps <- readRDS(sc_retrieve(nyc_dep_ind))
 
-  dat_out <- bind_rows(drb_reservoirs_temps, nyc_det_reservoirs_temps)
-  saveRDS(dat_out, as_data_file(out_ind))
+  combine_dat <- bind_rows(drb_reservoirs_temps, nyc_det_reservoirs_temps)
+
+  n_occur <- data.frame(table(combine_dat$date))
+  n_occur[n_occur$Freq > 1,]
+  combine_dat[combine_dat$date %in% n_occur$Var1[n_occur$Freq > 1],]
+
+  saveRDS(combine_dat, as_data_file(out_ind))
   gd_put(out_ind)
 }
