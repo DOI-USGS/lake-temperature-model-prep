@@ -41,7 +41,7 @@ targets:
   7a_nwis_munge/out/NYC_DEP_reservoir_temperature_data.rds.ind:
     command: munge_nyc_dep_temperature(
       out_ind = target_name,
-      in_ind = '7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx',
+      in_ind = '7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx.ind',
       xwalk = I(c('Cannonsville' = 'nhdhr_120022743', 'Pepacton' = 'nhdhr_151957878')))
 
   7a_nwis_munge/out/reservoir_combined_temperature_data.rds.ind:
