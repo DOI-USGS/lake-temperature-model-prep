@@ -74,4 +74,6 @@ targets:
   ## not a huge but this lets us select noon local time
 
   7b_temp_merge/out/drb_daily_reservoir_temps.rds.ind:
-    command: reduce_reservoir_data(target_name, '7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind')
+    command: reduce_reservoir_data(target_name,
+      drb_ind = '7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind',
+      nyc_dep_ind = '7a_nwis_munge/out/NYC_DEP_reservoir_temperature_data.rds.ind')
