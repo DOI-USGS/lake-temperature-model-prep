@@ -36,11 +36,19 @@ targets:
       levels_ind = '6_nwis_fetch/out/drb_reservoirs_waterlevel.rds.ind',
       xwalk = I(c('01423910' = 'nhdhr_120022743', '01414750' = 'nhdhr_151957878', '01424997' = 'nhdhr_120022743', '01416900' = 'nhdhr_151957878')))
 
-# -- munge NYC Department of Environmental Protection (DEP) temperature records for reservoirs -- #
+  # -- Munge NYC Department of Environmental Protection (DEP) temperature records for reservoirs -- #
   # Cannonsville: '01423910' or 'nhdhr_120022743'; Pepacton: '01414750' = 'nhdhr_151957878'
   7a_nwis_munge/out/NYC_DEP_reservoir_temperature_data.rds.ind:
     command: munge_nyc_dep_temperature(
       out_ind = target_name,
       in_ind = '7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx.ind',
+      xwalk = I(c('Cannonsville' = 'nhdhr_120022743', 'Pepacton' = 'nhdhr_151957878')))
+
+  # Munge NYC Department of Environmental Protection (DEP) temperature data to retrieve surface elevation records.
+  # Cannonsville: '01423910' or 'nhdhr_120022743'; Pepacton: '01414750' = 'nhdhr_151957878'
+  7a_nwis_munge/out/NYC_DEP_reservoir_waterlevels.rds.ind:
+    command: munge_nyc_dep_waterlevel(
+      out_ind = target_name,
+      temp_ind = '7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx.ind',
       xwalk = I(c('Cannonsville' = 'nhdhr_120022743', 'Pepacton' = 'nhdhr_151957878')))
 
