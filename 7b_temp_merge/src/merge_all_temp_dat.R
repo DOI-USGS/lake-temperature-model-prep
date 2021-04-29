@@ -289,11 +289,14 @@ reduce_reservoir_data <- function(outind, drb_ind, nyc_dep_ind) {
 
   nyc_dep_reservoirs_temps <- readRDS(sc_retrieve(nyc_dep_ind))
 
-  # Selecting unique dates in nyc_dep_reservoirs_temp data.
-  nyc_dep_dates <- unique(nyc_dep_reservoirs_temps$date)
+  # Selecting the unique dates associated with each reservoir.
+  cannonsville_dates <- unique(nyc_dep_reservoirs_temps$date[nyc_dep_reservoirs_temps$site_id == 'nhdhr_120022743'])
+  pepacton_dates <- unique(nyc_dep_reservoirs_temps$date[nyc_dep_reservoirs_temps$site_id == 'nhdhr_151957878'])
+
 
   daily_drb_dat <- drb_reservoirs_temps %>%
-    filter(!date %in% nyc_dep_dates) %>%
+    filter(!(site_id %in% 'nhdhr_120022743' & date %in% cannonsville_dates) &
+             !(site_id %in% 'nhdhr_151957878' & date %in% pepacton_dates)) %>%
     group_by(site_id, date, depth_category) %>%
     slice_min(hours_diff_noon) %>%
     ungroup() %>%
@@ -301,10 +304,13 @@ reduce_reservoir_data <- function(outind, drb_ind, nyc_dep_ind) {
 
   drb_source <- unique(daily_drb_dat$source_id)
 
-  combine_dat <- bind_rows(daily_drb_dat, nyc_dep_reservoirs_temps) %>%
-    mutate(source = ifelse(source_id %in% drb_source, 'nwis', 'nyc_dep'))
+  combine_dat <- bind_rows('nwis' = daily_drb_dat,
+                           'nyc_dep' = nyc_dep_reservoirs_temps, .id = 'source') %>%
+    dplyr::select(site_id, date, dateTime, source_id, source, depth, temp)
+
 
   saveRDS(combine_dat, as_data_file(outind))
   gd_put(outind)
 
 }
+
