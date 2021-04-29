@@ -66,22 +66,3 @@ munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
   gd_put(out_ind)
 }
 
-
-# Function to combine the drb_reservoirs_temp and nyc_dep_temp data.
-combine_reservoirs_temperature <- function(out_ind, drb_ind, nyc_dep_ind) {
-
-  drb_reservoirs_temps <- readRDS(sc_retrieve(drb_ind))
-
-  nyc_dep_reservoirs_temps <- readRDS(sc_retrieve(nyc_dep_ind))
-
-  combine_dat <- bind_rows(drb_reservoirs_temps, nyc_dep_reservoirs_temps)
-
-  # # checking if there's a single profile per site_id, date.
-  # n_date_occur <- combine_dat %>% group_by(site_id, date) %>%
-  #   summarize(n_dates = length(unique(date)))
-  # #n_date_occur[n_date_occur$n_dates > 1,]
-  # overlapping_dates <- combine_dat[combine_dat$date %in% n_date_occur$n_dates > 1,]
-
-  saveRDS(combine_dat, as_data_file(out_ind))
-  gd_put(out_ind)
-}
