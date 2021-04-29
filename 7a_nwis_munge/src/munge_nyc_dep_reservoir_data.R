@@ -66,3 +66,24 @@ munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
   gd_put(out_ind)
 }
 
+
+munge_nyc_dep_waterlevel <- function(out_ind, temp_ind, xwalk) {
+
+  temp_dat <- readxl::read_xlsx(sc_retrieve(temp_ind)) %>%
+    dplyr::select(Reservoir, Site, `Sample Date`, `Surface Elevation (ft.)`) %>%
+    filter(!is.na(`Surface Elevation (ft.)`)) %>%
+    rename(surface_elevation = `Surface Elevation (ft.)`) %>%
+    mutate(site_id = as.character(xwalk[Reservoir]),
+           date = as.Date(`Sample Date`))
+
+  # get daily water level from temp data
+  daily_levels <- temp_dat %>%
+    group_by(site_id, Site, date) %>%
+    summarize(surface_elevation_m = mean(surface_elevation)) %>%
+    dplyr::select(site_id, source_id = Site, date, surface_elevation_m) %>%
+    ungroup()
+
+  saveRDS(daily_levels, as_data_file(out_ind))
+  gd_put(out_ind)
+
+}
