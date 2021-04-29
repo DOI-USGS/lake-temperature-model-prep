@@ -76,4 +76,5 @@ build/status/N2FfdGVtcF9jb29wX211bmdlL3RtcC9*
 # ignore source metdata csv
 7b_temp_merge/in/source_metadata.csv
 7b_temp_merge/out/source_metadata_for_release.csv
+# ignore sentinel lakes names csv file
 sentinel_lake_names.csv
