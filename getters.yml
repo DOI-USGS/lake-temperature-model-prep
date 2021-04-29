@@ -315,9 +315,6 @@ targets:
   7a_nwis_munge/out/NYC_DEP_reservoir_temperature_data.rds:
     command: gd_get('7a_nwis_munge/out/NYC_DEP_reservoir_temperature_data.rds.ind')
 
-  7a_nwis_munge/out/reservoir_combined_temperature_data.rds:
-    command: gd_get('7a_nwis_munge/out/reservoir_combined_temperature_data.rds.ind')
-
   7a_wqp_munge/out/temp_wqp_munged.feather:
     command: gd_get('7a_wqp_munge/out/temp_wqp_munged.feather.ind')
 
