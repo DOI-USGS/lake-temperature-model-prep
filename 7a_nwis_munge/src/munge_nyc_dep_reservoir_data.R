@@ -78,7 +78,7 @@ munge_nyc_dep_waterlevel <- function(out_ind, temp_ind, xwalk) {
 
   # get daily water level from temp data
   daily_levels <- temp_dat %>%
-    group_by(site_id, Site, date) %>%
+    group_by(site_id, date) %>%
     summarize(surface_elevation_m = mean(surface_elevation)) %>%
     dplyr::select(site_id, source_id = Site, date, surface_elevation_m) %>%
     ungroup()
