@@ -9,7 +9,8 @@ munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
     mutate(date =  as.Date(`Sample Date`), # Creating date column.
            site_id = as.character(xwalk[Reservoir])) %>%
     rename(source_id = Site, profile_id = `Profile Id`, dateTime = `Sample Date`,
-           depth = `Depth (m)`, temp = Value)
+           depth = `Depth (m)`, temp = Value) %>%
+    distinct()
 
   # Filtering the sites near the dam (start with "1")
   dam_dat <- filter(dat, source_id %in% c('1WDC', '1EDP')) %>%
@@ -18,9 +19,6 @@ munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
     # these sites are sometimes measured >1/day
     group_by(site_id, source_id, date) %>%
     filter(profile_id == profile_id[which.min(difference_from_noon)])
-
-  # did we reduce down to a single profile per reservoir-date?
-  summary(group_by(dam_dat, site_id, date) %>% summarize(n_prof = length(unique(profile_id))))
 
   # Selecting the unique dates associated with the sites near dam.
   cannonsville_dates <- unique(dam_dat$date[dam_dat$Reservoir == 'Cannonsville'])
@@ -50,13 +48,6 @@ munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
   # bind data and select rows
   dat_out <- bind_rows(dam_dat, daily_alt_dat)
 
-  # is there a single profile per site_id, date?
-  summary(group_by(dat_out, site_id, date) %>% summarize(n_prof = length(unique(profile_id))))
-
-  # did we maintain the same number of unique dates per reservoir from the original data?
-  length(unique(dat$date[dat$Reservoir == 'Cannonsville'])) == length(unique(dat_out$date[dat_out$Reservoir == 'Cannonsville']))
-  length(unique(dat$date[dat$Reservoir == 'Pepacton'])) == length(unique(dat_out$date[dat_out$Reservoir == 'Pepacton']))
-
   # The munged dataframe has site_id, source_id, date, depth, temp columns.
   dat_out <- dat_out %>%
     # Selecting columns to order and rename them.
@@ -79,9 +70,11 @@ munge_nyc_dep_waterlevel <- function(out_ind, temp_ind, xwalk) {
   # get daily water level from temp data
   daily_levels <- temp_dat %>%
     group_by(site_id, date) %>%
-    summarize(surface_elevation_m = mean(surface_elevation)) %>%
-    dplyr::select(site_id, source_id = Site, date, surface_elevation_m) %>%
+    summarize(surface_elevation_m = mean(surface_elevation),
+              source_id = paste(unique(Site), collapse = '; ')) %>%
+    dplyr::select(site_id, source_id, date, surface_elevation_m) %>%
     ungroup()
+
 
   saveRDS(daily_levels, as_data_file(out_ind))
   gd_put(out_ind)
