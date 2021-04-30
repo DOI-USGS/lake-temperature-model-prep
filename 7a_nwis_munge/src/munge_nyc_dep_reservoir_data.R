@@ -1,6 +1,10 @@
 
 munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
 
+  # filter criteria
+  max.temp <- 40 # threshold!
+  min.temp <- 0
+
   dat <- readxl::read_xlsx(sc_retrieve(in_ind)) %>%
     # Removing unnecessary columns.
     dplyr::select(-c(`Surface Elevation (ft.)`, `Thermocline (m)`,
@@ -10,7 +14,9 @@ munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
            site_id = as.character(xwalk[Reservoir])) %>%
     rename(source_id = Site, profile_id = `Profile Id`, dateTime = `Sample Date`,
            depth = `Depth (m)`, temp = Value) %>%
-    distinct()
+    distinct() %>%
+    filter(temp >= min.temp,
+           temp <= max.temp)
 
   # Filtering the sites near the dam (start with "1")
   dam_dat <- filter(dat, source_id %in% c('1WDC', '1EDP')) %>%
