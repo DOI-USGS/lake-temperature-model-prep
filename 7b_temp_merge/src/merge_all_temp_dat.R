@@ -159,8 +159,8 @@ reduce_temp_data <- function(outind, inind) {
   resolved_time_multiples <- dat_times_c %>%
     group_by(site_id, source, source_site_id, date, depth) %>%
     dplyr::summarize(temp = temp[which.min(hours_diff_noon)],
-              time = time[which.min(hours_diff_noon)],
-              source_id = source_id[which.min(hours_diff_noon)])
+                     time = time[which.min(hours_diff_noon)],
+                     source_id = source_id[which.min(hours_diff_noon)])
 
   cat(nrow(time_multiples) - nrow(resolved_time_multiples), "high frequency (>1/day) observations were dropped. Observations with time closest to noon (local time) were retained when possible.")
 
@@ -193,7 +193,7 @@ reduce_temp_data <- function(outind, inind) {
     ungroup() %>%
     group_by(site_id, source, source_site_id, date, depth) %>%
     dplyr::summarize(temp = temp[first(which_keep)],
-              source_id = first(source_id)) %>%
+                     source_id = first(source_id)) %>%
     ungroup() %>%
     filter(!is.na(temp))
 
@@ -229,12 +229,12 @@ reduce_temp_data <- function(outind, inind) {
     dplyr::summarize(n_depths = n()) %>%
     group_by(site_id, source, source_site_id) %>%
     dplyr::summarize(n_dates = n(),
-              avg_n_depths = mean(n_depths)) %>%
+                     avg_n_depths = mean(n_depths)) %>%
     group_by(site_id) %>%
     dplyr::summarize(source = source[which.max(n_dates)],
-              source_site_id = source_site_id[which.max(n_dates)],
-              avg_n_depths = avg_n_depths[which.max(n_dates)],
-              n_dates = max(n_dates)) %>%
+                     source_site_id = source_site_id[which.max(n_dates)],
+                     avg_n_depths = avg_n_depths[which.max(n_dates)],
+                     n_dates = max(n_dates)) %>%
     filter(n_dates > 50 & avg_n_depths >= 5) %>%
     mutate(top_site = 1) %>%
     dplyr::select(site_id, source, source_site_id, top_site) %>%
@@ -244,7 +244,7 @@ reduce_temp_data <- function(outind, inind) {
     dplyr::summarize(n_depths = n()) %>%
     group_by(site_id, date) %>%
     dplyr::summarize(source = source[which.max(n_depths)],
-              source_site_id = source_site_id[which.max(n_depths)]) %>%
+                     source_site_id = source_site_id[which.max(n_depths)]) %>%
     mutate(top_site_date = 1) %>%
     ungroup()
 
@@ -259,9 +259,9 @@ reduce_temp_data <- function(outind, inind) {
     mutate(keep_source_site = ifelse(top_site %in% 1 | top_site_date %in% 1, TRUE, FALSE)) %>%
     group_by(site_id, date, depth) %>%
     dplyr::summarize(temp = ifelse(all(!(keep_source_site)), first(temp), temp[keep_source_site]),
-              source = ifelse(all(!(keep_source_site)), first(source), source[keep_source_site]),
-              source_site_id = ifelse(all(!(keep_source_site)), first(source_site_id), source_site_id[keep_source_site]),
-              source_id = ifelse(all(!(keep_source_site)), first(source_id), source_id[keep_source_site])) %>%
+                     source = ifelse(all(!(keep_source_site)), first(source), source[keep_source_site]),
+                     source_site_id = ifelse(all(!(keep_source_site)), first(source_site_id), source_site_id[keep_source_site]),
+                     source_id = ifelse(all(!(keep_source_site)), first(source_id), source_id[keep_source_site])) %>%
     ungroup() %>% arrange(site_id, date, depth)
 
   all_dailies <- bind_rows(daily_vals, singles) %>%
@@ -276,10 +276,10 @@ reduce_temp_data <- function(outind, inind) {
 
 }
 
-reduce_reservoir_data <- function(outind, inind) {
+reduce_reservoir_data <- function(outind, drb_ind, nyc_dep_ind) {
   # group by depth category
   # select value closest to noon
-  dat <- readRDS(sc_retrieve(inind)) %>%
+  drb_reservoirs_temps <- readRDS(sc_retrieve(drb_ind)) %>%
     mutate(dateTime_est = as.POSIXct(dateTime, tz = 'America/New_York'),
            time = format(dateTime, '%H:%M'),
            time_hm = lubridate::hm(time),
@@ -287,16 +287,30 @@ reduce_reservoir_data <- function(outind, inind) {
            minutes_decimal = time_hm$minute/60,
            hours_diff_noon = abs(hours_minus_noon + minutes_decimal)) %>% arrange(site_id, date, depth_category)
 
-  dat_out <- dat %>%
+  nyc_dep_reservoirs_temps <- readRDS(sc_retrieve(nyc_dep_ind))
+
+  # Selecting the unique dates associated with each reservoir.
+  cannonsville_dates <- unique(nyc_dep_reservoirs_temps$date[nyc_dep_reservoirs_temps$site_id == 'nhdhr_120022743'])
+  pepacton_dates <- unique(nyc_dep_reservoirs_temps$date[nyc_dep_reservoirs_temps$site_id == 'nhdhr_151957878'])
+
+
+  daily_drb_dat <- drb_reservoirs_temps %>%
+    filter(!(site_id %in% 'nhdhr_120022743' & date %in% cannonsville_dates) &
+             !(site_id %in% 'nhdhr_151957878' & date %in% pepacton_dates)) %>%
     group_by(site_id, date, depth_category) %>%
     slice_min(hours_diff_noon) %>%
     ungroup() %>%
     dplyr::select(site_id, source_id, date, depth, temp)
 
-  saveRDS(dat_out, as_data_file(outind))
+  drb_source <- unique(daily_drb_dat$source_id)
+
+  combine_dat <- bind_rows('nwis' = daily_drb_dat,
+                           'nyc_dep' = nyc_dep_reservoirs_temps, .id = 'source') %>%
+    dplyr::select(site_id, date, dateTime, source_id, source, depth, temp)
+
+
+  saveRDS(combine_dat, as_data_file(outind))
   gd_put(outind)
 
-
 }
-
 
