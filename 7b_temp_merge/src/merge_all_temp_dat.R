@@ -305,7 +305,8 @@ reduce_reservoir_data <- function(outind, drb_ind, nyc_dep_ind) {
 
   combine_dat <- bind_rows('nwis' = daily_drb_dat,
                            'nyc_dep' = nyc_dep_reservoirs_temps, .id = 'source') %>%
-    dplyr::select(site_id, date, source_id, source, depth, temp)
+    dplyr::select(site_id, date, source_id, source, depth, temp) %>%
+    arrange(site_id, date, depth)
 
   saveRDS(combine_dat, as_data_file(outind))
   gd_put(outind)
