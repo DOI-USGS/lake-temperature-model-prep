@@ -302,11 +302,16 @@ reduce_reservoir_data <- function(outind, drb_ind, nyc_dep_ind) {
     ungroup() %>%
     dplyr::select(site_id, source_id, date, depth, temp)
 
-  drb_source <- unique(daily_drb_dat$source_id)
-
   combine_dat <- bind_rows('nwis' = daily_drb_dat,
                            'nyc_dep' = nyc_dep_reservoirs_temps, .id = 'source') %>%
-    dplyr::select(site_id, date, dateTime, source_id, source, depth, temp)
+    dplyr::select(site_id, date, dateTime, source_id, source, depth, temp) %>%
+    group_by(site_id, date, source_id, source, depth) %>%
+    summarize(temp_new = mean(temp)) %>%
+    ungroup()
+
+  duplicate_depth <- combine_dat %>%
+    group_by(site_id, date, depth) %>%
+    summarize(n_duplicates = n())
 
 
   saveRDS(combine_dat, as_data_file(outind))
