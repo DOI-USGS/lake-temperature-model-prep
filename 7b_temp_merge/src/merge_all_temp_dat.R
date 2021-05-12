@@ -293,7 +293,6 @@ reduce_reservoir_data <- function(outind, drb_ind, nyc_dep_ind) {
   cannonsville_dates <- unique(nyc_dep_reservoirs_temps$date[nyc_dep_reservoirs_temps$site_id == 'nhdhr_120022743'])
   pepacton_dates <- unique(nyc_dep_reservoirs_temps$date[nyc_dep_reservoirs_temps$site_id == 'nhdhr_151957878'])
 
-
   daily_drb_dat <- drb_reservoirs_temps %>%
     filter(!(site_id %in% 'nhdhr_120022743' & date %in% cannonsville_dates) &
              !(site_id %in% 'nhdhr_151957878' & date %in% pepacton_dates)) %>%
@@ -301,6 +300,7 @@ reduce_reservoir_data <- function(outind, drb_ind, nyc_dep_ind) {
     slice_min(hours_diff_noon) %>%
     ungroup() %>%
     dplyr::select(site_id, source_id, date, depth, temp)
+
 
   combine_dat <- bind_rows('nwis' = daily_drb_dat,
                            'nyc_dep' = nyc_dep_reservoirs_temps, .id = 'source') %>%
