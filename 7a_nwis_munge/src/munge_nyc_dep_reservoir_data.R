@@ -20,11 +20,14 @@ munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
 
   # Filtering the sites near the dam (start with "1")
   dam_dat <- filter(dat, source_id %in% c('1WDC', '1EDP')) %>%
-    mutate(hour = lubridate::hour(dateTime),
-           difference_from_noon = abs(hour-12)) %>%
+    mutate(time = format(dateTime, '%H:%M'),
+           time_hm = lubridate::hm(time),
+           hours_minus_noon = time_hm$hour - 12,
+           minutes_decimal = time_hm$minute/60,
+           hours_diff_noon = abs(hours_minus_noon + minutes_decimal)) %>%
     # these sites are sometimes measured >1/day
     group_by(site_id, source_id, date) %>%
-    filter(profile_id == profile_id[which.min(difference_from_noon)])
+    filter(profile_id == profile_id[which.min(hours_diff_noon)])
 
   # Selecting the unique dates associated with the sites near dam.
   cannonsville_dates <- unique(dam_dat$date[dam_dat$Reservoir == 'Cannonsville'])
@@ -46,10 +49,13 @@ munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
   # by selecting profile closest to noon
   daily_alt_dat <- alt_sites %>%
     # Selecting the profile closest to noon.
-    mutate(hour = lubridate::hour(dateTime),
-           difference_from_noon = abs(hour - 12)) %>%
+    mutate(time = format(dateTime, '%H:%M'),
+           time_hm = lubridate::hm(time),
+           hours_minus_noon = time_hm$hour - 12,
+           minutes_decimal = time_hm$minute/60,
+           hours_diff_noon = abs(hours_minus_noon + minutes_decimal)) %>%
     group_by(site_id, date) %>%
-    filter(profile_id == profile_id[which.min(difference_from_noon)])
+    filter(profile_id == profile_id[which.min(hours_diff_noon)])
 
   # bind data and select rows
   dat_out <- bind_rows(dam_dat, daily_alt_dat)
@@ -57,7 +63,14 @@ munge_nyc_dep_temperature <- function(out_ind, in_ind, xwalk) {
   # The munged dataframe has site_id, source_id, date, depth, temp columns.
   dat_out <- dat_out %>%
     # Selecting columns to order and rename them.
-    dplyr::select(site_id, source_id, date, dateTime, depth, temp)
+    dplyr::select(site_id, source_id, date, dateTime, depth, temp) %>%
+    filter(depth > 0) %>%
+    ungroup() %>%
+    # leftover duplicates per res-date-depth have same profiles IDs
+    # take average temp
+    group_by(site_id, source_id, date, depth) %>%
+    summarize(temp = mean(temp)) %>% ungroup()
+
 
   saveRDS(dat_out, as_data_file(out_ind))
   gd_put(out_ind)
