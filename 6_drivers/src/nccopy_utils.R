@@ -165,9 +165,9 @@ nldas_url_from_file <- function(nc_filename){
   return(create_nldas_url(t0 = time[1], t1 = time[2], x0 = x[1], x1 = x[2], y0 = y[1], y1 = y[2], variable = var))
 }
 
-# http://hydro1.sci.gsfc.nasa.gov/dods/NLDAS_FORA0125_H.002?lon[221:1:344],time[0:1:99],lat[132:1:196],apcpsfc[0:1:99][132:1:196][221:1:344]
+# https://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FORA0125_H.002?lon[221:1:344],time[0:1:99],lat[132:1:196],apcpsfc[0:1:99][132:1:196][221:1:344]
 create_nldas_url <- function(t0, t1, x0, x1, y0, y1, variable){
-  base_url <- 'http://hydro1.sci.gsfc.nasa.gov/dods/NLDAS_FORA0125_H.002'
+  base_url <- 'https://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FORA0125_H.002'
   query_url <- '?lon[%1.0f:1:%1.0f],time[%1.0f:1:%1.0f],lat[%1.0f:1:%1.0f],%s[%1.0f:1:%1.0f][%1.0f:1:%1.0f][%1.0f:1:%1.0f]'
   sprintf(paste0(base_url, query_url), x0, x1, t0, t1, y0, y1, variable, t0, t1, y0, y1, x0, x1)
 }

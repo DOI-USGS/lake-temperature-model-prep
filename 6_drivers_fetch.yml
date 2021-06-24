@@ -23,7 +23,7 @@ targets:
       - "6_drivers/log/feather/6_fetch_new_cell_tasks.ind"
 
   replete_time_range:
-    command: c(t0=I(0), t1 = I(359420)) # for doing one timechunk: 24999
+    command: c(t0=I(0), t1 = I(367700)) # for doing one timechunk: 24999
 
   append_time_range:
     command: nldas_times_diff(replete_time_range, '6_drivers/in/nldas_times.rds')
@@ -32,7 +32,7 @@ targets:
     command: c(I(25000))
 
   cube_data_dir:
-    command: c(I("6_drivers/out/nc"))
+    command: c(I("/Volumes/ThunderBlade/NLDAS_nc"))
 
   cube_ind_dir:
     command: c(I("6_drivers/log/nc"))
@@ -57,10 +57,10 @@ targets:
     command: cells_containing_points(NLDAS_grid, old_feature_centroids)
 
   #feature_NLDAS_cells:
-  #  command: cells_containing_points_within(NLDAS_grid, new_feature_centroids, x_range = I(c(202,335)), y_range = I(c(127, 191)))
-  # figure out what to adjust with `st_bbox(filter(NLDAS_grid, y > 191 & y < 200, x > 220 & x < 260))`
+  #  command: cells_containing_points_within(NLDAS_grid, new_feature_centroids, x_range = I(c(202,335)), y_range = I(c(127, 191))) ]_y[94.126
+  # figure out what to adjust with `st_bbox(filter(NLDAS_grid, y > 191 & y < 200, x > 220 & x < 260))` x[228.265]_y[120.126]; x[202.335]_y[127.191
   feature_NLDAS_cells:
-    command: cells_all(NLDAS_grid, x_range = I(c(232, 288)), y_range = I(c(86, 128))) # was c(127,154) and c(155, 191) had to do this in two chunks do to memory issues I(c(166,201)), y_range = I(c(144,191))
+    command: cells_all(NLDAS_grid, x_range = I(c(232, 288)), y_range = I(c(86, 126))) # was c(127,154) and c(155, 191) had to do this in two chunks do to memory issues I(c(166,201)), y_range = I(c(144,191))
 
   old_nldas_cells:
     command: as_OPeNDAP_cells(feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # switch back to old_feature_NLDAS_cells
