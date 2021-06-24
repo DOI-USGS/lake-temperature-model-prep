@@ -48,7 +48,8 @@ munge_nwis_temperature <- function(in_ind, out_ind, xwalk){
     # but still want to preserve actual depth
     mutate(depth_category = mean(depth, na.rm = TRUE)) %>% # create a single depth per sensor per day
     ungroup() %>%
-    dplyr::select(date, dateTime, timezone, depth, depth_category, temp = value, site_id, source_id = site_no)
+    dplyr::select(date, dateTime, timezone, depth, depth_category, temp = value, site_id, source_id = site_no) %>%
+    filter(temp >= 0 & temp <=40)
 
   saveRDS(dat_out, as_data_file(out_ind))
   gd_put(out_ind)

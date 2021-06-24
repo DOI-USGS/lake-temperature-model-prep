@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 7a_nwis_munge/out/NYC_DEP_reservoir_waterlevels.rds.ind
+type: file
+hash: 627ee8ead54a48198f6b9c3f8a7944c5
+time: 2021-05-03 13:22:21 UTC
+depends:
+  7a_nwis_munge/in/NYC_DEP_reservoir_data.xlsx.ind: c4cf3a6289414e953ccacf646f6fbfc3
+fixed: 7109b102912953a2ba0e23ebb29d907a
+code:
+  functions:
+    munge_nyc_dep_waterlevel: 68dc99b53142c643482805f1d79af085
+
