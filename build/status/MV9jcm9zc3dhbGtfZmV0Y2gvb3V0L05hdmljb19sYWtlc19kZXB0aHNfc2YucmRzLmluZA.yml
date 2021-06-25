@@ -1,12 +1,12 @@
 version: 0.3.0
 name: 1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind
 type: file
-hash: 351d607b32073a38dc6e728c0d45c276
-time: 2021-06-25 20:30:14 UTC
+hash: 8c6efd7b6e52b7cc108ef3aeb27afeb3
+time: 2021-06-25 20:45:20 UTC
 depends:
   1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind: ecc9c6369fe3120fcfc93a7061bfeec6
 fixed: 932d13566ff80488e4bba71950970c2a
 code:
   functions:
-    fetch_navico_points: 17f3d183ec6e50c7a27fa955ffdfc295
+    fetch_navico_points: f363fdfc3578505a7c6a0146c9ba3ca4
 
