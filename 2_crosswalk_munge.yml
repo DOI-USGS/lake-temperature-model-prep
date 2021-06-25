@@ -164,4 +164,4 @@ targets:
     command: crosswalk_points_in_poly(target_name,
       poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
       points_ind_file = '1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind',
-      points_ID_name = I("MapWaterbody_ID"))
+      points_ID_name = I("Navico_ID"))
