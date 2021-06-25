@@ -16,7 +16,7 @@ targets:
     command: gd_get('1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
 
   1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds:
-    commnad: gd_get('1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind')
+    command: gd_get('1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind')
 
   1_crosswalk_fetch/out/canonical_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
