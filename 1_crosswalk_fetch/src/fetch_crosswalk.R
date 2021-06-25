@@ -208,3 +208,15 @@ fetch_micorps_sites <- function(ind_file) {
 
 }
 
+fetch_navico_points <- function(out_ind, csv_ind) {
+  outfile <- as_data_file(out_ind)
+
+  navico_data <- scipiper::sc_retrieve(csv_ind, remake_file = 'getters.yml') %>%
+    read_csv(col_types = 'dcccdddddi', na='NULL')
+
+  # convert data to sf object and save as rds
+  navico_points_sf <- st_as_sf(navico_data, coords = c('CenterLong','CenterLat'), crs=4326) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+}
