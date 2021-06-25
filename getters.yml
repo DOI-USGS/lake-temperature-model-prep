@@ -237,7 +237,7 @@ targets:
     command: gd_get('4_params_munge/out/iadnr_bathy.rds.ind')
 
   4_params_munge/out/indnr_bathy.rds:
-    command: gd_get('4_params_munge/out/iadnr_bathy.rds.ind')
+    command: gd_get('4_params_munge/out/indnr_bathy.rds.ind')
 
   4_params_munge/out/mndow_01_bathy.rds:
     command: gd_get('4_params_munge/out/mndow_01_bathy.rds.ind')
