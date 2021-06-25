@@ -209,6 +209,9 @@ targets:
   4_params_munge/out/mglp_depths.rds:
     command: gd_get('4_params_munge/out/mglp_depths.rds.ind')
 
+  4_params_munge/out/navico_depths.rds:
+    command: gd_get('4_params_munge/out/navico_depths.rds.ind')
+
   4_params_munge/out/lagos_secchi.rds:
     command: gd_get('4_params_munge/out/lagos_secchi.rds.ind')
 

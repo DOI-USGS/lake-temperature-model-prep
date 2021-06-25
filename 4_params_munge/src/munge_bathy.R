@@ -28,6 +28,19 @@ munge_simple_depth <- function(out_ind, ...){
   gd_put(out_ind, data_file)
 }
 
+munge_navico_depths <- function(out_ind, navico_xwalk_ind) {
+  # munge depth data and filter out lakes where max depth is NA
+  navico_depths <- sc_retrieve(navico_xwalk_ind) %>%
+    readRDS() %>%
+    mutate(Navico_ID = sprintf("Navico_%s", Navico_ID)) %>%
+    filter(!is.na(SocialMapMaxDepthMeters)) %>%
+    dplyr::select(site_id, Navico_ID, z_max = SocialMapMaxDepthMeters)
+
+  data_file <- scipiper::as_data_file(out_ind)
+  saveRDS(navico_depths, data_file)
+  gd_put(out_ind, data_file)
+}
+
 collapse_multi_bathy <- function(data_in){
   bathy_data <- purrr::map(unique(data_in$site_id), function(x){
 
