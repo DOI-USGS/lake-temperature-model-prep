@@ -32,7 +32,6 @@ munge_navico_depths <- function(out_ind, navico_xwalk_ind) {
   # munge depth data and filter out lakes where max depth is NA
   navico_depths <- sc_retrieve(navico_xwalk_ind) %>%
     readRDS() %>%
-    mutate(Navico_ID = sprintf("Navico_%s", Navico_ID)) %>%
     filter(!is.na(SocialMapMaxDepthMeters)) %>%
     dplyr::select(site_id, Navico_ID, z_max = SocialMapMaxDepthMeters)
 
