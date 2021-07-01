@@ -24,7 +24,7 @@ targets:
 
   7a_temp_coop_munge/tmp/parser_files.yml:
     command: list_coop_files(target_name,
-      dirpath = I('7a_temp_coop_munge/src/data_parsers'), dummy = I('2020-03-30'))
+      dirpath = I('7a_temp_coop_munge/src/data_parsers'), dummy = I('2021-07-01'))
 
   coop_parsers:
     command: find_parser(coop_wants, '7a_temp_coop_munge/tmp/parser_files.yml')
@@ -35,12 +35,16 @@ targets:
   # -- create makefile with targets to parse each file pulled from gd -- #
 
   7a_temp_coop_munge_tasks.yml:
-    command: create_coop_munge_makefile(target_name, coop_munge_taskplan, I('7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind'))
+    command: create_coop_munge_makefile(target_name, coop_munge_taskplan,
+      parser_files_yml = '7a_temp_coop_munge/tmp/parser_files.yml',
+      I('7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind'))
 
   7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind:
     command: loop_tasks(task_plan = coop_munge_taskplan,
       task_makefile = '7a_temp_coop_munge_tasks.yml',
-      num_tries = I(10))
+      num_tries = 3)
+    depends: '7a_temp_coop_munge/tmp/parser_files.yml'
+
 
   # -- bind together all data using final indicator file of 7a_temp_coop_munge_tasks.yml -- #
 

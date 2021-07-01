@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/1945_2020_All_MNDNR_MPCA_Temp_DO_Profiles.xlsx.ind
+type: file
+hash: 58310028dd954eab0d0f2b13534baed8
+time: 2021-07-01 20:32:01 UTC
+depends: {}
+fixed: e23cf8350a27a42711d3588f0cadf584
+code:
+  functions: {}
+
