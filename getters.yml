@@ -12,6 +12,12 @@ targets:
 
   #### 1_spatial ####
 
+  1_crosswalk_fetch/in/Navico_lakes_depths.csv:
+    command: gd_get('1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
+
+  1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind')
+
   1_crosswalk_fetch/out/canonical_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
 
@@ -121,6 +127,9 @@ targets:
   2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind')
 
+  2_crosswalk_munge/out/navico_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind')
+
   #### 3_params_fetch #####
 
   3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip:
@@ -200,6 +209,9 @@ targets:
   4_params_munge/out/mglp_depths.rds:
     command: gd_get('4_params_munge/out/mglp_depths.rds.ind')
 
+  4_params_munge/out/navico_depths.rds:
+    command: gd_get('4_params_munge/out/navico_depths.rds.ind')
+
   4_params_munge/out/lagos_secchi.rds:
     command: gd_get('4_params_munge/out/lagos_secchi.rds.ind')
 
@@ -225,7 +237,7 @@ targets:
     command: gd_get('4_params_munge/out/iadnr_bathy.rds.ind')
 
   4_params_munge/out/indnr_bathy.rds:
-    command: gd_get('4_params_munge/out/iadnr_bathy.rds.ind')
+    command: gd_get('4_params_munge/out/indnr_bathy.rds.ind')
 
   4_params_munge/out/mndow_01_bathy.rds:
     command: gd_get('4_params_munge/out/mndow_01_bathy.rds.ind')

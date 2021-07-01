@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 4_params_munge/out/navico_depths.rds.ind
+type: file
+hash: c1fd082bb2c30b052dbebf89bd5fd60b
+time: 2021-06-30 18:40:29 UTC
+depends:
+  2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind: 185aafe6b5f51d9e47e15b6e1f3be92b
+fixed: 8de0b412e34c6c4872d93fca0b13f8b9
+code:
+  functions:
+    munge_navico_depths: ca3747a6ecb070fbf79accee1e4e703d
+

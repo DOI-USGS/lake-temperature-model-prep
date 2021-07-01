@@ -55,6 +55,7 @@ targets:
       '4_params_munge/out/indnr_bathy.rds.ind',
       '4_params_munge/out/DRB_reservoirs_bathy.rds.ind',
       '4_params_munge/out/mglp_mi_perc_bathy.rds.ind',
+      '4_params_munge/out/navico_depths.rds.ind',
       '4_params_munge/out/lagos_depths.rds.ind',
       '4_params_munge/out/wbic_depths.rds.ind',
       '4_params_munge/out/mglp_depths.rds.ind',

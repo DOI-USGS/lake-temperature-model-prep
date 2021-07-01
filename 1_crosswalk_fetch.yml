@@ -25,6 +25,7 @@ targets:
       - 1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind
       - 1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind
       - 1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind
+      - 1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind
 
   wqp_temperature_charnames:
     command: c(I(c(
@@ -105,3 +106,6 @@ targets:
     command: slice_iadnr_contour(target_name,
       contour_ind = '1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind')
 
+  1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind:
+    command: fetch_navico_points(target_name,
+      csv_ind = '1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')

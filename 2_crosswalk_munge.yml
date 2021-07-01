@@ -27,6 +27,7 @@ targets:
       - 2_crosswalk_munge/out/centroid_lakes_sf.rds.ind
       - 2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind
 
   2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind:
     command: scmake(I('gnisname_nhdhr_xwalk.rds.ind_promise'), '1_crosswalk_fetch_nhd_tasks.yml')
@@ -158,3 +159,9 @@ targets:
       target_name,
       intersect_ind_file = '2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds.ind',
       poly1_ID_name = I("NDGF_ID"))
+
+  2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind:
+    command: crosswalk_points_in_poly(target_name,
+      poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      points_ind_file = '1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind',
+      points_ID_name = I("Navico_ID"))
