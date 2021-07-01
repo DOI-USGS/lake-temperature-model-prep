@@ -15,6 +15,9 @@ targets:
   1_crosswalk_fetch/in/Navico_lakes_depths.csv:
     command: gd_get('1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
 
+  1_crosswalk_fetch/in/Iowa_Lake_Locations.csv:
+    command: gd_get('1_crosswalk_fetch/in/Iowa_Lake_Locations.csv.ind')
+
   1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind')
 
