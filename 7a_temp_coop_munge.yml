@@ -24,7 +24,7 @@ targets:
 
   7a_temp_coop_munge/tmp/parser_files.yml:
     command: list_coop_files(target_name,
-      dirpath = I('7a_temp_coop_munge/src/data_parsers'), dummy = I('2021-07-01'))
+      dirpath = I('7a_temp_coop_munge/src/data_parsers'), dummy = I('2021-07-02'))
 
   coop_parsers:
     command: find_parser(coop_wants, '7a_temp_coop_munge/tmp/parser_files.yml')
@@ -47,11 +47,12 @@ targets:
 
 
   # -- bind together all data using final indicator file of 7a_temp_coop_munge_tasks.yml -- #
-
+  # these are crosswalks to _ temperature data_, not all xwalks link to temperatures
   7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind:
     command: crosswalk_coop_dat(
       outind = target_name,
       inind = '7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind',
       id_crosswalk = '2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind',
       wbic_crosswalk = '2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind',
-      dow_crosswalk = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind')
+      dow_crosswalk = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind',
+      iowa_crosswalk = '2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind')

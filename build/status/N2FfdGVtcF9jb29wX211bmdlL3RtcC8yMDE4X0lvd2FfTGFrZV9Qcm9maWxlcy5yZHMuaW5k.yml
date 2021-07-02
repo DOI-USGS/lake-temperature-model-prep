@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 7a_temp_coop_munge/tmp/2018_Iowa_Lake_Profiles.rds.ind
+type: file
+hash: 1a9de6a5e309803afefca09e2cbdcb6f
+time: 2021-07-02 13:34:45 UTC
+depends:
+  6_temp_coop_fetch/in/2018_Iowa_Lake_Profiles.csv.ind: 520c2d03f1b67a13d0875602664b9279
+fixed: 2e46967255c9e0f79a6d9bd6b25e78a4
+code:
+  functions:
+    parse_2018_Iowa_Lake_Profiles: 2f8a907254705869106c0f278cddf74b
+    parse_Iowa_Lake_Profiles: 14e6a1704dc141538daa74deb273c383
+
