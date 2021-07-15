@@ -29,7 +29,7 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   dow2nhd$DOW <- gsub('mndow_', '', as.character(dow2nhd$MNDOW_ID))
   dow2nhd <- distinct(dow2nhd) # get rid of duplicated obs
 
-  iowa2hnd <- sc_retrieve(iowa_crosswalk) %>% readRDS(dowfile) %>% distinct()
+  iowa2nhd <- sc_retrieve(iowa_crosswalk) %>% readRDS() %>% distinct()
 
   # merge each possible ID with nhdid
   # wbic
@@ -46,7 +46,7 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
 
   # iowa
   dat_iowa <- filter(dat, !is.na(Iowa_ID)) %>%
-    left_join(iowa2hnd)
+    left_join(iowa2nhd)
 
   # dow
   dat_filt_dow <- filter(dat, !is.na(DOW)) %>%
