@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 7a_temp_coop_munge/tmp/1945_2020_All_MNDNR_MPCA_Temp_DO_Profiles.rds.ind
+type: file
+hash: 5c21e52c3fda96859a9942e32dcaa5ed
+time: 2021-07-01 21:11:53 UTC
+depends:
+  6_temp_coop_fetch/in/1945_2020_All_MNDNR_MPCA_Temp_DO_Profiles.xlsx.ind: 58310028dd954eab0d0f2b13534baed8
+fixed: e5853c0e60c86936b22e7e44071eab94
+code:
+  functions:
+    parse_1945_2020_All_MNDNR_MPCA_Temp_DO_Profiles: 8db2570396472b30105a07c141cd0d96
+

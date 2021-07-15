@@ -31,7 +31,8 @@ find_parser <- function(coop_wants, parser_filehash) {
   }
 
   if (!all(parser_exists)) {
-    stop(paste0('Cooperator data file(s) ', paste0(coop_wants[which(parser_exists == FALSE)], collapse = ', '), ' do not have parsers. Please write a parser and save to 7a_temp_coop_munge/src/data_parser'))
+    stop(paste0('Cooperator data file(s) ', paste0(coop_wants[which(parser_exists == FALSE)], collapse = ', '), ' do not have parsers. Please write a parser and save to 7a_temp_coop_munge/src/data_parsers/
+                may need to rebuild 7a_temp_coop_munge/tmp/parser_files.yml to update the list'))
   }
 
   parsers_list <- as.list(parsers)
@@ -80,30 +81,17 @@ create_coop_munge_taskplan <- function(wants, parsers) {
   return(task_plan)
 }
 
-create_coop_munge_makefile <- function(target_name, taskplan, final_targets) {
+create_coop_munge_makefile <- function(target_name, taskplan, parser_files_yml, final_targets) {
+  parser_files <- names(yaml::yaml.load_file(parser_files_yml))
   create_task_makefile(
     makefile = target_name,
     task_plan = taskplan,
     packages = c('scipiper', 'dplyr', 'readxl', 'assertthat', 'tidyselect'),
     file_extensions = c("ind"),
     include = c('6_temp_coop_fetch.yml', '7a_temp_coop_munge.yml'),
-    sources = c('7a_temp_coop_munge/src/data_parsers/parse_test_coop_data.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_wilter_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_vermillion_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_mndow_coop_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_manualentry_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_micorps_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_mndnr_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_winnie_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_wi_wbic_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_redlake_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_dakota_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_indiana_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_tenmile_files.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_cass_file.R',
+    sources = c(parser_files,
                 '7a_temp_coop_munge/src/parsing_task_fxns.R',
-                'lib/src/require_local.R',
-                '7a_temp_coop_munge/src/data_parsers/parse_unit_functions.R'),
+                'lib/src/require_local.R'),
     final_targets = final_targets
     )
 }

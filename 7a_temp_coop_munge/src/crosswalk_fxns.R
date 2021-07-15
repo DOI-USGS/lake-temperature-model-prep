@@ -4,7 +4,8 @@ list_coop_files <- function(fileout, dirpath, dummy){
 
 
 crosswalk_coop_dat <- function(outind = target_name, inind,
-                               id_crosswalk, wbic_crosswalk, dow_crosswalk) {
+                               id_crosswalk, wbic_crosswalk, dow_crosswalk,
+                               iowa_crosswalk) {
 
   outfile <- as_data_file(outind)
 
@@ -28,6 +29,8 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   dow2nhd$DOW <- gsub('mndow_', '', as.character(dow2nhd$MNDOW_ID))
   dow2nhd <- distinct(dow2nhd) # get rid of duplicated obs
 
+  iowa2nhd <- sc_retrieve(iowa_crosswalk) %>% readRDS() %>% distinct()
+
   # merge each possible ID with nhdid
   # wbic
   wbics_in_dat <- wbic2nhd %>%
@@ -41,8 +44,11 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   dat_wbic <- filter(dat, !is.na(WBIC)) %>%
     left_join(wbics_in_dat)
 
-  # dow
+  # iowa
+  dat_iowa <- filter(dat, !is.na(Iowa_ID)) %>%
+    left_join(iowa2nhd)
 
+  # dow
   dat_filt_dow <- filter(dat, !is.na(DOW)) %>%
     filter(!DOW == '') %>%
     mutate(DOW = ifelse(nchar(DOW)==8, DOW, paste0('0', DOW)))
@@ -64,8 +70,8 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
 
   # all together now
   # print out warning about what data you're dropping
-  dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id) %>%
-    tidyr::gather(key = state_id_type, value = state_id, DOW, id, WBIC) %>%
+  dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id, dat_iowa) %>%
+    tidyr::gather(key = state_id_type, value = state_id, DOW, id, WBIC, Iowa_ID) %>%
     filter(!is.na(state_id))
 
   # find which coop files have missing crosswalks

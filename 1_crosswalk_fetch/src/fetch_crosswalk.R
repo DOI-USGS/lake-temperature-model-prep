@@ -223,3 +223,17 @@ fetch_navico_points <- function(out_ind, csv_ind) {
 
   gd_put(out_ind, outfile)
 }
+
+fetch_Iowa_points <- function(out_ind, csv_ind){
+  outfile <- as_data_file(out_ind)
+
+  Iowa_data <- scipiper::sc_retrieve(csv_ind) %>%
+    read_csv(col_types = 'icccddc')
+
+  st_as_sf(Iowa_data, coords = c('UTM (NAD83)_E','UTM (NAD83)_N'), crs=26915) %>%
+    mutate(site_id = sprintf("Iowa_%s", LakeID), .keep="unused", .before=1) %>%
+    st_transform(crs=4326) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+}

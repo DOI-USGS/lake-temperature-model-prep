@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/2018_Iowa_Lake_Profiles.csv.ind
+type: file
+hash: 520c2d03f1b67a13d0875602664b9279
+time: 2021-07-02 13:23:43 UTC
+depends: {}
+fixed: 1d50a4aa1fedafe00c5aa8dac0938780
+code:
+  functions: {}
+
