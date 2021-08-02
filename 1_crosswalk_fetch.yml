@@ -44,7 +44,7 @@ targets:
  #https://www.waterqualitydata.us/portal/#siteType=Lake%2C%20Reservoir%2C%20Impoundment&characteristicName=Depth%2C%20Secchi%20disk%20depth&characteristicName=Water%20transparency%2C%20Secchi%20disc&characteristicName=Depth%2C%20Secchi%20disk%20depth%20(choice%20list)&characteristicName=Secchi%20Reading%20Condition%20(choice%20list)&mimeType=tsv
   nhd_HR_download_plan:
     command: create_nhd_HR_download_plan(I(c("North_Dakota","South_Dakota","Iowa","Michigan","Indiana","Illinois","Wisconsin",
-      "Minnesota", "New_York", "Pennsylvania", "Missouri")),
+      "Minnesota", "New_York", "Pennsylvania", "Missouri", "Arkansas")),
       min_size = I(40000))
 
   1_crosswalk_fetch_nhd_tasks.yml:
@@ -74,7 +74,7 @@ targets:
       out_ind = target_name,
       layer = I("LAGOS_NE_All_Lakes_4ha"),
       zip_ind = '1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind',
-      states = I(c("IA", "IN", "SD", "ND", "MI", "MN", "WI", "IL", "NY", "PA", "MO")))
+      states = I(c("IA", "IN", "SD", "ND", "MI", "MN", "WI", "IL", "NY", "PA", "MO", "AR")))
 
   1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind:
     command: MGLP_zip_to_sf(

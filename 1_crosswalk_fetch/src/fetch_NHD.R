@@ -2,7 +2,8 @@
 
 
 create_nhd_HR_download_plan <- function(states, min_size, remove_IDs = NULL, keep_IDs = NULL){
-  base_url <- 'ftp://rockyftp.cr.usgs.gov/vdelivery/Datasets/Staged/Hydrography/NHD/State/HighResolution/GDB/NHD_H_%s_State_GDB.zip'
+
+  base_url <- 'https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHD/State/HighResolution/GDB/NHD_H_%s_State_GDB.zip'
 
   fetch_as_sf_step <- create_task_step(
     step_name = 'fetch_NHD_as_sf',
@@ -64,9 +65,8 @@ fetch_NHD_as_sf <- function(url){
     unlink(dl_dest)
   })
 
-  download.file(url, destfile = dl_dest, quiet = TRUE)
+  GET(url, write_disk( dl_dest, overwrite=TRUE))
   unzip(dl_dest, exdir = unzip_dir)
-
   sf::read_sf(file.path(unzip_dir,paste0(tools::file_path_sans_ext(basename(url)), '.gdb')), layer = 'NHDWaterbody') %>%
     filter(FType %in% c(390, 436, 361)) #select only lakes/ponds/reservoirs. This drops things like swamp/marsh
 }
