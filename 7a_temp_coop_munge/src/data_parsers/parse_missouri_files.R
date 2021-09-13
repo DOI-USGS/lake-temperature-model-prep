@@ -25,8 +25,8 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
                     # Bull Shoals yet and I found this nhdhr match:
                     # https://github.com/USGS-R/lake-temperature-model-prep/blob/master/4_params_munge.yml#L60
                     id = 'nhdhr_12003253',
-                    depth = `Depth (ft)`,
-                    temp = !!"Temp (°C)") %>%
+                    depth = `Depth (ft)`) %>%
+      dplyr::rename(temp = "Temp (°C)") %>%
 
       # Replace "Surface" depth and convert depths to numeric
       mutate(depth = as.numeric(ifelse(depth == "Surface", 0, depth))) %>%
