@@ -17,6 +17,11 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
     # of data (which looked correct based on my spot check)
     readxl::read_excel(fn, range = "A7:D27") %>%
 
+      # Struggles with the special symbols in the column names
+      # due to encoding issues. See details in the `scipiper`
+      # issue: https://github.com/USGS-R/scipiper/issues/151
+      fix_colname_encoding("latin1") %>%
+
       # Reformat columns and extract info we need from Excel file
       dplyr::mutate(DateTime = extract_bullshoals_date(fn),
                     site = extract_bullshoals_site(fn),
@@ -43,6 +48,14 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
   saveRDS(object = data_clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 
+}
+
+# Thanks https://stackoverflow.com/questions/34024654/reading-rdata-file-with-different-encoding
+fix_colname_encoding <- function(df, new_encoding = c("UTF-8", "latin1")) {
+  cnames <- colnames(df)
+  Encoding(cnames) <- new_encoding
+  colnames(df) <- cnames
+  return(df)
 }
 
 extract_bullshoals_date <- function(fn) {
