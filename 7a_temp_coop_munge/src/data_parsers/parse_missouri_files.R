@@ -40,8 +40,6 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
   }) %>%  bind_rows() %>%
     arrange(site, DateTime, depth)
 
-  # TODO: Add in the id column?
-
   saveRDS(object = data_clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
 
