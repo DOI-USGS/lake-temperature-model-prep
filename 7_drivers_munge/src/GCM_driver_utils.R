@@ -1,8 +1,8 @@
 library(sf)
 library(ggplot2)
 
-map_centroids <- function(centroids_sf, out_file) {
-
+map_centroids <- function(centroids_sf_rds, out_file) {
+  centroids_sf <- readRDS(centroids_sf_rds)
   centroid_plot <- ggplot() +
     geom_sf(data=centroids_sf, color='dodgerblue', size=0.5)
 

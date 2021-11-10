@@ -8,13 +8,18 @@ source('7_drivers_munge/src/GCM_driver_utils.R')
 
 targets_list <- list(
   tar_target(
-    centroids_sf,
-    gd_get(ind_file = '2_crosswalk_munge/out/centroid_lakes_sf.rds.ind') %>% readRDS
+    centroids_sf_rds,
+    gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind'),
+    format='file'
   ),
   tar_target(
     centroid_map_png,
-    map_centroids(centroids_sf, out_file = '7_drivers_munge/out/centroid_map.png'),
+    map_centroids(centroids_sf_rds, out_file = '7_drivers_munge/out/centroid_map.png'),
     format='file'
+  ),
+  tar_target(
+    pipeline_files_out,
+    c(centroids_sf_rds, centroid_map_png)
   )
 )
 
