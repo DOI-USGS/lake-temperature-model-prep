@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 7_drivers_munge/out/7_GCM_driver_files.ind
+type: file
+hash: cb02e318645ec836130d8a31d65cce3f
+time: 2021-11-10 16:35:13 UTC
+depends:
+  2_crosswalk_munge/out/centroid_lakes_sf.rds.ind: 3863d7a358596a912c2d87fca11e2d37
+fixed: ecd2ace6bd2c040576a545a1d62e37ad
+code:
+  functions:
+    build_GCM_pipeline: cdc897a9236f3fca11c297b78b7037b7
+

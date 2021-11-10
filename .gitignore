@@ -1,3 +1,5 @@
+# Targets files
+_targets
 # History files
 .Rhistory
 .Rapp.history
@@ -52,6 +54,7 @@ rsconnect/
 *.xml
 *.xlsx
 *.Rdata
+*.png
 # "in" cooperator data
 /6_temp_coop_fetch/in/*
 !/6_temp_coop_fetch/in/*.ind
