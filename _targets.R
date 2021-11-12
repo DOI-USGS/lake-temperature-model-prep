@@ -18,7 +18,7 @@ targets_list <- list(
     format='file'
   ),
   tar_target(
-    pipeline_files_out,
+    gcm_files_out,
     c(centroids_sf_rds, centroid_map_png)
   )
 )
