@@ -80,4 +80,6 @@ build/status/N2FfdGVtcF9jb29wX211bmdlL3RtcC9*
 # ignore source metdata csv
 7b_temp_merge/in/source_metadata.csv
 7b_temp_merge/out/source_metadata_for_release.csv
-
+# Ignore GCM pipeline intermediate files
+7_drivers_munge/tmp/*
+!7_drivers_munge/tmp/.empty
