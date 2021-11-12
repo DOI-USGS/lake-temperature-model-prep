@@ -1,5 +1,3 @@
-library(sf)
-library(ggplot2)
 
 map_centroids <- function(centroids_sf_rds, out_file) {
   centroids_sf <- readRDS(centroids_sf_rds)

@@ -1,7 +1,7 @@
 library(targets)
 
 options(tidyverse.quiet = TRUE)
-tar_option_set(packages = c("tidyverse", "sf", "scipiper"))
+tar_option_set(packages = c("tidyverse", "sf", "scipiper", "ggplot2"))
 
 
 source('7_drivers_munge/src/GCM_driver_utils.R')
