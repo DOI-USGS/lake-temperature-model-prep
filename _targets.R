@@ -48,7 +48,8 @@ targets_list <- list(
       query_url = "https://cida.usgs.gov/thredds/dodsC/notaro_GFDL_1980_1999",
       query_vars = c("evspsbl", "hfss", "mrso"),
       query_dates = c('1999-01-01', '1999-01-15')
-    )
+    ),
+    format = "file"
   ),
 
   tar_target(
