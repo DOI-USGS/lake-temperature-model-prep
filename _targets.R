@@ -52,13 +52,17 @@ targets_list <- list(
   ),
 
   tar_target(
-    centroid_map_png,
-    map_centroids(centroids_sf_rds, out_file = '7_drivers_munge/out/centroid_map.png'),
+    query_map_png,
+    map_query(
+      out_file = '7_drivers_munge/out/query_map.png',
+      centroids_sf = query_centroids_sf,
+      polys_sf = query_polys_sf
+    ),
     format='file'
   ),
   tar_target(
     gcm_files_out,
-    c(gcm_data_raw_txt, centroid_map_png)
+    c(gcm_data_raw_txt, query_map_png)
   )
 )
 

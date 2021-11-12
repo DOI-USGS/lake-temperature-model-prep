@@ -1,10 +1,16 @@
 
-map_centroids <- function(centroids_sf_rds, out_file) {
-  centroids_sf <- readRDS(centroids_sf_rds)
-  centroid_plot <- ggplot() +
-    geom_sf(data=centroids_sf, color='dodgerblue', size=0.5)
+map_query <- function(out_file, centroids_sf, polys_sf) {
 
-  ggsave(out_file, centroid_plot, width=10, height=8, dpi=300)
+  # TODO: delete this WI-specific view
+  wi_sf <- st_as_sf(maps::map('state', 'wisconsin', plot=FALSE, fill=TRUE))
+
+  query_plot <- ggplot() +
+    geom_sf(data=wi_sf) +
+    geom_sf(data=polys_sf, color='dodgerblue', fill=NA, size=1) +
+    geom_sf(data=centroids_sf, color='salmon', size=4) +
+    coord_sf() + theme_void()
+
+  ggsave(out_file, query_plot, width=10, height=8, dpi=300)
 
   return(out_file)
 }
