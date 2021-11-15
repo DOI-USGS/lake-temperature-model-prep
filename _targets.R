@@ -24,16 +24,10 @@ targets_list <- list(
     split_lake_centroids(centroids_sf_rds)
   ),
 
-  # Convert the lake centroids to some kind of polygon for querying GDP
-  tar_target(
-    query_polys_sf,
-    centroids_to_poly(query_centroids_sf)
-  ),
-
   # Convert the sf polygons into a geoknife-ready format
   tar_target(
-    query_polys_geoknife,
-    sf_to_simplegeom(query_polys_sf)
+    query_centroids_geoknife,
+    sf_pts_to_simplegeom(query_centroids_sf)
   ),
 
   # TODO: make this parameterized/branched. Right now, just doing
@@ -44,7 +38,7 @@ targets_list <- list(
     gcm_data_raw_txt,
     download_gcm_data(
       out_file = "7_drivers_munge/tmp/7_GCM_GFDL_raw.txt",
-      query_geom = query_polys_geoknife,
+      query_geom = query_centroids_geoknife,
       query_url = "https://cida.usgs.gov/thredds/dodsC/notaro_GFDL_1980_1999",
       query_vars = c("evspsbl", "hfss", "mrso"),
       query_dates = c('1999-01-01', '1999-01-15')

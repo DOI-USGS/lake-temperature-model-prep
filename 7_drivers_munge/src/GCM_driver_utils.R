@@ -27,19 +27,14 @@ split_lake_centroids <- function(centroids_sf_rds) {
     sample_n(5)
 }
 
-# Take the lake centroids and convert into a polygon to query
-# the Geo Data Portal for driver data.
-centroids_to_poly <- function(centroids_sf) {
-  centroids_sf %>%
-    st_make_grid()
-}
-
 # Convert an sf object into a geoknife::simplegeom, so that
-# it can be used in the geoknife query. Must become an
-# `sp` object first.
-sf_to_simplegeom <- function(sf_obj) {
+# it can be used in the geoknife query. `geoknife` only works
+# with `sp` objects but not SpatialPoints at the moment, so
+# need to convert these to a data.frame.
+sf_pts_to_simplegeom <- function(sf_obj) {
   sf_obj %>%
-    as_Spatial() %>%
+    st_coordinates() %>%
+    t() %>% as.data.frame() %>%
     simplegeom()
 }
 
