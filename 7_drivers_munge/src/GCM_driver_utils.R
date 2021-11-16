@@ -53,7 +53,8 @@ download_gcm_data <- function(out_file, query_geom, query_url, query_vars,
   )
 
   wait(gcm_job)
-  download(gcm_job, destination = out_file, overwrite = TRUE)
+  my_data <- result(gcm_job)
+  arrow::write_feather(my_data, out_file)
 
   return(out_file)
 }

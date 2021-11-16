@@ -6,7 +6,8 @@ tar_option_set(packages = c(
   "sf",
   "scipiper",
   "ggplot2",
-  "geoknife"
+  "geoknife",
+  "arrow"
 ))
 
 source('7_drivers_munge/src/GCM_driver_utils.R')
@@ -35,12 +36,13 @@ targets_list <- list(
   # handle chunks of lakes. See this config file example for an example:
   # https://github.com/USGS-R/necsc-lake-modeling/blob/a81a0e7ed6ede66253f765b42568a4d39a5dccc2/configs/ACCESS_config.yml
   tar_target(
-    gcm_data_raw_txt,
+    gcm_data_raw_feather,
     download_gcm_data(
-      out_file = "7_drivers_munge/tmp/7_GCM_GFDL_raw.txt",
+      out_file = "7_drivers_munge/tmp/7_GCM_GFDL_raw.feather",
       query_geom = query_centroids_geoknife,
       query_url = "https://cida.usgs.gov/thredds/dodsC/notaro_GFDL_1980_1999",
-      query_vars = c("evspsbl", "hfss", "mrso"),
+      # Data definitions: https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html
+      query_vars = c("evspsbl"), # TODO: more than one var, but geoknife isn't working with that
       query_dates = c('1999-01-01', '1999-01-15')
     ),
     format = "file"
