@@ -1,12 +1,11 @@
 
-map_query <- function(out_file, centroids_sf, polys_sf) {
+map_query <- function(out_file, centroids_sf) {
 
   # TODO: delete this WI-specific view
   wi_sf <- st_as_sf(maps::map('state', 'wisconsin', plot=FALSE, fill=TRUE))
 
   query_plot <- ggplot() +
     geom_sf(data=wi_sf) +
-    geom_sf(data=polys_sf, color='dodgerblue', fill=NA, size=1) +
     geom_sf(data=centroids_sf, color='salmon', size=4) +
     coord_sf() + theme_void()
 
@@ -27,19 +26,14 @@ split_lake_centroids <- function(centroids_sf_rds) {
     sample_n(5)
 }
 
-# Take the lake centroids and convert into a polygon to query
-# the Geo Data Portal for driver data.
-centroids_to_poly <- function(centroids_sf) {
-  centroids_sf %>%
-    st_make_grid()
-}
-
 # Convert an sf object into a geoknife::simplegeom, so that
-# it can be used in the geoknife query. Must become an
-# `sp` object first.
-sf_to_simplegeom <- function(sf_obj) {
+# it can be used in the geoknife query. `geoknife` only works
+# with `sp` objects but not SpatialPoints at the moment, so
+# need to convert these to a data.frame.
+sf_pts_to_simplegeom <- function(sf_obj) {
   sf_obj %>%
-    as_Spatial() %>%
+    st_coordinates() %>%
+    t() %>% as.data.frame() %>%
     simplegeom()
 }
 
@@ -58,7 +52,8 @@ download_gcm_data <- function(out_file, query_geom, query_url, query_vars,
   )
 
   wait(gcm_job)
-  download(gcm_job, destination = out_file, overwrite = TRUE)
+  my_data <- result(gcm_job)
+  arrow::write_feather(my_data, out_file)
 
   return(out_file)
 }
