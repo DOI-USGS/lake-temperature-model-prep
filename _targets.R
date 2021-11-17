@@ -42,7 +42,8 @@ targets_list <- list(
       query_geom = query_centroids_geoknife,
       query_url = "https://cida.usgs.gov/thredds/dodsC/notaro_GFDL_1980_1999",
       # Data definitions: https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html
-      query_vars = c("evspsbl"), # TODO: more than one var, but geoknife isn't working with that
+      # Can't use `mrso` until https://github.com/USGS-R/geoknife/issues/399 is fixed, but we shouldn't need it
+      query_vars = c("evspsbl", "hfss"),
       query_dates = c('1999-01-01', '1999-01-15')
     ),
     format = "file"
