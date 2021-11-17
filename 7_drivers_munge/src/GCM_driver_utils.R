@@ -1,12 +1,11 @@
 
-map_query <- function(out_file, centroids_sf, polys_sf) {
+map_query <- function(out_file, centroids_sf) {
 
   # TODO: delete this WI-specific view
   wi_sf <- st_as_sf(maps::map('state', 'wisconsin', plot=FALSE, fill=TRUE))
 
   query_plot <- ggplot() +
     geom_sf(data=wi_sf) +
-    geom_sf(data=polys_sf, color='dodgerblue', fill=NA, size=1) +
     geom_sf(data=centroids_sf, color='salmon', size=4) +
     coord_sf() + theme_void()
 

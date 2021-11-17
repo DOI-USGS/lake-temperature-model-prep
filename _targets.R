@@ -25,7 +25,7 @@ targets_list <- list(
     split_lake_centroids(centroids_sf_rds)
   ),
 
-  # Convert the sf polygons into a geoknife-ready format
+  # Convert the sf centroids into a geoknife-ready format
   tar_target(
     query_centroids_geoknife,
     sf_pts_to_simplegeom(query_centroids_sf)
@@ -52,8 +52,7 @@ targets_list <- list(
     query_map_png,
     map_query(
       out_file = '7_drivers_munge/out/query_map.png',
-      centroids_sf = query_centroids_sf,
-      polys_sf = query_polys_sf
+      centroids_sf = query_centroids_sf
     ),
     format='file'
   ),
