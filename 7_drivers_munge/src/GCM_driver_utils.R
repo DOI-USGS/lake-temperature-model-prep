@@ -26,6 +26,36 @@ split_lake_centroids <- function(centroids_sf_rds) {
     sample_n(5)
 }
 
+# Reproject to the crs of the gcm grid
+project_to_grid_crs <- function(input_sf, grid_cells) {
+  sf::st_transform(input_sf, crs = st_crs(grid_cells))
+}
+
+
+# need to subset grid tiles polygons to that with mapped tile id
+# then subset grid cells to polygons within that tile
+# then return id of those cells
+get_tile_cells <- function(grid_cell_centroids, grid_cells_sf, grid_tiles, grid_tile_id) {
+  grid_tile <- grid_tiles %>%
+    filter(tile_no == grid_tile_id)
+
+  tile_cells <- grid_cell_centroids %>%
+    st_intersection(grid_tile)
+
+  tile_cell_ids <- tile_cells$cell_no
+
+  grid_cells_sf %>%
+    filter(cell_no %in% tile_cell_ids)
+}
+
+# # Filter cells associated with given tile
+# # to only those cells that contain lakes
+# keep_cells_with_lakes <- function(query_lake_centroids_sf, tile_cells) {
+#   query_cells <- grid_cell_centroids %>%
+#     st_intersection(grid_tile)
+# }
+
+
 # Convert an sf object into a geoknife::simplegeom, so that
 # it can be used in the geoknife query. `geoknife` only works
 # with `sp` objects but not SpatialPoints at the moment, so

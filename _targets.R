@@ -4,6 +4,7 @@ options(tidyverse.quiet = TRUE)
 tar_option_set(packages = c(
   "tidyverse",
   "sf",
+  "rgdal",
   "scipiper",
   "ggplot2",
   "geoknife",
@@ -15,21 +16,117 @@ source('7_drivers_munge/src/GCM_driver_utils.R')
 targets_list <- list(
   # The input from our `scipiper` pipeline
   tar_target(
-    centroids_sf_rds,
+    lake_centroids_sf_rds,
     gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind'),
     format='file'
   ),
 
+  # FOR NOW - get subset of lake centroids
   tar_target(
-    query_centroids_sf,
-    split_lake_centroids(centroids_sf_rds)
+    subset_lake_centroids_sf,
+    split_lake_centroids(lake_centroids_sf_rds)
   ),
 
-  # Convert the sf centroids into a geoknife-ready format
+  # TODO: bring in the python workflow to create this shapefile
+  # of the reconstructed grid cells
+  # Load in the reconstructed grid shapefile as a file target
+  tar_target(
+    grid_cells_shp,
+    '7_drivers_munge/in/gcm_grid_cells.shp',
+    format='file'
+  ),
+
+  # load the grid cell shapefile using readOGR
+  # (so that we get the custom LCC projection information)
+  tar_target(
+    grid_cells,
+    rgdal::readOGR(grid_cells_shp)
+  ),
+
+  # Load grid cells shapefile again as sf object
+  # using projection of grid cells OGR object
+  tar_target(
+    grid_cells_sf,
+    sf::st_read(grid_cells_shp, layer='gcm_grid_cells') %>%
+      sf::st_transform(grid_cells, crs = sf::st_crs(grid_cells))
+  ),
+
+  # TODO: bring in the python workflow to create this shapefile
+  # of the grid cell centroids
+  # Load in the grid cell centroids as a file target
+  tar_target(
+    grid_cell_centroids_shp,
+    '7_drivers_munge/in/gcm_grid_cell_centroids.shp',
+    format='file'
+  ),
+
+  # load the tiles shapefile using sf
+  # using projection of grid cells OGR object
+  tar_target(
+    grid_cell_centroids_sf,
+    sf::st_read(grid_cell_centroids_shp, layer='gcm_grid_cell_centroids') %>%
+      sf::st_transform(grid_cells, crs = sf::st_crs(grid_cells))
+  ),
+
+  # TODO: bring in the python workflow to create this shapefile
+  # of the tiles
+  # Load in the shapefile of the grid tiles as a file target
+  tar_target(
+    grid_tiles_shp,
+    '7_drivers_munge/in/gcm_grid_tiles.shp',
+    format='file'
+  ),
+
+  # load the tiles shapefile using sf
+  # using projection of grid cells OGR object
+  tar_target(
+    grid_tiles_sf,
+    sf::st_read(grid_tiles_shp, layer='gcm_grid_tiles') %>%
+      sf::st_transform(grid_cells, crs = sf::st_crs(grid_cells))
+  ),
+
+  # Pull the tile ids, for mapping
+  tar_target(
+    grid_tile_ids,
+    grid_tiles_sf$tile_no
+  ),
+
+  # reproject lake centroids to crs of grid cells
+  tar_target(
+    query_lake_centroids_sf,
+    project_to_grid_crs(subset_lake_centroids_sf, grid_cells)
+  ),
+
+  # Get cells associated with each tile
+  # MAPPING over grid tile ids
+  tar_target(
+    tile_cells,
+    get_tile_cells(grid_cell_centroids_sf, grid_cells_sf, grid_tiles_sf, grid_tile_ids),
+    pattern = map(grid_tile_ids),
+    iteration = 'list'
+  ),
+
+# Make sense to do this here? or instead intersect lakes w/ cells earlier?
+  # # TODO - Filter cells within each tile to only those cells
+  # # that contain lake centroids
+  # tar_target(
+  #   query_cells,
+  #   keep_cells_with_lakes(query_lake_centroids_sf, tile_cells),
+  #   pattern = map(tile_cells),
+  #   iteration = 'list'
+  # ),
+
+
+
+
+  # Convert the grid cell centroids into a geoknife-ready format
+  # TODO: map over tile ids
   tar_target(
     query_centroids_geoknife,
-    sf_pts_to_simplegeom(query_centroids_sf)
+    sf_pts_to_simplegeom(query_lake_centroids_sf)
   ),
+
+
 
   # TODO: make this parameterized/branched. Right now, just doing
   # a single GCM, but will want to parameterize to each of them +
@@ -53,7 +150,7 @@ targets_list <- list(
     query_map_png,
     map_query(
       out_file = '7_drivers_munge/out/query_map.png',
-      centroids_sf = query_centroids_sf
+      centroids_sf = query_lake_centroids_sf
     ),
     format='file'
   ),
