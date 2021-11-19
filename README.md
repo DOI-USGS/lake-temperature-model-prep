@@ -46,14 +46,53 @@ This will allow you or others to access this dataset to help build other targets
 You may need to create a custom function to do this, since each of the files seem to be different enough. This function should write a single file, which will be a MULTIPOLYGON `sf` simple feature collection with only one field (other than the spatial information in `geometry`), which will be `site_id`. `site_id` will be the data source alternative (non-NHDHR) identifier as a character. 
 
 
-4) Next, we add the `data_file` to the `getters.yml`, using the format
+4) Next, add the `data_file` to the `getters.yml`, using the format
 ```yaml
   1_crosswalk_fetch/out/{stateXY_lakes}_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/{stateXY_lakes}_sf.rds.ind')
 ```
 
-5) Now, 
+The next set of steps will cover the creation of the ID crosswalk for this dataset, `2_crosswalk_munge/out/{stateXY}_nhdhr_xwalk.rds.ind`:
 
+5) Now, take advantage of a couple generic functions that use the standardized outputs of steps 3 & 4 to evaluate polygon overlap. The `crosswalk_poly_intersect_poly()` function is the first of these functions, and has inputs for the outgoing indicator file, the two polygons needed (one for your specific new dataset, and the other as the canonical source of NHDHR lakes), and the CRS that you'd like to perform the overlap analysis in. The `poly1_ID_name` argument is special - this is where you will define the site identifier naming convention for this crosswalk. This is the field/column name that will show up in the `{stateXY}_nhdhr_xwalk.rds` alongside the `site_id` for the NHDHR ID. I've been using uppercase letters for this argument, and it is going to be filled with the values of the alternative (non-NHDHR) identifier found in the `site_id` output of step #3. Here is what that new target recipe would look like: 
+```yaml
+  2_crosswalk_munge/out/{stateXY}_nhdhr_intersect.rds.ind:
+    command: crosswalk_poly_intersect_poly(
+      target_name,
+      poly1_ind_file = '1_crosswalk_fetch/out/{stateXY_lakes}_sf.rds.ind',
+      poly2_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      poly1_ID_name = I("{stateXY}_ID"),
+      crs=I(26915))
+```
+6) use the second generic polygon overlap function to choose a single polygon from intersected polygons from the file you just created a target for:
+```yaml
+  2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind:
+    command: choose1_poly_intersect_poly(
+      target_name,
+      intersect_ind_file = '2_crosswalk_munge/out/{stateXY}_nhdhr_intersect.rds.ind',
+      poly1_ID_name = I("{stateXY}_ID"))
+```
+This is broken up into two functions because the expensive analysis happens in `crosswalk_poly_intersect_poly()` and if we ever want to change the selection criteria in `choose1_poly_intersect_poly()`, doing so would be pretty quick. When we wrote these functions I think we thought it would be likely we'd revisit this matching criteria in the future. 
+
+
+7) As before, we're using a shared cache, so add both targets to getters.yml:
+```yaml
+  2_crosswalk_munge/out/{stateXY}_nhdhr_intersect.rds:
+    command: gd_get('2_crosswalk_munge/out/{stateXY}_nhdhr_intersect.rds.ind')    
+  2_crosswalk_munge/out/{stateXY}_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/{stateXY}_nhdhr_xwalk.rds.ind')
+```
+
+8) Add the new indicator file target from #6 to the depends of the `2_crosswalk_munge` target:
+```yaml
+targets:
+  2_crosswalk_munge:
+    depends:
+      ...
+      - 2_crosswalk_munge/out/{stateXY}_nhdhr_xwalk.rds.ind
+```
+
+8) Lastly, build `scmake('2_crosswalk_munge')` and check the new built files (and code files) into version control and create a PR. You will now be able to use the crosswalk file to link data from this set of identifiers into the modeling system. The original file you added in step #1 `1_crosswalk_fetch/in/` should already be gitignored, but make sure this doesn't show up in your commits because we don't want to check large files (or really any data files) into github. 
 
 
 ## Tallgrass
