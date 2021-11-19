@@ -85,13 +85,13 @@ targets:
   1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind:
     command: fetch_wqp_sites(target_name, characteristicName = wqp_temperature_charnames,
       sf_ind = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
-      box_res = 5, dummy = I('2020-11-14'),
+      box_res = 5, dummy = I('2021-11-19'),
       '1_crosswalk_fetch/src/fetch_wqp_sites.R')
 
   1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind:
     command: fetch_wqp_sites(target_name, characteristicName = wqp_secchi_charnames,
       sf_ind = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
-      box_res = 5, dummy = I('2020-11-14'),
+      box_res = 5, dummy = I('2021-11-19'),
       '1_crosswalk_fetch/src/fetch_wqp_sites.R')
 
   1_crosswalk_fetch/out/micorps_sites.xlsx.ind:
