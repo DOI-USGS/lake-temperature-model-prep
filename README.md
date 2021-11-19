@@ -23,7 +23,7 @@ If any of these files are changed / updated in this pipeline, remember to:
 ### Adding new spatial data that uses a non-NHDHR identifier and generating a new crosswalk
 When data (such as temperature, depth, clarity, etc) are referenced to a non-NHDHR identifier, we need to generate a new crosswalk file that shows the code how to link the `site_id` (NHD high-res ID) to the other identifier (often a state agency ID). The two common ways this crosswalk is generated is by using an approximate polygon overlap to consider two lakes "the same" or using a lat/lon sampling point from a lake with a point-in-polygon analysis. 
 
-#### Crosswalk: Alternative ID comes from spatial data
+#### Crosswalk: Alternative ID comes from polygon spatial data
 Often a state agency has a shapefile (or other) that has polygons for each lake they study, as well as attributes that include the agency ID, which we'll want to crosswalk. Commonly, this shapefile doesn't come from an easy-to-code web service, as it is either emailed to us, or downloaded from a UI that doesn't make it easy to code against. (If, however, there is a service to code against, you can skip steps 1 and 2 and go right to step 3, but write your function to access the remote data and write to `sf` as .rds instead of opening a local file).
 
 1) First, we upload the zip file that contains the raw/original data manually onto google drive to [`1_crosswalk_fetch/in`](https://drive.google.com/drive/u/0/folders/1T8cpB2YUXbP_q4fFNCd3elOG6_FU1TvU) and then in the console, create an indicator file for that remote dataset using `gd_confirm_posted("1_crosswalk_fetch/in/{my_filename}.zip.ind")`. This only needs to be done once, and now the .ind file and the corresponding build file will appear locally and must now be checked into version control so other collaborators will have access to this information. 
@@ -92,7 +92,42 @@ targets:
       - 2_crosswalk_munge/out/{stateXY}_nhdhr_xwalk.rds.ind
 ```
 
-8) Lastly, build `scmake('2_crosswalk_munge')` and check the new built files (and code files) into version control and create a PR. You will now be able to use the crosswalk file to link data from this set of identifiers into the modeling system. The original file you added in step #1 `1_crosswalk_fetch/in/` should already be gitignored, but make sure this doesn't show up in your commits because we don't want to check large files (or really any data files) into github. 
+9) Lastly, build `scmake('2_crosswalk_munge')` and check the new built files (and code files) into version control and create a PR. You will now be able to use the crosswalk file to link data from this set of identifiers into the modeling system. The original file you added in step #1 `1_crosswalk_fetch/in/` should already be gitignored, but make sure this doesn't show up in your commits because we don't want to check large files (or really any data files) into github. 
+
+
+#### Crosswalk: Alternative ID comes from point-based spatial data (such as monitoring locations)
+Point-based data that contain non-NHDHR identifiers is a bit simpler to set up. Similar to vector polygon data, some datasets need to be manually uploaded to drive and indicated prior to being able to process them (steps 1 and 2 from above) and other point-based data can be directly accessed via services, such as the water quality portal monitoring locations. 
+
+Skipping ahead to step #3 above (assuming you've building an `sf` object and saving it as an .rds), create a POINT simple feature collection with the required field `site_id`, other optional fields (e.g., "OrganizationIdentifier", and "resultCount" are in the `1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds` file for diagnostic purposes), with the required `geometry` as well. Creating this .rds file (assumed here as `1_crosswalk_fetch/out/{pointXY}_sf.rds`) and indicator file likely requires a custom function, see `fetch_navico_points()` for a simple example. 
+
+1) After this file and the .ind in `getters.yml is created, you can move on to the generic function `crosswalk_points_in_poly()` to create the crosswalk file:
+```yaml
+  2_crosswalk_munge/out/{pointXY}_nhdhr_xwalk.rds.ind:
+    command: crosswalk_points_in_poly(target_name,
+      poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      points_ind_file = '1_crosswalk_fetch/out/{pointXY}_sf.rds.ind',
+      points_ID_name = I("{POINTXY}_ID"))
+```
+As with above, the `points_ID_name` is what you want to refer to the crosswalk field in future use, this is not a field that matches an existing prior name. 
+
+2) Add the indicator file(s) to getters.yml
+```yaml
+  1_crosswalk_fetch/out/{pointXY}_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/{pointXY}_sf.rds.ind')    
+  2_crosswalk_munge/out/{pointXY}_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/{pointXY}_nhdhr_xwalk.rds.ind')
+```
+
+3) Add the new indicator file target from #6 to the depends of the `2_crosswalk_munge` target:
+```yaml
+targets:
+  2_crosswalk_munge:
+    depends:
+      ...
+      - 2_crosswalk_munge/out/{pointXY}_nhdhr_xwalk.rds.ind
+```
+
+8) Lastly, build `scmake('2_crosswalk_munge')` and check the new built files (and code files) into version control and create a PR. You will now be able to use the crosswalk file to link data from this set of identifiers into the modeling system.
 
 
 ## Tallgrass
