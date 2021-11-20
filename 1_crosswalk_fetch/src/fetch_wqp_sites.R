@@ -1,5 +1,7 @@
 fetch_wqp_sites <- function(out_ind, characteristicName, sf_ind, box_res, dummy, ...) {
 
+  sf::sf_use_s2(FALSE)
+  on.exit(sf::sf_use_s2(TRUE))
   target_name <- scipiper::as_data_file(out_ind)
   base_task_type <- basename(target_name) %>% tools::file_path_sans_ext()
   remakefile <- base_task_type %>% paste0('_tasks.yml')

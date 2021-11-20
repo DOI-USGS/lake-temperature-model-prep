@@ -1,5 +1,8 @@
 
 crosswalk_points_in_poly <- function(ind_file, poly_ind_file, points_ind_file, points_ID_name){
+
+  sf::sf_use_s2(FALSE)
+  on.exit(sf::sf_use_s2(TRUE))
   poly_data <- gd_get(ind_file = poly_ind_file) %>% readRDS
 
   points_data <- gd_get(ind_file = points_ind_file) %>% readRDS %>%
