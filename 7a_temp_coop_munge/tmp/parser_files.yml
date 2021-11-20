@@ -5,6 +5,7 @@
 7a_temp_coop_munge/src/data_parsers/parse_indiana_files.R: f2a81bb1cbcb1767d4b58418c5b4fa7e
 7a_temp_coop_munge/src/data_parsers/parse_manualentry_files.R: c9a32776901f585ca9140228f19511ad
 7a_temp_coop_munge/src/data_parsers/parse_micorps_files.R: cbb2d98f8a9b987149c28da5e5f2f122
+7a_temp_coop_munge/src/data_parsers/parse_missouri_files.R: e27494d559c3a3a39574f441e910e665
 7a_temp_coop_munge/src/data_parsers/parse_mndnr_files.R: 57b1b027d9ba7c1e821cd2fc7c8e7bdc
 7a_temp_coop_munge/src/data_parsers/parse_mndow_coop_files.R: 6a6c233b3d6da67ee765bc11cb193d61
 7a_temp_coop_munge/src/data_parsers/parse_redlake_files.R: 8496c673c467c09219bfdb6d85ffa964
