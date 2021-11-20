@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Bull_Shoals_Lake_DO_and_Temp.zip.ind
+type: file
+hash: 2c84cf1880163d8b27b0ad6d1a41d02e
+time: 2021-11-19 23:59:08 UTC
+depends: {}
+fixed: 1ac22e95ecaf73ad42a58250bf9ee476
+code:
+  functions: {}
+
