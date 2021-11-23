@@ -21,7 +21,7 @@ targets_list <- list(
     format='file'
   ),
 
-  # FOR NOW - get subset of lake centroids
+  # FOR NOW, FOR TESTING - get subset of lake centroids
   tar_target(
     subset_lake_centroids_sf,
     split_lake_centroids(lake_centroids_sf_rds)
@@ -106,18 +106,19 @@ targets_list <- list(
     iteration = 'list'
   ),
 
-# Make sense to do this here? or instead intersect lakes w/ cells earlier?
-  # # TODO - Filter cells within each tile to only those cells
-  # # that contain lake centroids
-  # tar_target(
-  #   query_cells,
-  #   keep_cells_with_lakes(query_lake_centroids_sf, tile_cells),
-  #   pattern = map(tile_cells),
-  #   iteration = 'list'
-  # ),
+  # Filter cells within each tile to only those cells
+  # that contain lake centroids
+  tar_target(
+    query_cells,
+    keep_cells_with_lakes(tile_cells, query_lake_centroids_sf),
+    pattern = map(tile_cells),
+    iteration = 'list'
+  ),
 
+  # TODO - Need to retain/get mapping of which lakes are in which cells
 
-
+  # TODO - Need to filter grid cell centroids to those associated
+  # with cells that contain lake centroids
 
   # Convert the grid cell centroids into a geoknife-ready format
   # TODO: map over tile ids
