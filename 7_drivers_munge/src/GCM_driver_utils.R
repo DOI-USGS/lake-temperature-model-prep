@@ -46,7 +46,8 @@ get_tile_cells <- function(grid_cell_centroids, grid_cells_sf, grid_tiles, grid_
   tile_cell_ids <- tile_cells$cell_no
 
   grid_cells_sf %>%
-    filter(cell_no %in% tile_cell_ids)
+    filter(cell_no %in% tile_cell_ids) %>%
+    mutate(tile_no = grid_tile_id)
 }
 
 # Filter cells associated with given tile
@@ -54,7 +55,7 @@ get_tile_cells <- function(grid_cell_centroids, grid_cells_sf, grid_tiles, grid_
 keep_cells_with_lakes <- function(tile_cells, lake_centroids) {
   cell_lakes_intersect <- st_intersects(tile_cells, lake_centroids)
 
-  cells_w_lakes <- tile_cells %>% mutate(contains_lake = lengths(cell_lakes_intersect) > 0) %>%
+  cells_w_lakes <- tile_cells %>% mutate(contains_lake = lengths(cell_lakes_intersect) > 0, n_lakes = lengths(cell_lakes_intersect)) %>%
     dplyr::filter(contains_lake)
 
   return(cells_w_lakes)
@@ -62,15 +63,43 @@ keep_cells_with_lakes <- function(tile_cells, lake_centroids) {
 }
 
 
+get_query_centroids <- function(query_cells, cell_centroids) {
+  # remove cell_no column from cell_centroids, since don't need it
+  # and would be duplicated on join
+  cell_centroids <- cell_centroids %>% select(-cell_no)
+
+  cell_centroids_w_lakes <- cell_centroids %>%
+    st_join(query_cells, left=FALSE)
+
+  return(cell_centroids_w_lakes)
+}
+
+# Get lake cell xwalk
+get_lake_cell_xwalk <- function(lake_centroids, tile_cells) {
+  lake_cells_join <- lake_centroids %>%
+    st_join(tile_cells, left=FALSE) %>%
+    st_set_geometry(NULL)
+
+  return(lake_cells_join)
+}
+
+
 # Convert an sf object into a geoknife::simplegeom, so that
 # it can be used in the geoknife query. `geoknife` only works
 # with `sp` objects but not SpatialPoints at the moment, so
 # need to convert these to a data.frame.
+#
+# Added an if statement to catch dataframes w/ 0 rows
+# since using this to map over tiles that may not
+# have any cells that contain lakes, and therefore
+# no cell centroids to convertto simplegeom
 sf_pts_to_simplegeom <- function(sf_obj) {
-  sf_obj %>%
-    st_coordinates() %>%
-    t() %>% as.data.frame() %>%
-    simplegeom()
+  if (nrow(sf_obj) > 0 ){
+    sf_obj %>%
+      st_coordinates() %>%
+      t() %>% as.data.frame() %>%
+      simplegeom()
+  }
 }
 
 # Set up a download file to get the raw GCM data down.

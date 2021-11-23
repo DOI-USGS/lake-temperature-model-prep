@@ -85,49 +85,63 @@ targets_list <- list(
       sf::st_transform(grid_cells, crs = sf::st_crs(grid_cells))
   ),
 
-  # Pull the tile ids, for mapping
-  tar_target(
-    grid_tile_ids,
-    grid_tiles_sf$tile_no
-  ),
-
   # reproject lake centroids to crs of grid cells
   tar_target(
     query_lake_centroids_sf,
     project_to_grid_crs(subset_lake_centroids_sf, grid_cells)
   ),
 
+  # Pull the tile ids, for mapping
+  tar_target(
+    grid_tile_ids,
+    grid_tiles_sf$tile_no
+  ),
+
   # Get cells associated with each tile
   # MAPPING over grid tile ids
   tar_target(
-    tile_cells,
+    tile_cells_sf,
     get_tile_cells(grid_cell_centroids_sf, grid_cells_sf, grid_tiles_sf, grid_tile_ids),
     pattern = map(grid_tile_ids),
     iteration = 'list'
   ),
 
-  # Filter cells within each tile to only those cells
-  # that contain lake centroids
+  # Get mapping of which lakes are in which cells (w/ no spatial info)
   tar_target(
-    query_cells,
-    keep_cells_with_lakes(tile_cells, query_lake_centroids_sf),
-    pattern = map(tile_cells),
+    lake_cell_xwalk,
+    get_lake_cell_xwalk(query_lake_centroids_sf, tile_cells_sf),
+    pattern = map(tile_cells_sf),
     iteration = 'list'
   ),
 
-  # TODO - Need to retain/get mapping of which lakes are in which cells
-
-  # TODO - Need to filter grid cell centroids to those associated
-  # with cells that contain lake centroids
-
-  # Convert the grid cell centroids into a geoknife-ready format
-  # TODO: map over tile ids
+  # Spatially filter cells within each tile to only those cells
+  # that contain lake centroids
   tar_target(
-    query_centroids_geoknife,
-    sf_pts_to_simplegeom(query_lake_centroids_sf)
+    query_cells_sf,
+    keep_cells_with_lakes(tile_cells_sf, query_lake_centroids_sf),
+    pattern = map(tile_cells_sf),
+    iteration = 'list'
   ),
 
+  # Spatially filter centroids to those that fall within
+  # tile cells that have lakes
+  tar_target(
+    query_cell_centroids_sf,
+    get_query_centroids(query_cells_sf, grid_cell_centroids_sf),
+    pattern = map(query_cells_sf),
+    iteration = 'list'
+  ),
 
+  # Convert the query grid cell centroids into a geoknife-ready format
+  # TODO - what projection does the request need to be in?
+  # returned proj4string from simplegeom is incorrect
+  # may need to reproject query cell centroids to EPSG 4326 first?
+  tar_target(
+    query_centroids_geoknife,
+    sf_pts_to_simplegeom(query_cell_centroids_sf),
+    pattern = map(query_cell_centroids_sf),
+    iteration = 'list'
+  ),
 
   # TODO: make this parameterized/branched. Right now, just doing
   # a single GCM, but will want to parameterize to each of them +
