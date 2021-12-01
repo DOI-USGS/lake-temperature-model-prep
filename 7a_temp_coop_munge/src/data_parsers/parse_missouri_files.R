@@ -6,8 +6,11 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
 
-  # unzip the file with all of Bull Shoals
-  files_from_zip <- unzip(infile, exdir = tempdir())
+  # Unzip the file with all of Bull Shoals, then cleanup unzipped files
+  # which aren't needed externally before leaving the function.
+  unzip_dir <- tempdir()
+  files_from_zip <- unzip(infile, exdir = unzip_dir)
+  on.exit(unlink(unzip_dir, recursive = TRUE))
 
   # Read and clean each file (create on big file)
   data_clean <- purrr::map(files_from_zip, function(fn) {
