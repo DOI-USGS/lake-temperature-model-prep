@@ -100,7 +100,7 @@ Point-based data that contain non-NHDHR identifiers is a bit simpler to set up. 
 
 Skipping ahead to step #3 above (assuming you've building an `sf` object and saving it as an .rds), create a POINT simple feature collection with the required field `site_id`, other optional fields (e.g., "OrganizationIdentifier", and "resultCount" are in the `1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds` file for diagnostic purposes), with the required `geometry` as well. Creating this .rds file (assumed here as `1_crosswalk_fetch/out/{pointXY}_sf.rds`) and indicator file likely requires a custom function, see `fetch_navico_points()` for a simple example. 
 
-1) After this file and the .ind in `getters.yml is created, you can move on to the generic function `crosswalk_points_in_poly()` to create the crosswalk file:
+1) After this file and the .ind in `getters.yml` is created, you can move on to the generic function `crosswalk_points_in_poly()` to create the crosswalk file:
 ```yaml
   2_crosswalk_munge/out/{pointXY}_nhdhr_xwalk.rds.ind:
     command: crosswalk_points_in_poly(target_name,
