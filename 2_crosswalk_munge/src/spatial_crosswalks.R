@@ -1,6 +1,11 @@
 
 crosswalk_points_in_poly <- function(ind_file, poly_ind_file, points_ind_file, points_ID_name){
 
+  # we now use sf > v1.0, which causes issues with some NHD polygons and the spherical coordinates
+  # see info on the change: https://r-spatial.org/r/2020/06/17/s2.html#sf-10-goodbye-flat-earth-welcome-s2-spherical-geometry
+
+  # to avoid these NHD issues, we'd either need to edit the files or avoid the error by avoiding use of the
+  # S2 engine. We do that by toggling off use of S2 here.
   sf::sf_use_s2(FALSE)
   on.exit(sf::sf_use_s2(TRUE))
   poly_data <- gd_get(ind_file = poly_ind_file) %>% readRDS
