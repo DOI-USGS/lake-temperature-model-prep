@@ -19,23 +19,34 @@ targets_list <- list(
   # FOR NOW, FOR TESTING - get subset of lake centroids
   tar_target(subset_lake_centroids_sf, split_lake_centroids(lake_centroids_sf_rds)),
 
+  # unzip the folder of shapefiles
+  tar_target(
+    gcm_shapefiles_dir,
+    {
+      dest_dir <- '7_drivers_munge/in/gcm_grid_shapefiles'
+      zip::unzip('7_drivers_munge/in/gcm_grid_shapefiles.zip', exdir=dest_dir)
+      return(dest_dir)
+    },
+    format='file'
+  ),
+
   # TODO: bring in the python workflow to create this shapefile of the reconstructed grid cells
   # Load in the reconstructed grid shapefile as a file target
-  tar_target(grid_cells_shp, '7_drivers_munge/in/gcm_grid_cells.shp', format='file'),
+  tar_target(grid_cells_shp, '7_drivers_munge/in/gcm_grid_shapefiles/gcm_grid_cells.shp', format='file'),
 
   # Load grid cells shapefile as sf object
   tar_target(grid_cells_sf, sf::st_read(grid_cells_shp)),
 
   # TODO: bring in the python workflow to create this shapefile of the grid cell centroids
   # Load in the grid cell centroids as a file target
-  tar_target(grid_cell_centroids_shp, '7_drivers_munge/in/gcm_grid_cell_centroids.shp', format='file'),
+  tar_target(grid_cell_centroids_shp, '7_drivers_munge/in/gcm_grid_shapefiles/gcm_grid_cell_centroids.shp', format='file'),
 
   # Load the grid cell centroids shapefile using sf
   tar_target(grid_cell_centroids_sf, sf::st_read(grid_cell_centroids_shp)),
 
   # TODO: bring in the python workflow to create this shapefile of the tiles
   # Load in the shapefile of the grid tiles as a file target
-  tar_target(grid_tiles_shp, '7_drivers_munge/in/gcm_grid_tiles.shp', format='file'),
+  tar_target(grid_tiles_shp, '7_drivers_munge/in/gcm_grid_shapefiles/gcm_grid_tiles.shp', format='file'),
 
   # Load the grid tiles shapefile using sf
   tar_target(grid_tiles_sf, sf::st_read(grid_tiles_shp)),
