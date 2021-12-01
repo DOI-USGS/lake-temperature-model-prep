@@ -24,32 +24,25 @@ targets_list <- list(
   # Load in the reconstructed grid shapefile as a file target
   tar_target(grid_cells_shp, '7_drivers_munge/in/gcm_grid_cells.shp', format='file'),
 
-  # load the grid cell shapefile using readOGR
-  # (so that we get the custom LCC projection information)
-  tar_target(grid_cells_ogr, rgdal::readOGR(grid_cells_shp)),
-
-  # Load grid cells shapefile again as sf object
-  # using projection of grid cells OGR object
-  tar_target(grid_cells_sf, read_and_project_shp(grid_cells_shp, grid_cells_ogr)),
+  # Load grid cells shapefile as sf object
+  tar_target(grid_cells_sf, sf::st_read(grid_cells_shp)),
 
   # TODO: bring in the python workflow to create this shapefile of the grid cell centroids
   # Load in the grid cell centroids as a file target
   tar_target(grid_cell_centroids_shp, '7_drivers_munge/in/gcm_grid_cell_centroids.shp', format='file'),
 
   # Load the grid cell centroids shapefile using sf
-  # using projection of grid cells OGR object
-  tar_target(grid_cell_centroids_sf, read_and_project_shp(grid_cell_centroids_shp, grid_cells_ogr)),
+  tar_target(grid_cell_centroids_sf, sf::st_read(grid_cell_centroids_shp)),
 
   # TODO: bring in the python workflow to create this shapefile of the tiles
   # Load in the shapefile of the grid tiles as a file target
   tar_target(grid_tiles_shp, '7_drivers_munge/in/gcm_grid_tiles.shp', format='file'),
 
   # Load the grid tiles shapefile using sf
-  # using projection of grid cells OGR object
-  tar_target(grid_tiles_sf,read_and_project_shp(grid_tiles_shp, grid_cells_ogr)),
+  tar_target(grid_tiles_sf, sf::st_read(grid_tiles_shp)),
 
   # Reproject lake centroids to crs of grid cells
-  tar_target(query_lake_centroids_sf, sf::st_transform(subset_lake_centroids_sf, grid_cells_ogr)),
+  tar_target(query_lake_centroids_sf, sf::st_transform(subset_lake_centroids_sf, sf::st_crs(grid_cells_sf))),
 
   # Get cells associated with each tile
   # MAPPING over grid tiles

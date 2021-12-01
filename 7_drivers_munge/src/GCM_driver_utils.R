@@ -10,13 +10,6 @@ split_lake_centroids <- function(centroids_sf_rds) {
     sample_n(5)
 }
 
-# Read in shp as sf and project to grid crs
-read_and_project_shp <- function(shp, grid_crs) {
-  sf_obj <- sf::st_read(shp)
-  sf_obj_prj <- sf::st_transform(sf_obj, grid_crs)
-  return(sf_obj_prj)
-}
-
 # Subset grid cells to those within each tile
 # (targets is branching over the tile polygons)
 # using grid cell centroids for clean intersection
