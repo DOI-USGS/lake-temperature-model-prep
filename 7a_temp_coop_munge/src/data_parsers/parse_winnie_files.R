@@ -48,7 +48,7 @@ parse_winnie_files <- function(inind, outind) {
   time_cols <- grep('Time', names(raw_dat))
   temp_cols <- grep('Temp', names(raw_dat))
 
-  cleaned_dat <- tibble(DateTime = POSIXct(),
+  cleaned_dat <- tibble(DateTime = as.POSIXct(c()),
                         temp = double(),
                         depth = double())
 
@@ -107,8 +107,8 @@ parse_winnie_files <- function(inind, outind) {
   date_cols <- grep('Date', names(raw_dat))
 
 
-  cleaned_dat <- tibble(DateTime = POSIXct(),
-         Time = POSIXct(),
+  cleaned_dat <- tibble(DateTime = as.POSIXct(c()),
+         Time = as.POSIXct(c()),
          temp = double(),
          depth = double())
 
@@ -148,8 +148,8 @@ parse_winnie_files <- function(inind, outind) {
     depths <- gsub("\\d{4}", "", data_sheets)
     depths <- gsub("(^\\D*)([[:digit:]]{1,2})(\\s*.*)", "\\2", depths)
 
-    cleaned_dat <- tibble(DateTime = POSIXct(),
-                          Time = POSIXct(),
+    cleaned_dat <- tibble(DateTime = as.POSIXct(c()),
+                          Time = as.POSIXct(c()),
                           temp = double(),
                           depth = double())
 
@@ -196,7 +196,7 @@ parse_winnie_files <- function(inind, outind) {
   depths <- gsub("\\d{4}", "", data_sheets)
   depths <- gsub("(^\\D*)([[:digit:]]{1,2})(\\s*.*)", "\\2", depths)
 
-  cleaned_dat <- tibble(DateTime = POSIXct(),
+  cleaned_dat <- tibble(DateTime = as.POSIXct(c()),
                         time = character(),
                         am_pm = character(),
                         temp = double(),
