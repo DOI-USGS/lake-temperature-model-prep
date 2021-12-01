@@ -39,8 +39,8 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
       # Replace "Surface" depth and convert depths to numeric
       mutate(depth = as.numeric(ifelse(depth == "Surface", 0, depth))) %>%
 
-      # Change depth from feet to meters
-      mutate(depth = depth / 3.28) %>%
+      # Convert depth from feet to meters
+      mutate(depth = depth * 0.3048) %>%
 
       # Keep just the columns we need
       dplyr::select(DateTime, depth, temp, id, site)
