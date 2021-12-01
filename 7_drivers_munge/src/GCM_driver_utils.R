@@ -10,15 +10,10 @@ split_lake_centroids <- function(centroids_sf_rds) {
     sample_n(5)
 }
 
-# Reproject to the specified crs
-project_to_crs <- function(sf_obj, crs) {
-  sf::st_transform(sf_obj, crs = st_crs(crs))
-}
-
 # Read in shp as sf and project to grid crs
 read_and_project_shp <- function(shp, grid_crs) {
   sf_obj <- sf::st_read(shp)
-  sf_obj_prj <- project_to_crs(sf_obj, grid_crs)
+  sf_obj_prj <- sf::st_transform(sf_obj, grid_crs)
   return(sf_obj_prj)
 }
 
@@ -137,7 +132,7 @@ download_gcm_data <- function(out_file_template, query_geom, query_url_template,
   if (nrow(query_geom) > 0) {
 
     # Reproject query cell centroids to WGS84
-    query_geom_WGS84 <- project_to_crs(query_geom, crs = 4326)
+    query_geom_WGS84 <- sf::st_transform(query_geom, crs = 4326)
 
     # convert grid cell centroids into geoknife-friendly format
     query_simplegeom <- sf_pts_to_simplegeom(query_geom_WGS84)

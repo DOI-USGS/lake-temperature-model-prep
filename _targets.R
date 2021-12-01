@@ -49,7 +49,7 @@ targets_list <- list(
   tar_target(grid_tiles_sf,read_and_project_shp(grid_tiles_shp, grid_cells_ogr)),
 
   # Reproject lake centroids to crs of grid cells
-  tar_target(query_lake_centroids_sf, project_to_crs(subset_lake_centroids_sf, grid_cells_ogr)),
+  tar_target(query_lake_centroids_sf, sf::st_transform(subset_lake_centroids_sf, grid_cells_ogr)),
 
   # Get cells associated with each tile
   # MAPPING over grid tiles
