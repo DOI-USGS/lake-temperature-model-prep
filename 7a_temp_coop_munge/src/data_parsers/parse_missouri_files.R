@@ -24,7 +24,6 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
       # due to encoding issues. See details in the `scipiper`
       # issue: https://github.com/USGS-R/scipiper/issues/151
       fix_colname_encoding("latin1") %>%
-
       # Reformat columns and extract info we need from Excel file
       dplyr::mutate(DateTime = extract_bullshoals_date(fn),
                     site = extract_bullshoals_site(fn),
@@ -37,16 +36,16 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
       dplyr::rename(temp = "Temp (°C)") %>%
 
       # Replace "Surface" depth and convert depths to numeric
-      mutate(depth = as.numeric(ifelse(depth == "Surface", 0, depth))) %>%
+      dplyr::mutate(depth = as.numeric(ifelse(depth == "Surface", 0, depth))) %>%
 
       # Convert depth from feet to meters
-      mutate(depth = depth * 0.3048) %>%
+      dplyr::mutate(depth = depth * 0.3048) %>%
 
       # Keep just the columns we need
       dplyr::select(DateTime, depth, temp, id, site)
 
   }) %>%  bind_rows() %>%
-    arrange(site, DateTime, depth)
+    dplyr::arrange(site, DateTime, depth)
 
   saveRDS(object = data_clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -55,9 +54,11 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
 
 # Thanks https://stackoverflow.com/questions/34024654/reading-rdata-file-with-different-encoding
 fix_colname_encoding <- function(df, new_encoding = c("UTF-8", "latin1")) {
-  cnames <- colnames(df)
-  Encoding(cnames) <- new_encoding
-  colnames(df) <- cnames
+  if(Sys.info()[['sysname']] == "Windows") {
+    cnames <- colnames(df)
+    Encoding(cnames) <- new_encoding
+    colnames(df) <- cnames
+  }
   return(df)
 }
 
