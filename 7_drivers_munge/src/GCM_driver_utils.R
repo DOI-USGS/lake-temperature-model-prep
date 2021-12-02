@@ -1,3 +1,55 @@
+# Reconstruct GCM grid using hard-coded grid parameters
+reconstruct_gcm_grid <- function(grid_params) {
+  # Build grid
+  gcm_grid_sfc <- sf::st_make_grid(cellsize = grid_params$grid_size_m,
+                                   n = c(grid_params$n_cell_x, grid_params$n_cell_y),
+                                   offset = c(grid_params$x_min, grid_params$y_min),
+                                   crs = grid_params$crs)
+
+  # set up attributes for cell number, x and y grid values
+  # cells count left to right, then next row, then left to right
+  cell_nos <- seq(1:(grid_params$n_cell_x*grid_params$n_cell_y))
+  x_cells <- rep(1:(grid_params$n_cell_x), grid_params$n_cell_y)
+  y_cells <- c(sapply(1:(grid_params$n_cell_y), function(x) rep(x, grid_params$n_cell_x)))
+
+  # construct sf dataframe
+  gcm_grid <- st_sf(data.frame(x = x_cells, y = y_cells, cell_no = cell_nos), geometry=gcm_grid_sfc)
+
+  return(gcm_grid)
+}
+
+# Construct grid tiles using hard-coded grid parameters
+# NOTE - sf_make_grid() can only  make square grid polygons
+# We're using tile_dim of 10 for now (tiles = 10 grid cells x 10 grid cells)
+# The grid is 110 cells wide by 85 high, and in this function we
+# get the number of rows/columns by floor(n_cells[high/wide]/tile_dim) so are rounding down.
+# With a tile_dim of 10, tiles won't cover full height of grid
+# but top 5 rows are fully outside CONUS, so we are dropping for now
+# rather than constructing two separate sf grids and merging
+# works b/c st_make_grid starts in lower left corner of grid
+construct_grid_tiles <- function(grid_params, tile_dim) {
+  # determine the number of columns and rows of tiles
+  xcolumns <- floor(grid_params$n_cell_x/tile_dim)
+  yrows <- floor(grid_params$n_cell_y/tile_dim)
+
+  # Build tiles
+  gcm_tiles_sfc <- sf::st_make_grid(cellsize = grid_params$grid_size_m*tile_dim,
+                                    n = c(xcolumns, yrows),
+                                    offset = c(grid_params$x_min, grid_params$y_min),
+                                    crs = grid_params$crs)
+
+  # set up attributes for tile number, x and y grid values
+  # tiles count left to right, then next row, then left to right
+  tile_nos <- seq(1:(xcolumns*yrows))
+  x_tiles <- rep(1:(xcolumns), yrows)
+  y_tiles <- c(sapply(1:(yrows), function(x) rep(x, xcolumns)))
+
+  # construct sf dataframe
+  gcm_tiles <- st_sf(data.frame(x = x_tiles, y = y_tiles, tile_no = tile_nos), geometry=gcm_tiles_sfc)
+
+  return(gcm_tiles)
+}
+
 # TODO: a much better solution. For now, this just subsets the lakes
 # to 5 in WI, but it will need to do smart chunking at some point.
 split_lake_centroids <- function(centroids_sf_rds) {
@@ -81,10 +133,10 @@ map_query <- function(out_file_template, lake_centroids, grid_tiles, grid_cells,
     query_plot <- ggplot() +
       geom_sf(data=wi_sf, fill=NA, color='grey70') +
       geom_sf(data=grid_cells, color='grey50', fill=NA, size=0.5) +
-      geom_sf(data=grid_tiles, color='dodgerblue3', fill=NA) +
-      geom_sf(data=cells_w_lakes, color='firebrick3', fill=NA) +
-      geom_sf(data=selected_tile, color='darkturquoise', fill=NA) +
-      geom_sf(data=lake_centroids, color='black', size=0.5) +
+      geom_sf(data=grid_tiles, color='darkgoldenrod2', fill=NA) +
+      geom_sf(data=selected_tile, color='firebrick4', fill=NA) +
+      geom_sf(data=cells_w_lakes, color='firebrick2', fill=NA) +
+      geom_sf(data=lake_centroids, color='dodgerblue2', size=0.5) +
       coord_sf() + theme_void()
 
     # save file
