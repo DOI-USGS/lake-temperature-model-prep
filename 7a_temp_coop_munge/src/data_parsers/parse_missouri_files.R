@@ -54,29 +54,11 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
 
 # Thanks https://stackoverflow.com/questions/34024654/reading-rdata-file-with-different-encoding
 fix_colname_encoding <- function(df, new_encoding = c("UTF-8", "latin1")) {
-
-
-  # Thanks https://conjugateprior.org/2015/06/identifying-the-os-from-r/
-  sysinf <- Sys.info()
-  if (!is.null(sysinf)){
-    os <- sysinf['sysname']
-    if (os == 'Darwin')
-      os <- "osx"
-  } else { ## mystery machine
-    os <- .Platform$OS.type
-    if (grepl("^darwin", R.version$os))
-      os <- "osx"
-    if (grepl("linux-gnu", R.version$os))
-      os <- "linux"
-  }
-  os <- tolower(os)
-
-  if (os != 'osx'){
+  if(Sys.info()[['sysname']] == "Windows") {
     cnames <- colnames(df)
     Encoding(cnames) <- new_encoding
     colnames(df) <- cnames
   }
-
   return(df)
 }
 
