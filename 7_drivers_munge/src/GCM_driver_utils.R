@@ -1,53 +1,24 @@
-# Pull GCM crs from GCM netcdf
-pull_gcm_crs <- function(gcm_data) {
-  # pull projection information
-  gcm_map <- ncdf4::ncatt_get(gcm_data, 'rcm_map')
-  gcm_crs <- sprintf("+proj=lcc +lat_0=%s + lon_0=%s +lat_1=%s +lat_2=%s +x_0=0 +y_0=0 +ellps=WGS84 +units=m",
-                     gcm_map$latitude_of_projection_origin,
-                     gcm_map$longitude_of_central_meridian,
-                     gcm_map$standard_parallel[1],
-                     gcm_map$standard_parallel[2])
-  return(gcm_crs)
-}
-
-# Reconstruct GCM grid from a GCM netcdf
-reconstruct_gcm_grid <- function(gcm_nc) {
-  gcm_data <- ncdf4::nc_open(gcm_nc)
-
-  # pull projection information
-  gcm_crs <- pull_gcm_crs(gcm_data)
-
-  # set grid size (there is a 'grid_size_in_meters' attribute,
-  # but I can't seem to pull it with ncatt_get)
-  grid_size_m <- 25000
-
-  # pull projected coordinates from netcdf (note - in units of **kilometers**)
-  y_coord <- ncdf4::ncvar_get(gcm_data, 'iy')
-  x_coord <- ncdf4::ncvar_get(gcm_data, 'jx')
-
-  # get number of grid cells in x and y dimensions
-  y_num <- length(y_coord) - 1
-  x_num <- length(x_coord) - 1
-
-  # get offset (lower left corner of grid)
-  # multiply by 1000 to get in units of meters, since crs unit is meters
-  y_min <- y_coord[1]*1000
-  x_min <- x_coord[1]*1000
-
+# Reconstruct GCM grid using hard-coded grid parameters
+reconstruct_gcm_grid <- function(grid_params) {
   # Build grid
-  gcm_grid_sfc <- sf::st_make_grid(cellsize = grid_size_m, n = c(x_num, y_num), offset = c(x_min, y_min), crs = gcm_crs)
+  gcm_grid_sfc <- sf::st_make_grid(cellsize = grid_params$grid_size_m,
+                                   n = c(grid_params$n_cell_x, grid_params$n_cell_y),
+                                   offset = c(grid_params$x_min, grid_params$y_min),
+                                   crs = grid_params$crs)
+
   # set up attributes for cell number, x and y grid values
   # cells count left to right, then next row, then left to right
-  cell_nos <- seq(1:(x_num*y_num))
-  x_cells <- rep(1:(x_num), y_num)
-  y_cells <- c(sapply(1:(y_num), function(x) rep(x, x_num)))
+  cell_nos <- seq(1:(grid_params$n_cell_x*grid_params$n_cell_y))
+  x_cells <- rep(1:(grid_params$n_cell_x), grid_params$n_cell_y)
+  y_cells <- c(sapply(1:(grid_params$n_cell_y), function(x) rep(x, grid_params$n_cell_x)))
+
   # construct sf dataframe
   gcm_grid <- st_sf(data.frame(x = x_cells, y = y_cells, cell_no = cell_nos), geometry=gcm_grid_sfc)
 
   return(gcm_grid)
 }
 
-# Construct grid tiles from a GCM netcdf
+# Construct grid tiles using hard-coded grid parameters
 # NOTE - sf_make_grid() can only  make square grid polygons
 # We're using tile_dim of 10 for now (tiles = 10 grid cells x 10 grid cells)
 # The grid is 110 cells wide by 85 high, and in this function we
@@ -55,45 +26,24 @@ reconstruct_gcm_grid <- function(gcm_nc) {
 # With a tile_dim of 10, tiles won't cover full height of grid
 # but top 5 rows are fully outside CONUS, so we are dropping for now
 # rather than constructing two separate sf grids and merging
-construct_grid_tiles <- function(gcm_nc, tile_dim) {
-  gcm_data <- ncdf4::nc_open(gcm_nc)
-
-  # pull projection information
-  gcm_crs <- pull_gcm_crs(gcm_data)
-
-  # set grid size (there is a 'grid_size_in_meters' attribute,
-  # but I can't seem to pull it with ncatt_get)
-  grid_size_m <- 25000
-
-  # pull projected coordinates from netcdf (note - in units of **kilometers**)
-  y_coord <- ncdf4::ncvar_get(gcm_data, 'iy')
-  x_coord <- ncdf4::ncvar_get(gcm_data, 'jx')
-
-  # get number of grid cells in x and y dimensions
-  y_num <- length(y_coord) - 1
-  x_num <- length(x_coord) - 1
-
-  # get offset (lower left corner of grid)
-  # multiply by 1000 to get in units of meters, since crs unit is meters
-  y_min <- y_coord[1]*1000
-  x_min <- x_coord[1]*1000
-
+# works b/c st_make_grid starts in lower left corner of grid
+construct_grid_tiles <- function(grid_params, tile_dim) {
   # determine the number of columns and rows of tiles
-  # the grid is 110 wide by 85 tall
-  # st_make_grid can only make square grids
-  # the top 5 rows of the grid are fully outside of CONUS
-  # so will exclude here by flooring y_rows
-  # works b/c st_make_grid starts in lower left corner of grid
-  xcolumns <- floor(x_num/tile_dim)
-  yrows <- floor(y_num/tile_dim)
+  xcolumns <- floor(grid_params$n_cell_x/tile_dim)
+  yrows <- floor(grid_params$n_cell_y/tile_dim)
 
   # Build tiles
-  gcm_tiles_sfc <- sf::st_make_grid(cellsize = grid_size_m*tile_dim, n = c(xcolumns, yrows), offset = c(x_min, y_min), crs = gcm_crs)
+  gcm_tiles_sfc <- sf::st_make_grid(cellsize = grid_params$grid_size_m*tile_dim,
+                                    n = c(xcolumns, yrows),
+                                    offset = c(grid_params$x_min, grid_params$y_min),
+                                    crs = grid_params$crs)
+
   # set up attributes for tile number, x and y grid values
   # tiles count left to right, then next row, then left to right
   tile_nos <- seq(1:(xcolumns*yrows))
   x_tiles <- rep(1:(xcolumns), yrows)
   y_tiles <- c(sapply(1:(yrows), function(x) rep(x, xcolumns)))
+
   # construct sf dataframe
   gcm_tiles <- st_sf(data.frame(x = x_tiles, y = y_tiles, tile_no = tile_nos), geometry=gcm_tiles_sfc)
 

@@ -20,17 +20,24 @@ targets_list <- list(
   # FOR NOW, FOR TESTING - get subset of lake centroids
   tar_target(subset_lake_centroids_sf, split_lake_centroids(lake_centroids_sf_rds)),
 
-  # load in netcdf for now (will eventually download from GDP)
-  tar_target(gcm_nc, '7_drivers_munge/in/notaro_MIROC_2040_2059.nc', format = 'file'),
+  # Hard code GCM grid parameters
+  tar_target(grid_params, tibble(
+    crs = "+proj=lcc +lat_0=45 + lon_0=-97 +lat_1=36 +lat_2=52 +x_0=0 +y_0=0 +ellps=WGS84 +units=m",
+    grid_size_m = 25000,
+    x_min = -200000,
+    y_min = -1125000,
+    n_cell_x = 110,
+    n_cell_y = 85
+  )),
 
   # Reconstruct GCM grid from a GCM netcdf
-  tar_target(grid_cells_sf, reconstruct_gcm_grid(gcm_nc)),
+  tar_target(grid_cells_sf, reconstruct_gcm_grid(grid_params)),
 
   # Get centroids of grid cells
   tar_target(grid_cell_centroids_sf, sf::st_centroid(grid_cells_sf)),
 
   # Construct grid tiles from a GCM netcdf
-  tar_target(grid_tiles_sf, construct_grid_tiles(gcm_nc, tile_dim=10)),
+  tar_target(grid_tiles_sf, construct_grid_tiles(grid_params, tile_dim=10)),
 
   # Reproject lake centroids to crs of grid cells
   tar_target(query_lake_centroids_sf, sf::st_transform(subset_lake_centroids_sf, sf::st_crs(grid_cells_sf))),

@@ -39,7 +39,6 @@ rsconnect/
 3_params_fetch/out/*.csv
 6_drivers/log/feather/*.feather.ind
 7_drivers_munge/in/*
-!7_drivers_munge/in/notaro_MIROC_2040_2059.nc
 7_drivers_munge/out/*.csv
 7_drivers_munge/out/*.csv.ind
 6_drivers/log/feather/cellgroup*.yml
