@@ -1,19 +1,13 @@
 # Reconstruct GCM grid using hard-coded grid parameters
 reconstruct_gcm_grid <- function(grid_params) {
-  # Build grid
-  gcm_grid_sfc <- sf::st_make_grid(cellsize = grid_params$grid_size_m,
-                                   n = c(grid_params$n_cell_x, grid_params$n_cell_y),
-                                   offset = c(grid_params$x_min, grid_params$y_min),
-                                   crs = grid_params$crs)
-
-  # set up attributes for cell number, x and y grid values
-  # cells count left to right, then next row, then left to right
-  cell_nos <- seq(1:(grid_params$n_cell_x*grid_params$n_cell_y))
-  x_cells <- rep(1:(grid_params$n_cell_x), grid_params$n_cell_y)
-  y_cells <- c(sapply(1:(grid_params$n_cell_y), function(x) rep(x, grid_params$n_cell_x)))
-
-  # construct sf dataframe
-  gcm_grid <- st_sf(data.frame(x = x_cells, y = y_cells, cell_no = cell_nos), geometry=gcm_grid_sfc)
+  # Build GCM grid
+  gcm_grid <- construct_grid(cellsize = grid_params$grid_size_m,
+                             nx = grid_params$n_cell_x,
+                             ny = grid_params$n_cell_y,
+                             xmin = grid_params$x_min,
+                             ymin = grid_params$y_min,
+                             proj_str = grid_params$crs) %>%
+    rename(cell_no = id)
 
   return(gcm_grid)
 }
@@ -32,22 +26,38 @@ construct_grid_tiles <- function(grid_params, tile_dim) {
   xcolumns <- floor(grid_params$n_cell_x/tile_dim)
   yrows <- floor(grid_params$n_cell_y/tile_dim)
 
-  # Build tiles
-  gcm_tiles_sfc <- sf::st_make_grid(cellsize = grid_params$grid_size_m*tile_dim,
-                                    n = c(xcolumns, yrows),
-                                    offset = c(grid_params$x_min, grid_params$y_min),
-                                    crs = grid_params$crs)
-
-  # set up attributes for tile number, x and y grid values
-  # tiles count left to right, then next row, then left to right
-  tile_nos <- seq(1:(xcolumns*yrows))
-  x_tiles <- rep(1:(xcolumns), yrows)
-  y_tiles <- c(sapply(1:(yrows), function(x) rep(x, xcolumns)))
-
-  # construct sf dataframe
-  gcm_tiles <- st_sf(data.frame(x = x_tiles, y = y_tiles, tile_no = tile_nos), geometry=gcm_tiles_sfc)
+  gcm_tiles <- construct_grid(cellsize = grid_params$grid_size_m*tile_dim,
+                              nx = xcolumns,
+                              ny = yrows,
+                              xmin = grid_params$x_min,
+                              ymin = grid_params$y_min,
+                              proj_str = grid_params$crs) %>%
+    rename(tile_no = id)
 
   return(gcm_tiles)
+}
+
+# Shared function used to generate a grid based on grid cell size, dimensions,
+# placement, and projection to use. This is used by both `reconstruct_gcm_grid()`
+# and `construct_grid_tiles()` to generate grids with their appropriate configurations.
+construct_grid <- function(cellsize, nx, ny, xmin, ymin, proj_str) {
+
+  # Build grid
+  grid_sfc <- sf::st_make_grid(cellsize = cellsize,
+                               n = c(nx, ny),
+                               offset = c(xmin, ymin),
+                               crs = proj_str)
+
+  # set up attributes for cell number, x and y grid values
+  # cells count left to right, then next row, then left to right
+  cell_nos <- seq(1:(nx*ny))
+  x_cells <- rep(1:nx, ny)
+  y_cells <- c(sapply(1:ny, function(x) rep(x, nx)))
+
+  # construct sf dataframe
+  grid_sf <- st_sf(data.frame(x = x_cells, y = y_cells, id = cell_nos), geometry=grid_sfc)
+
+  return(grid_sf)
 }
 
 # TODO: a much better solution. For now, this just subsets the lakes

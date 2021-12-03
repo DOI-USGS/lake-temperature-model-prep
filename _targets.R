@@ -30,13 +30,14 @@ targets_list <- list(
     n_cell_y = 85
   )),
 
-  # Reconstruct GCM grid from a GCM netcdf
+  # Reconstruct GCM grid using grid parameters from GDP defined above
   tar_target(grid_cells_sf, reconstruct_gcm_grid(grid_params)),
 
   # Get centroids of grid cells
   tar_target(grid_cell_centroids_sf, sf::st_centroid(grid_cells_sf)),
 
-  # Construct grid tiles from a GCM netcdf
+  # Group cells into tiles to use for querying GDP. Constructing tiles
+  # to be made of 100 cells in a 10x10 grid.
   tar_target(grid_tiles_sf, construct_grid_tiles(grid_params, tile_dim=10)),
 
   # Reproject lake centroids to crs of grid cells
