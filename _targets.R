@@ -53,8 +53,9 @@ targets_list <- list(
   # Get mapping of which cells are in which tiles (w/ no spatial info)
   tar_target(cell_tile_xwalk_df, get_cell_tile_xwalk(grid_cell_centroids_sf, grid_tiles_sf)),
 
-  # Get mapping of which lakes are in which cells (w/ no spatial info)
-  # (for use later so that we know what data to pull for each lake)
+  # Get mapping of which lakes are in which cells (w/ no spatial info). Not currently
+  # being used, but this info saved as a file could be useful in the modeling part so
+  # that we know what data to pull for each lake).
   tar_target(lake_cell_xwalk_df, get_lake_cell_xwalk(query_lake_centroids_sf, grid_cells_sf)),
 
   ##### Prepare grid cell centroids for querying GDP #####
