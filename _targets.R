@@ -14,11 +14,6 @@ tar_option_set(packages = c(
 source('7_drivers_munge/src/GCM_driver_utils.R')
 
 targets_list <- list(
-  # The input from our `scipiper` pipeline
-  tar_target(lake_centroids_sf_rds, gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind'), format='file'),
-
-  # FOR NOW, FOR TESTING - get subset of lake centroids
-  tar_target(subset_lake_centroids_sf, split_lake_centroids(lake_centroids_sf_rds)),
 
   # Hard code GCM grid parameters
   tar_target(grid_params, tibble(
@@ -40,8 +35,16 @@ targets_list <- list(
   # to be made of 100 cells in a 10x10 grid.
   tar_target(grid_tiles_sf, construct_grid_tiles(grid_params, tile_dim=10)),
 
-  # Reproject lake centroids to crs of grid cells
-  tar_target(query_lake_centroids_sf, sf::st_transform(subset_lake_centroids_sf, sf::st_crs(grid_cells_sf))),
+  # Load and prepare lake centroids for matching to the GCM grid using
+  # the `centroid_lakes_sf.rds` file from our `scipiper` pipeline
+  tar_target(lake_centroids_sf_rds, gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind'), format='file'),
+  tar_target(query_lake_centroids_sf,
+             readRDS(lake_centroids_sf_rds) %>%
+               # Subset to 5 lakes for now for testing
+               subset_lake_centroids() %>%
+               # Lake centroids should be in the same CRS as the GCM grid
+               sf::st_transform(grid_params$crs)
+  ),
 
   # Get cells associated with each tile
   # MAPPING over grid tiles

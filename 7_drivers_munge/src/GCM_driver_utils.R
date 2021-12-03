@@ -60,14 +60,16 @@ construct_grid <- function(cellsize, nx, ny, xmin, ymin, proj_str) {
   return(grid_sf)
 }
 
-# TODO: a much better solution. For now, this just subsets the lakes
-# to 5 in WI, but it will need to do smart chunking at some point.
-split_lake_centroids <- function(centroids_sf_rds) {
+# TODO: scale up. For now, this just subsets the lakes
+# to 5 in WI. Will want to scale up to all of MN and then
+# try for every lake in centroid_lakes_sf Once we scale
+# up completely, we shouldn't need this function.
+subset_lake_centroids <- function(centroids_sf) {
 
   set.seed(19) # Same subset of 5 every time
   wi_sf <- st_as_sf(maps::map('state', 'wisconsin', plot=FALSE, fill=TRUE))
 
-  readRDS(centroids_sf_rds) %>%
+  centroids_sf %>%
     st_intersection(wi_sf) %>%
     sample_n(5)
 }
