@@ -1,11 +1,11 @@
 version: 0.3.0
 name: 6_wqp_fetch/out/wqp_secchi_data.rds.ind
 type: file
-hash: e2e48b285793016f18114de4e3ce670b
-time: 2021-07-31 06:40:56 UTC
+hash: 9689042ea1d3d1a09247ec9cff27f5cd
+time: 2021-12-02 14:22:13 UTC
 depends:
   wqp_secchi_charnames: 992326512fc3e6fbcb92452ebbc00850
-  2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind: 3abfe8c8c792e39f77e79650fdfacc29
+  2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind: 525185c395a492766a18ebd3ab69eae5
   6_wqp_fetch/src/fetch_wqp_data.R: 9b359d41ea2c08f9f7eb9221ecb5b28c
 fixed: 77842b0265a8941b381f6a80e8f0f880
 code:
