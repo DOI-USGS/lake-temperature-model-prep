@@ -166,15 +166,21 @@ map_query <- function(out_file_template, lake_centroids, grid_tiles, grid_cells,
 
 }
 
-# Convert an sf object into a geoknife::simplegeom, so that
-# it can be used in the geoknife query. `geoknife` only works
-# with `sp` objects but not SpatialPoints at the moment, so
-# need to convert these to a data.frame.
+#' @title Convert an sf object into a geoknife::simplegeom, so that
+#' it can be used in the geoknife query.
+#' @description `geoknife` only works  with `sp` objects but not `sf`
+#' objects, so you need to convert these to a data.frame.
+#' @param sf_obj spatial features object with at least a `geometry`
+#' field and a `cell_no` field. `cell_no` contains the names for each
+#' of the polygons used in the query.
 sf_pts_to_simplegeom <- function(sf_obj) {
-    sf_obj %>%
-      st_coordinates() %>%
-      t() %>% as.data.frame() %>%
-      simplegeom()
+  sf_obj %>%
+    st_coordinates() %>%
+    t() %>% as.data.frame() %>%
+    # Include the cell numbers in the GDP geom so that the
+    # results can be linked to the correct cells
+    setNames(sf_obj$cell_no) %>%
+    simplegeom()
 }
 
 # Set up a download file to get the raw GCM data down.
