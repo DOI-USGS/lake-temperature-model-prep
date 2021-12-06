@@ -154,7 +154,7 @@ get_query_cells <- function(grid_cells, lake_centroids) {
 get_lake_cell_xwalk <- function(lake_centroids, grid_cells) {
   lake_cells_join <- lake_centroids %>%
     st_join(grid_cells, left=FALSE) %>%
-    st_set_geometry(NULL)
+    st_drop_geometry()
 
   return(lake_cells_join)
 }
