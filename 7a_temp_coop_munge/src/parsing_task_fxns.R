@@ -1,5 +1,13 @@
-find_parser <- function(coop_wants, parser_filehash) {
-
+#' @param trigger_file is a file that will always be modified when it is used
+#'
+#' @details whenever `trigger_file` is used as an input, the function needs to call
+#' make_trigger_file_stale(trigger_file) to modify the file, keeping that input always stale
+#'
+#' in this function, the trigger_file is used we're building a hash table of the files in a directory,
+#' and since we can't rely on a directory as a dependency, we want to check changes to this diretory
+#' in a greedy way (i.e., every time).
+find_parser <- function(coop_wants, parser_filehash, trigger_file) {
+  make_file_stale(trigger_file)
   parser_files <- yaml::yaml.load_file(parser_filehash) %>% names()
   parser_env <- new.env()
   sapply(parser_files, source,  parser_env)
