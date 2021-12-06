@@ -1,61 +1,79 @@
-# Reconstruct GCM grid using hard-coded grid parameters
+#
+#' @title Create an `sf` objecting with square grid cells.
+#' @description Reconstruct GCM grid using hard-coded grid parameters.
+#' @param grid_params list with five elements: `crs`, `cellsize`,
+#' `xmin`, `ymin`, `nx`, and `ny`. See descriptions of these elements
+#' in the documentation for `construct_grid()` below.
 reconstruct_gcm_grid <- function(grid_params) {
   # Build GCM grid
-  gcm_grid <- construct_grid(cellsize = grid_params$grid_size_m,
-                             nx = grid_params$n_cell_x,
-                             ny = grid_params$n_cell_y,
-                             xmin = grid_params$x_min,
-                             ymin = grid_params$y_min,
-                             proj_str = grid_params$crs) %>%
+  gcm_grid <- construct_grid(cellsize = grid_params$cellsize,
+                             nx = grid_params$nx,
+                             ny = grid_params$ny,
+                             xmin = grid_params$xmin,
+                             ymin = grid_params$ymin,
+                             crs = grid_params$crs) %>%
     rename(cell_no = id)
 
   return(gcm_grid)
 }
 
-# Construct grid tiles using hard-coded grid parameters
-# NOTE - sf_make_grid() can only  make square grid polygons
-# We're using tile_dim of 10 for now (tiles = 10 grid cells x 10 grid cells)
-# The grid is 110 cells wide by 85 high, and in this function we
-# get the number of rows/columns by floor(n_cells[high/wide]/tile_dim) so are rounding down.
-# With a tile_dim of 10, tiles won't cover full height of grid
-# but top 5 rows are fully outside CONUS, so we are dropping for now
-# rather than constructing two separate sf grids and merging
-# works b/c st_make_grid starts in lower left corner of grid
+#' @title Create an `sf` objecting representing groups of square
+#' grid cells that we are calling "tiles".
+#' @description Construct grid tiles (groups of grid cells) using
+#' hard-coded grid parameters. Grid tiles can be used to group
+#' queries to the Geodata Portal into more manageable sizes.
+#' @param grid_params list with five elements: `crs`, `cellsize`,
+#' `xmin`, `ymin`, `nx`, and `ny`. See descriptions of these elements
+#' in the documentation for `construct_grid()` below.
+#' @param tile_dim single numeric value representing how many grid cells to
+#' group into a single tile. NOTE - sf_make_grid() can only make square grid
+#' polygons. The GCM grid is 110 cells wide by 85 high. With a `tile_dim` of
+#' 10 (tiles = 10 grid cells x 10 grid cells), tiles won't cover full height
+#' of the GCM grid and there will be 5 rows left out at the top. Since the top
+#' 5 rows are fully outside CONUS, we are OK with dropping for now. If we wanted
+#' to include, we would need to construct two separate `sf` grids and merge.
 construct_grid_tiles <- function(grid_params, tile_dim) {
   # determine the number of columns and rows of tiles
-  xcolumns <- floor(grid_params$n_cell_x/tile_dim)
-  yrows <- floor(grid_params$n_cell_y/tile_dim)
+  xcolumns <- floor(grid_params$nx/tile_dim)
+  yrows <- floor(grid_params$ny/tile_dim)
 
-  gcm_tiles <- construct_grid(cellsize = grid_params$grid_size_m*tile_dim,
+  gcm_tiles <- construct_grid(cellsize = grid_params$cellsize*tile_dim,
                               nx = xcolumns,
                               ny = yrows,
-                              xmin = grid_params$x_min,
-                              ymin = grid_params$y_min,
-                              proj_str = grid_params$crs) %>%
+                              xmin = grid_params$xmin,
+                              ymin = grid_params$ymin,
+                              crs = grid_params$crs) %>%
     rename(tile_no = id)
 
   return(gcm_tiles)
 }
 
-# Shared function used to generate a grid based on grid cell size, dimensions,
-# placement, and projection to use. This is used by both `reconstruct_gcm_grid()`
-# and `construct_grid_tiles()` to generate grids with their appropriate configurations.
-construct_grid <- function(cellsize, nx, ny, xmin, ymin, proj_str) {
+#' @title Create an `sf` object representing a square grid
+#' @description Shared function used to generate a grid based on grid cell size, dimensions,
+#' placement, and projection to use. This is used by both `reconstruct_gcm_grid()`
+#' and `construct_grid_tiles()` to generate grids with their appropriate configurations.
+#' @param cellsize numeric value representing the dimensions of the square grid cell in meters.
+#' @param nx number of cells to place in the x direction
+#' @param ny number of cells to place in the y direction
+#' @param xmin x dimension for the bottomleft corner of the grid
+#' @param ymin y dimension for the bottomleft corner of the grid
+#' @param crs character string representing the projection of the grid
+construct_grid <- function(cellsize, nx, ny, xmin, ymin, crs) {
 
   # Build grid
   grid_sfc <- sf::st_make_grid(cellsize = cellsize,
                                n = c(nx, ny),
                                offset = c(xmin, ymin),
-                               crs = proj_str)
+                               crs = crs)
 
   # set up attributes for cell number, x and y grid values
   # cells count left to right, then next row, then left to right
-  cell_nos <- seq(1:(nx*ny))
-  x_cells <- rep(1:nx, ny)
-  y_cells <- c(sapply(1:ny, function(x) rep(x, nx)))
+  cell_nums <- seq(1:(nx*ny))
+  xcells <- rep(1:nx, ny)
+  ycells <- c(sapply(1:ny, function(x) rep(x, nx)))
 
   # construct sf dataframe
-  grid_sf <- st_sf(data.frame(x = x_cells, y = y_cells, id = cell_nos), geometry=grid_sfc)
+  grid_sf <- st_sf(data.frame(x = xcells, y = ycells, id = cell_nums), geometry=grid_sfc)
 
   return(grid_sf)
 }

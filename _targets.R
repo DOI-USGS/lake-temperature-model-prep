@@ -20,11 +20,11 @@ targets_list <- list(
   # Hard code GCM grid parameters
   tar_target(grid_params, tibble(
     crs = "+proj=lcc +lat_0=45 + lon_0=-97 +lat_1=36 +lat_2=52 +x_0=0 +y_0=0 +ellps=WGS84 +units=m",
-    grid_size_m = 25000,
-    x_min = -200000,
-    y_min = -1125000,
-    n_cell_x = 110,
-    n_cell_y = 85
+    cellsize = 25000,
+    xmin = -200000,
+    ymin = -1125000,
+    nx = 110,
+    ny = 85
   )),
 
   # Create larger tiles to use for querying GDP with groups of cells.
