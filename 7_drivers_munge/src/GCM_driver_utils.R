@@ -1,4 +1,4 @@
-#
+
 #' @title Create an `sf` objecting with square grid cells.
 #' @description Reconstruct GCM grid using hard-coded grid parameters.
 #' @param grid_params list with five elements: `crs`, `cellsize`,
@@ -92,10 +92,17 @@ subset_lake_centroids <- function(centroids_sf) {
     sample_n(5)
 }
 
-# Match grid cells to the grid tiles. Essentially, adds
-# the `tile_no` column for each grid cell so that we can
-# easily map over tiles in later steps. Using grid cell
-# centroids for clean intersection
+#' @title Match grid cells to the grid tiles.
+#' @description Using grid cell centroids, this spatially
+#' intersects the cells to the bigger tiles and returns a
+#' non-spatial data.frame with `cell_no` and `tile_no`
+#' columns to map each grid cell to the tile they are inside.
+#' @param grid_cell_centroids an `sf` object of points representing
+#' the grid cell centroids. Must contain a `cell_no` column which has
+#' the id of each of the cell centroids
+#' @param grid_tiles an `sf` object with polygons representing the
+#' groups of grid cells. Must contain a `tile_no` column which has
+#' the id of each of the tile polygons.
 get_cell_tile_xwalk <- function(grid_cell_centroids, grid_tiles) {
   # Figure out which cell centroids fall within each tile
   # Don't need to keep geometry
@@ -105,7 +112,17 @@ get_cell_tile_xwalk <- function(grid_cell_centroids, grid_tiles) {
     select(cell_no, tile_no)
 }
 
-# Filter grid cells to only those cells that contain lakes
+#' @title Filter grid cells to only those cells that contain lakes
+#' @description Using an sf object of the grid cells and an sf object
+#' of the lake centroids, this returns a data.frame with the number
+#' of lakes contained in each cell, `n_lakes` and the `cell_no` for
+#' any cell with at least one lake inside.
+#' @param grid_cells an `sf` object of the square grid polygons. Assumes
+#' that this is already in the same projection as `lake_centroids`. Must
+#' contain a column called `cell_no`.
+#' @param lake_centroids an `sf` object of points representing the
+#' centroid for each lake. Assumes that this is already in the same
+#' projection as `grid_cells`.
 get_query_cells <- function(grid_cells, lake_centroids) {
   # Intersect the lake centroids with the grid cells.
   cell_lakes_intersect <- st_intersects(grid_cells, lake_centroids)
@@ -124,7 +141,16 @@ get_query_cells <- function(grid_cells, lake_centroids) {
   return(cells_w_lakes)
 }
 
-# Get lake cell xwalk, w/o spatial information
+#' @title Match lakes to the grid cells.
+#' @description Using lake centroids, this spatially
+#' intersects the lakes to the grid cells and returns a
+#' non-spatial data.frame with `cell_no` and any of the existing
+#' columns from `lake_centroids`.
+#' @param lake_centroids an `sf` object of points representing
+#' the lake centroids.
+#' @param grid_cells an `sf` object with square polygons representing the
+#' grid cells. Must contain a `cell_no` column which has
+#' the id of each of the cell polygons.
 get_lake_cell_xwalk <- function(lake_centroids, grid_cells) {
   lake_cells_join <- lake_centroids %>%
     st_join(grid_cells, left=FALSE) %>%
@@ -134,7 +160,9 @@ get_lake_cell_xwalk <- function(lake_centroids, grid_cells) {
 }
 
 # Map the query - grid cells, grid tiles, selected tile, cells w lakes in selected tile, lake centroids
-# For now, generating empty file for tiles that don't contain cells that contain lakes
+# TODO: purely diagnostic while we develop the pipeline. Likely delete when done. If we decide to keep,
+# this function to should be 1) moved to 8_viz, and 2) made so that it only rebuilds if new cells will
+# must be plot.
 map_query <- function(out_file_template, lake_centroids, grid_tiles, grid_cells, cells_w_lakes) {
 
   # get tile id (pull from first row - will be identical
