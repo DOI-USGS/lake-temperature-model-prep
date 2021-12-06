@@ -183,10 +183,28 @@ sf_pts_to_simplegeom <- function(sf_obj) {
     simplegeom()
 }
 
-# Set up a download file to get the raw GCM data down.
-# This function accepts each of the query parameters for the
-# geoknife job as an argument. Currently missing the "knife" parameter.
-download_gcm_data <- function(out_file_template, query_geom, query_url_template, gcm_name, query_vars,
+#' @title Download GCM data from GDP for each tile and save to a feather file.
+#' @description This function accepts each of the query parameters for the
+#' geoknife job as an argument. Currently missing the "knife" parameter.
+#' The result of the geoknife job is saved as a feather file.
+#' @param out_file_template string representing the filepath at which to save
+#' the feather file output of the data returned from GDP. The first `%s` is
+#' used as the placeholder for the `gcm_name` and the second is for the `tile_no`.
+#' @param query_geom an `sf` object that represents the polygons to use to query
+#' GDP. Will reproject to EPS = 4326 to query GDP. Expects a column called
+#' `tile_no` to represent the current group of grid cells being queried.
+#' @param gcm_name name of one of the six GCMs to use to construct the query URL.
+#' @param query_vars character vector of the variables that should be downloaded
+#' from each of the GCMs. For a list of what variables are available, see
+#' https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html.
+#' Note that we can't use `mrso` until https://github.com/USGS-R/geoknife/issues/399
+#' is fixed, but we shouldn't need it for the GLM runs that these data feed anyways.
+#' @param query_dates character or date vector with two dates: the first is the
+#' earliest date in your query and the second is the latest date in your query.
+#' @param query_knife the algorithm used to summarize the ouput. Currently `NULL`,
+#' which uses `geoknife` defaults.
+download_gcm_data <- function(out_file_template, query_geom,
+                              gcm_name, query_vars,
                               query_dates, query_knife = NULL) {
 
   # Reproject query cell centroids to WGS84
@@ -196,7 +214,7 @@ download_gcm_data <- function(out_file_template, query_geom, query_url_template,
   query_simplegeom <- sf_pts_to_simplegeom(query_geom_WGS84)
 
   # Build query_url
-  query_url <- sprintf(query_url_template, gcm_name)
+  query_url <- sprintf("https://cida.usgs.gov/thredds/dodsC/notaro_%s_1980_1999", gcm_name)
 
   # construct and submit query
   gcm_job <- geoknife(
@@ -206,9 +224,10 @@ download_gcm_data <- function(out_file_template, query_geom, query_url_template,
       variables = query_vars,
       times = query_dates
     )
+    #TODO: should we specify the `knife`??
   )
   wait(gcm_job)
-  my_data <- result(gcm_job)
+  my_data <- result(gcm_job, with.units = TRUE)
 
   # Build out_file name
   out_file <- sprintf(out_file_template, gcm_name, query_geom$tile_no[1])

@@ -111,6 +111,8 @@ targets_list <- list(
   # BUILD QUERY
   # Define list of GCMs
   tar_target(gcm_names, c('ACCESS', 'GFDL')),#, 'CNRM', 'IPSL', 'MRI', 'MIROC')),
+  tar_target(gcm_vars, c("evspsbl", "hfss")),
+  tar_target(gcm_dates, c('1999-01-01', '1999-01-15')),
 
   # Download data from GDP for each tile & GCM name combination.
   # If the cells in a tile don't change, then the tile should not need to rebuild.
@@ -119,12 +121,9 @@ targets_list <- list(
     download_gcm_data(
       out_file_template = "7_drivers_munge/tmp/7_GCM_%s_tile%s_raw.feather",
       query_geom = query_cells_centroids_list_by_tile,
-      query_url_template = "https://cida.usgs.gov/thredds/dodsC/notaro_%s_1980_1999",
       gcm_name = gcm_names,
-      # Data definitions: https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html
-      # Can't use `mrso` until https://github.com/USGS-R/geoknife/issues/399 is fixed, but we shouldn't need it
-      query_vars = c("evspsbl", "hfss"),
-      query_dates = c('1999-01-01', '1999-01-15')
+      query_vars = gcm_vars,
+      query_dates = gcm_dates
     ),
     pattern = cross(query_cells_centroids_list_by_tile, gcm_names),
     format = "file"
