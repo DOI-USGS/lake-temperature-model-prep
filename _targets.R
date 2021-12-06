@@ -125,6 +125,8 @@ targets_list <- list(
       query_vars = gcm_vars,
       query_dates = gcm_dates
     ),
+    # TODO: might need to split across variables, too. Once we scale up, our queries
+    # might be too large and chunking by variable could help.
     pattern = cross(query_cells_centroids_list_by_tile, gcm_names),
     format = "file"
   ),
