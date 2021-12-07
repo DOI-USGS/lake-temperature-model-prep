@@ -1,4 +1,5 @@
-list_coop_files <- function(fileout, dirpath, dummy){
+list_coop_files <- function(fileout, dirpath, trigger_file){
+  make_file_stale(trigger_file)
   scipiper::sc_indicate(fileout,  data_file = list.files(dirpath, full.names = TRUE))
 }
 
