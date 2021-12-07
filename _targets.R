@@ -12,6 +12,7 @@ tar_option_set(packages = c(
 ))
 
 source('7_drivers_munge/src/GCM_driver_utils.R')
+source('7_drivers_munge/src/GCM_driver_nc_utils.R')
 
 targets_list <- list(
 
@@ -111,8 +112,16 @@ targets_list <- list(
   # BUILD QUERY
   # Define list of GCMs
   tar_target(gcm_names, c('ACCESS', 'GFDL')),#, 'CNRM', 'IPSL', 'MRI', 'MIROC')),
-  tar_target(gcm_vars, c("evspsbl", "hfss")),
   tar_target(gcm_dates, c('1999-01-01', '1999-01-15')),
+  tar_target(gcm_vars_info,
+             # Gathered manually from https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html
+             tibble(
+               var_name = c("evspsbl", "hfss"),
+               longname = c("Total evapotranspiration flux", "Sensible heat flux"),
+               units = c("(kg * m^2)/s", "W / m^2"),
+               precision = "float"
+             )),
+  tar_target(gcm_vars, gcm_vars_info$var_name),
 
   # Download data from GDP for each tile & GCM name combination.
   # If the cells in a tile don't change, then the tile should not need to rebuild.
@@ -132,7 +141,37 @@ targets_list <- list(
   ),
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
-  # TODO - munge data
+
+  # TODO: create snow from rain, see https://github.com/USGS-R/lake-temperature-model-prep/issues/222
+
+  # Group resulting feather files by GCM to map over
+  tar_target(gcm_data_raw_feather_group_by_gcm,
+             tibble(gcm_file = gcm_data_raw_feather) %>%
+               mutate(gcm_name = gsub("7_drivers_munge/tmp/7_GCM_|_tile([0-9]+)_raw.feather", "", gcm_file)) %>%
+               group_by(gcm_name) %>%
+               tar_group(),
+             iteration = "group"),
+
+  # TODO: currently returning hours ... should be days
+  tar_target(gcm_times_returned, arrow::read_feather(gcm_data_raw_feather[1]) %>% pull(DateTime) %>% unique()),
+
+  # Create single NetCDF files for each of the GCMs
+  tar_target(
+    gcm_nc, {
+      gcm_name <- unique(gcm_data_raw_feather_group_by_gcm$gcm_name)
+      generate_gcm_nc(
+        nc_file = sprintf("7_drivers_munge/out/7_GCM_%s.nc", gcm_name),
+        gcm_raw_files = gcm_data_raw_feather_group_by_gcm$gcm_file,
+        # TODO: replace with sequence (or not?!) once daily, not hourly are being returned
+        dim_time_input = gcm_times_returned,
+        # dim_time_input = seq(gcm_dates[1], gcm_dates[2], by = 1),
+        dim_cell_input = grid_cells_sf$cell_no,
+        vars_info = gcm_vars_info,
+        global_att = sprintf("GCM Notaro %s", gcm_name)
+      )
+    },
+    pattern = map(gcm_data_raw_feather_group_by_gcm)
+  ),
 
 
   ##### Get list of final output files to link back to scipiper pipeline #####
