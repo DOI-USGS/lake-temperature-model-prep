@@ -265,3 +265,33 @@ download_gcm_data <- function(out_file_template, query_geom,
 
   return(out_file)
 }
+
+#' @title Summarize hourly output from geoknife to daily
+#' @description the final GCM driver data will need to be daily, but geoknife
+#' returns hourly values. This step summarizes the data into daily values. It
+#' creates a file with the exact same name, except that the "_raw" part of the
+#' `in_file` filepath is replaced with "_daily".
+#' @param in_file filepath to a feather file containing the hourly geoknife data
+#' @param time_colname single character string representing the column name
+#' containing the date and time information from the geoknife results.
+convert_to_daily <- function(in_file, time_colname = "DateTime") {
+
+  daily_data <- arrow::read_feather(in_file) %>%
+    # Replace the DateTime column with just a date
+    dplyr::mutate(date = as.Date(DateTime)) %>%
+    dplyr::select(-DateTime) %>%
+    # For each variable and date, we need to get a single daily value, so group
+    # by these. statistic and units are unique to each variable, so keeping
+    # these in the final data by including in the `group_by()` call.
+    dplyr::group_by(date, variable, statistic, units) %>%
+    # TODO: should we `na.rm = TRUE`?
+    dplyr::summarize(across(.fns = ~ mean(.x, na.rm = FALSE))) %>%
+    # Move the variable, statistic, and units column back after the data columns
+    dplyr::relocate(all_of(c("variable", "statistic", "units")), .after = last_col())
+
+  # Save the daily data
+  out_file <- gsub("_raw.feather", "_daily.feather", in_file)
+  arrow::write_feather(daily_data, out_file)
+
+  return(out_file)
+}

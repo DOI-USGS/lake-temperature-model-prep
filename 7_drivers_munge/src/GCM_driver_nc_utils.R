@@ -1,10 +1,5 @@
 # Munging driver data from geoknife to create NetCDF for each GCM.
 
-# # Example of extracting one cell's timeseries data
-# x <- nc_open("7_drivers_munge/out/7_GCM_ACCESS.nc")
-# cell_i <- 4650
-# xx <- ncvar_get(x, "evspsbl", start = c(1,cell_i), count = c(-1,1))
-
 #' @title Creates a NetCDF file with GCM driver data
 #' @description For each of the GCMs, create a single NetCDF file containing all the
 #' variables and all the grid cells.
@@ -48,11 +43,9 @@ build_gcm_nc_skeleton <- function(nc_file, dim_time_input, dim_cell_input, vars_
   ##### Set dimensions; should always be [time, cell] #####
 
   # Setup time dimension
-  # TODO: currently hourly timesteps but I believe these should be
-  # adjusted to days by changing the geoknife query
-  times <- as.integer(seq(0, length(dim_time_input) - 1, 1)) # hours since dim_time_input[1]
+  times <- as.integer(seq(0, length(dim_time_input) - 1, 1)) # days since dim_time_input[1]
   time_dim <- ncdim_def("time",
-                        units = sprintf('hours since %s', dim_time_input[1]),
+                        units = sprintf('days since %s', dim_time_input[1]),
                         longname = 'time',
                         vals = times)
 
@@ -142,7 +135,7 @@ push_gcm_nc_data <- function(gcm_df, nc_file, var_names){
     # Cycle through only cells that are in the `gcm_df`rather than all 9000+ grid cells for each variable
     # and each file. To find the cells that have data, force column names to be numeric and then only keep
     # ones that succeed (so this assumes that the only numeric column names are the grid cell columns, which
-    # seems reasonable). As of 12/7, non-cell colnames are "DateTime", "variable", "statistic", and "units"
+    # seems reasonable). As of 12/7, non-cell colnames are "date", "variable", "statistic", and "units"
     available_cells <- na.omit(as.numeric(names(gcm_df)))
 
     for(cur_cell in available_cells){
