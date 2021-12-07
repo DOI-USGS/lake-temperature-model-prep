@@ -285,7 +285,7 @@ convert_to_daily <- function(in_file, time_colname = "DateTime") {
     # these in the final data by including in the `group_by()` call.
     dplyr::group_by(date, variable, statistic, units) %>%
     # TODO: should we `na.rm = TRUE`?
-    dplyr::summarize(across(.fns = ~ mean(.x, na.rm = FALSE))) %>%
+    dplyr::summarize(across(.fns = ~ mean(.x, na.rm = FALSE)), .groups = "keep") %>%
     # Move the variable, statistic, and units column back after the data columns
     dplyr::relocate(all_of(c("variable", "statistic", "units")), .after = last_col())
 
