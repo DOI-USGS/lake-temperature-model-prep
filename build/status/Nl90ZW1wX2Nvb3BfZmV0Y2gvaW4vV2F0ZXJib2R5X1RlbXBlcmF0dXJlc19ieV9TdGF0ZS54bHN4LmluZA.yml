@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Waterbody_Temperatures_by_State.xlsx.ind
+type: file
+hash: 8e338c7c99cf9ef24e063b22909d94d5
+time: 2021-12-07 21:53:06 UTC
+depends: {}
+fixed: 92d3e98cdf8ac1494b2da585bec21720
+code:
+  functions: {}
+
