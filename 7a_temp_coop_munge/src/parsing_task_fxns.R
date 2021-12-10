@@ -1,13 +1,17 @@
 #' @param trigger_file is a file that will always be modified when it is used
 #'
 #' @details whenever `trigger_file` is used as an input, the function needs to call
-#' make_trigger_file_stale(trigger_file) to modify the file, keeping that input always stale
+#' make_trigger_file_stale(trigger_file) to modify the file, keeping that input always stale.
+#' Remove this arg (NULL) to skip rebuilds
 #'
 #' in this function, the trigger_file is used we're building a hash table of the files in a directory,
 #' and since we can't rely on a directory as a dependency, we want to check changes to this diretory
 #' in a greedy way (i.e., every time).
-find_parser <- function(coop_wants, parser_filehash, trigger_file) {
-  make_file_stale(trigger_file)
+find_parser <- function(coop_wants, parser_filehash, trigger_file = NULL) {
+  if (!is.null(trigger_file)){
+    make_file_stale(trigger_file)
+  }
+
   parser_files <- yaml::yaml.load_file(parser_filehash) %>% names()
   parser_env <- new.env()
   sapply(parser_files, source,  parser_env)
@@ -29,9 +33,9 @@ find_parser <- function(coop_wants, parser_filehash, trigger_file) {
 
     }  else if (grepl('lower_red|upper_red', coop_wants[i])) {
       parsers[i] <- 'parse_upper_lower_redlake_files'
-	
+
 	}  else if (grepl('Waterbody_Temperatures_by_State', coop_wants[i])) {
-      parsers[i] <- 'parse_navico_files'  
+      parsers[i] <- 'parse_navico_files'
 
     }  else {
       parsers[i] <- paste0('parse_', tools::file_path_sans_ext(coop_wants[i]))
