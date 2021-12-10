@@ -47,7 +47,9 @@ targets:
     command: loop_tasks(task_plan = coop_munge_taskplan,
       task_makefile = '7a_temp_coop_munge_tasks.yml',
       num_tries = 3)
-    depends: '7a_temp_coop_munge/tmp/parser_files.yml'
+    depends:
+      - '7a_temp_coop_munge/tmp/parser_files.yml'
+      - '6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind'
 
 
   # -- bind together all data using final indicator file of 7a_temp_coop_munge_tasks.yml -- #
