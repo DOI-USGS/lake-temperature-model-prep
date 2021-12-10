@@ -1,12 +1,15 @@
 version: 0.3.0
 name: 6_temp_coop_fetch/out/coop_all_files.rds.ind
 type: file
-hash: c85675ddc3fe0940e9f67eb472a5e96a
-time: 2021-12-08 14:10:44 UTC
+hash: a61edb0871f37f05a323ef4c3cd3bfe8
+time: 2021-12-10 01:42:37 UTC
 depends:
-  coop_file_upload_location: 58e73ff0eb450b41567bab120075f40c
-fixed: 1d0d32fa7ecc2993fdab023f31964ef5
+  coop_file_upload_location: 2c1265c14fda5fa0d792caa9b0ad5d3b
+  1_crosswalk_fetch/out/always_stale_time.txt: fe3a260481a11d2e658b5538082d649c
+fixed: d05198f16bfb67e8f5dcec76981a9ee9
 code:
   functions:
-    files_in_drive: af41cd21ddd1fadb9d8a28b44542d5df
+    files_in_drive: 4881694acdf08fd85dff136d03057226
+    gd_freshen_dir: 2b808cb1379ae9634e46aff1ebb3ff98
+    make_file_stale: 33f71e82f4a81a5655deab336c0f680b
 

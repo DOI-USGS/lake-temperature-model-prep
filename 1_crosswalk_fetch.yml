@@ -14,6 +14,7 @@ sources:
   - 1_crosswalk_fetch/src/fetch_NHD.R
   - 1_crosswalk_fetch/src/munge_crosswalk.R
   - 1_crosswalk_fetch/src/fetch_wqp_sites.R
+  - lib/src/generic_utils.R
 
 targets:
   1_crosswalk_fetch:
@@ -27,6 +28,16 @@ targets:
       - 1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind
       - 1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind
       - 1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind
+
+# create the trigger file, which will not be checked into git
+# if we use a trigger file elsewhere, this could be called just once, in 1_fetch.
+# I see no reason to have different trigger files for different sections of the pipeline
+# if this is used elsewhere, since the intent is to keep modifying it
+# or the trigger file could be checked into git so that people building this part
+# for the first time don't get "Can't build implicit target 7a_temp_coop_munge/tmp/always_stale_time.txt"
+# if this recipe is missing and the file doesn't exist
+  1_crosswalk_fetch/out/always_stale_time.txt:
+    command: make_file_stale(target_name)
 
   wqp_temperature_charnames:
     command: c(I(c(

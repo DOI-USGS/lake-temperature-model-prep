@@ -23,25 +23,15 @@ targets:
     depends:
      - 7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind
 
-# create the trigger file, which will not be checked into git
-# if we use a trigger file elsewhere, this could be called just once, in 1_fetch.
-# I see no reason to have different trigger files for different sections of the pipeline
-# if this is used elsewhere, since the intent is to keep modifying it
-# or the trigger file could be checked into git so that people building this part
-# for the first time don't get "Can't build implicit target 7a_temp_coop_munge/tmp/always_stale_time.txt"
-# if this recipe is missing and the file doesn't exist
-  7a_temp_coop_munge/tmp/always_stale_time.txt:
-    command: make_file_stale(target_name)
-
 # here, trigger_file is used to keep this parser_file list _always stale_, so it always gets rebuilt.
   7a_temp_coop_munge/tmp/parser_files.yml:
     command: list_coop_files(target_name,
       dirpath = I('7a_temp_coop_munge/src/data_parsers'),
-      trigger_file = '7a_temp_coop_munge/tmp/always_stale_time.txt')
+      trigger_file = '1_crosswalk_fetch/out/always_stale_time.txt')
 
   coop_parsers:
     command: find_parser(coop_wants, '7a_temp_coop_munge/tmp/parser_files.yml',
-      trigger_file = '7a_temp_coop_munge/tmp/always_stale_time.txt')
+      trigger_file = '1_crosswalk_fetch/out/always_stale_time.txt')
 
   coop_munge_taskplan:
     command: create_coop_munge_taskplan(wants = coop_wants, parsers = coop_parsers)

@@ -31,6 +31,7 @@ rsconnect/
 **_tasks.yml
 1_crosswalk_fetch/in/*.zip
 1_crosswalk_fetch/in/*.csv
+1_crosswalk_fetch/out/always_stale_time.txt
 3_params_fetch/out/*.zip
 3_params_fetch/in/*.zip
 3_params_fetch/in/*.csv
