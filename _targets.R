@@ -159,7 +159,7 @@ targets_list <- list(
   # Group daily feather files by GCM to map over
   tar_target(gcm_data_daily_feather_group_by_gcm,
              tibble(gcm_file = gcm_data_daily_feather) %>%
-               mutate(gcm_name = gsub("7_drivers_munge/tmp/7_GCM_|_([0-9]{4}){4}_([0-9]{4})_tile([0-9]+)_daily.feather", "", gcm_file)) %>%
+               mutate(gcm_name = str_extract(gcm_file, paste(gcm_names, collapse="|"))) %>%
                group_by(gcm_name) %>%
                tar_group(),
              iteration = "group"),
