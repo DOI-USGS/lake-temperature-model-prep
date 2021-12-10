@@ -279,22 +279,65 @@ download_gcm_data <- function(out_file_template, query_geom,
 #' creates a file with the exact same name, except that the "_raw" part of the
 #' `in_file` filepath is replaced with "_daily".
 #' @param in_file filepath to a feather file containing the hourly geoknife data
-#' @param time_colname single character string representing the column name
-#' containing the date and time information from the geoknife results.
-convert_to_daily <- function(in_file, time_colname = "DateTime") {
+munge_to_glm <- function(in_file) {
 
   daily_data <- arrow::read_feather(in_file) %>%
-    # Replace the DateTime column with just a date
-    dplyr::mutate(date = as.Date(DateTime)) %>%
-    dplyr::select(-DateTime) %>%
-    # For each variable and date, we need to get a single daily value, so group
-    # by these. statistic and units are unique to each variable, so keeping
-    # these in the final data by including in the `group_by()` call.
-    dplyr::group_by(date, variable, statistic, units) %>%
+
+    # Pivot to long format first to get cells as a column.
+    pivot_longer(cols = -c(DateTime, variable, statistic, units),
+                 names_to = "cell", values_to = "val") %>%
+    mutate(cell = as.numeric(cell)) %>%
+
+    # Now pivot wider to makes each variable a column for easy, readable munging
+    # Also, removes `units` and `statistic` columns which are specific to each variable
+    pivot_wider(id_cols = c("DateTime", "cell"), names_from = variable, values_from = val) %>%
+
+    # TODO: remove this. Just temporarily working with one timestep
+    # filter(DateTime < as.POSIXct("1999-01-02 00:00:00", tz = "UTC")) %>%
+
+    # Unit conversions to get GLM-ready variables from GDP ones
+    mutate(AirTemp = tas - 273.15, # Convert GDP air temperature (tas) from Kelvin to Celcius
+           Rain = pr # TODO: Convert GDP precipitation (pr) from kg/m2/s to meters/hour
+    ) %>%
+
+    # Simply rename GDP variables into GLM variables
+    mutate(RelHum = qas,
+           Shortwave = rsns,
+           Longwave = rsns # TODO: find longwave from GDP
+    ) %>%
+
+    # Calculate GLM variables using other existing variables
+    mutate(Snow = ifelse(AirTemp < 0, Rain*10, 0), # When air temp is below freezing, any precip should be considered snow
+           Rain = ifelse(AirTemp < 0, 0, Rain),
+           # Calculate the Windspeed from wind velocity values (westerly & southerly)
+           WindSpeed = sqrt(uas^2 + vas^2)
+    ) %>%
+
+    # Create a column with just the date to use for summarizing
+    mutate(date = as.Date(DateTime)) %>%
+
+    # Keep only the columns we need
+    select(time = date,
+           cell,
+           Shortwave,
+           Longwave,
+           AirTemp,
+           RelHum,
+           WindSpeed,
+           Rain,
+           Snow
+    ) %>%
+
+    # Convert from hourly to daily data
+    group_by(time, cell) %>%
     # TODO: should we `na.rm = TRUE`?
-    dplyr::summarize(across(.fns = ~ mean(.x, na.rm = FALSE)), .groups = "keep") %>%
-    # Move the variable, statistic, and units column back after the data columns
-    dplyr::relocate(all_of(c("variable", "statistic", "units")), .after = last_col())
+    summarize(across(.cols = -WindSpeed, .fns = ~ mean(.x, na.rm = FALSE)),
+              WindSpeed = mean(WindSpeed^3)^(1/3),
+              n = length(time),
+              .groups = "keep") %>%
+    ungroup() %>%
+    # This drops Jan 1, 1980
+    filter(n == 24) %>% select(-n)
 
   # Save the daily data
   out_file <- gsub("_raw.feather", "_daily.feather", in_file)

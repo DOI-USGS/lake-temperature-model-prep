@@ -148,15 +148,13 @@ targets_list <- list(
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
 
-  # First, need to summarize the hourly data into daily output
+  # Need to munge GCM variables into useable GLM variables
   tar_target(
     gcm_data_daily_feather,
-    convert_to_daily(gcm_data_raw_feather),
+    munge_to_glm(gcm_data_raw_feather),
     pattern = map(gcm_data_raw_feather),
     format = "file"
   ),
-
-  # TODO: create snow from rain, see https://github.com/USGS-R/lake-temperature-model-prep/issues/222
 
   # Group daily feather files by GCM to map over
   tar_target(gcm_data_daily_feather_group_by_gcm,
