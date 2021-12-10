@@ -222,6 +222,9 @@ sf_pts_to_simplegeom <- function(sf_obj) {
 #' GDP. Will reproject to EPS = 4326 to query GDP. Expects a column called
 #' `tile_no` to represent the current group of grid cells being queried.
 #' @param gcm_name name of one of the six GCMs to use to construct the query URL.
+#' @param gcm_projection_period name given to the different projection periods. Each
+#' GCM dataset has a separate URL for downloading data from these different periods.
+#' Should be one of `1980_1999`, `2040_2059`, or `2080_2099`.
 #' @param query_vars character vector of the variables that should be downloaded
 #' from each of the GCMs. For a list of what variables are available, see
 #' https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html.
@@ -232,7 +235,7 @@ sf_pts_to_simplegeom <- function(sf_obj) {
 #' @param query_knife the algorithm used to summarize the ouput. Currently `NULL`,
 #' which uses `geoknife` defaults.
 download_gcm_data <- function(out_file_template, query_geom,
-                              gcm_name, query_vars,
+                              gcm_name, gcm_projection_period, query_vars,
                               query_dates, query_knife = NULL) {
 
   # Reproject query cell centroids to WGS84
@@ -242,7 +245,8 @@ download_gcm_data <- function(out_file_template, query_geom,
   query_simplegeom <- sf_pts_to_simplegeom(query_geom_WGS84)
 
   # Build query_url
-  query_url <- sprintf("https://cida.usgs.gov/thredds/dodsC/notaro_%s_1980_1999", gcm_name)
+  query_url <- sprintf("https://cida.usgs.gov/thredds/dodsC/notaro_%s_%s",
+                       gcm_name, gcm_projection_period)
 
   # construct and submit query
   gcm_job <- geoknife(
@@ -252,13 +256,16 @@ download_gcm_data <- function(out_file_template, query_geom,
       variables = query_vars,
       times = query_dates
     )
-    #TODO: should we specify the `knife`??
+    # The default knife algorithm is appropriate
   )
   wait(gcm_job)
   my_data <- result(gcm_job, with.units = TRUE)
 
   # Build out_file name
-  out_file <- sprintf(out_file_template, gcm_name, query_geom$tile_no[1])
+  out_file <- sprintf(out_file_template,
+                      gcm_name,
+                      gcm_projection_period,
+                      query_geom$tile_no[1])
 
   # write file
   arrow::write_feather(my_data, out_file)

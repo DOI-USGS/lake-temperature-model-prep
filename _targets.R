@@ -117,16 +117,15 @@ targets_list <- list(
   # BUILD QUERY
   # Define list of GCMs
   tar_target(gcm_names, c('ACCESS', 'GFDL')),#, 'CNRM', 'IPSL', 'MRI', 'MIROC')),
-  tar_target(gcm_dates, c('1999-01-01 00:00:00', '1999-01-15 23:00:00')),
-  tar_target(gcm_vars_info,
-             # Gathered manually from https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html
+  tar_target(gcm_dates_df,
              tibble(
-               var_name = c("evspsbl", "hfss"),#, "pr", "ps", "qas"),
-               longname = c("Total evapotranspiration flux", "Sensible heat flux"),
-               units = c("(kg * m^2)/s", "W / m^2"),
-               precision = "float"
+               projection_period = c('1980_1999', '2040_2059', '2080_2099'),
+               start_datetime = c('1980-01-01 00:00:00', '2040-01-01 00:00:00', '2080-01-01 00:00:00'),
+               # TODO: scale up to the full time period
+               end_datetime = c('1980-01-15 23:00:00', '2040-01-15 00:00:00', '2080-01-15 00:00:00')
              )),
-  tar_target(gcm_vars, gcm_vars_info$var_name),
+  # Gathered manually from https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html
+  tar_target(gcm_query_vars, c("pr", "tas", "qas", "rsns", "uas", "vas")), # missing longwave radiation
 
   # Download data from GDP for each tile & GCM name combination.
   # If the cells in a tile don't change, then the tile should not need to rebuild.
@@ -134,15 +133,16 @@ targets_list <- list(
   tar_target(
     gcm_data_raw_feather,
     download_gcm_data(
-      out_file_template = "7_drivers_munge/tmp/7_GCM_%s_1980_1999_tile%s_raw.feather",
+      out_file_template = "7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_raw.feather",
       query_geom = query_cells_centroids_list_by_tile,
       gcm_name = gcm_names,
-      query_vars = gcm_vars,
-      query_dates = gcm_dates
+      gcm_projection_period = gcm_dates_df$projection_period,
+      query_vars = gcm_query_vars,
+      query_dates = c(gcm_dates_df$start_datetime, gcm_dates_df$end_datetime)
     ),
     # TODO: might need to split across variables, too. Once we scale up, our queries
     # might be too large and chunking by variable could help.
-    pattern = cross(query_cells_centroids_list_by_tile, gcm_names),
+    pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df),
     format = "file"
   ),
 
@@ -159,26 +159,24 @@ targets_list <- list(
   # TODO: create snow from rain, see https://github.com/USGS-R/lake-temperature-model-prep/issues/222
 
   # Group daily feather files by GCM to map over
-  # TODO: map over other time periods- 1980-1999 + 2040-2059 + 2080-2099
   tar_target(gcm_data_daily_feather_group_by_gcm,
              tibble(gcm_file = gcm_data_daily_feather) %>%
-               mutate(gcm_name = gsub("7_drivers_munge/tmp/7_GCM_|_1980_1999_tile([0-9]+)_daily.feather", "", gcm_file)) %>%
+               mutate(gcm_name = gsub("7_drivers_munge/tmp/7_GCM_|_([0-9]{4}){4}_([0-9]{4})_tile([0-9]+)_daily.feather", "", gcm_file)) %>%
                group_by(gcm_name) %>%
                tar_group(),
              iteration = "group"),
 
   # Create single NetCDF files for each of the GCMs
-  # TODO: map over other time periods- 1980-1999 + 2040-2059 + 2080-2099
   tar_target(
     gcm_nc, {
       gcm_name <- unique(gcm_data_daily_feather_group_by_gcm$gcm_name)
       generate_gcm_nc(
-        nc_file = sprintf("7_drivers_munge/out/7_GCM_%s_1980_1999.nc", gcm_name),
+        nc_file = sprintf("7_drivers_munge/out/7_GCM_%s.nc", gcm_name),
         gcm_raw_files = gcm_data_daily_feather_group_by_gcm$gcm_file,
         dim_time_input = seq(as.Date(gcm_dates[1]), as.Date(gcm_dates[2]), by = 1),
         dim_cell_input = grid_cells_sf$cell_no,
         vars_info = gcm_vars_info,
-        global_att = sprintf("GCM Notaro %s 1980_1999", gcm_name)
+        global_att = sprintf("GCM Notaro %s", gcm_name)
       )
     },
     pattern = map(gcm_data_daily_feather_group_by_gcm)
