@@ -139,7 +139,7 @@ targets_list <- list(
   ##### Get list of final output files to link back to scipiper pipeline #####
   tar_target(
     gcm_files_out,
-    c(gcm_data_raw_feather, query_map_png)
+    c(gcm_data_raw_feather, lake_cell_xwalk_csv)
   )
 )
 
