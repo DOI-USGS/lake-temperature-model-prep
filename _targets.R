@@ -129,7 +129,6 @@ targets_list <- list(
 
   # Download data from GDP for each tile & GCM name combination.
   # If the cells in a tile don't change, then the tile should not need to rebuild.
-  # TODO: map over other time periods- 1980-1999 + 2040-2059 + 2080-2099
   tar_target(
     gcm_data_raw_feather,
     download_gcm_data(
