@@ -61,6 +61,11 @@ targets_list <- list(
   # being used, but this info saved as a file could be useful in the modeling part so
   # that we know what data to pull for each lake).
   tar_target(lake_cell_xwalk_df, get_lake_cell_xwalk(query_lake_centroids_sf, grid_cells_sf)),
+  tar_target(lake_cell_xwalk_csv, {
+    out_file <- "7_drivers_munge/out/lake_cell_xwalk.csv"
+    write_csv(lake_cell_xwalk_df, out_file)
+    return(out_file)
+  }, format = 'file'),
 
   ##### Prepare grid cell centroids for querying GDP #####
   # Don't need to do everything, only need to do cells where we have lakes. Group query
@@ -138,7 +143,7 @@ targets_list <- list(
   ##### Get list of final output files to link back to scipiper pipeline #####
   tar_target(
     gcm_files_out,
-    c(gcm_data_raw_feather, query_map_png)
+    c(gcm_data_raw_feather, lake_cell_xwalk_csv)
   )
 )
 
