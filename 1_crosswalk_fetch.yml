@@ -30,11 +30,10 @@ targets:
       - 1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind
 
 # create the trigger file, which will not be checked into git
-# if we use a trigger file elsewhere, this could be called just once, in 1_fetch.
 # I see no reason to have different trigger files for different sections of the pipeline
 # if this is used elsewhere, since the intent is to keep modifying it
 # or the trigger file could be checked into git so that people building this part
-# for the first time don't get "Can't build implicit target 7a_temp_coop_munge/tmp/always_stale_time.txt"
+# for the first time don't get "Can't build implicit target 1_crosswalk_fetch/out/always_stale_time.txt"
 # if this recipe is missing and the file doesn't exist
   1_crosswalk_fetch/out/always_stale_time.txt:
     command: make_file_stale(target_name)
