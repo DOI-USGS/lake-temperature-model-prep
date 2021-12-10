@@ -156,6 +156,32 @@ targets_list <- list(
     format = "file"
   ),
 
+  # Create feather files that can be used in the GLM pipeline without
+  # having to be munged and extracted via NetCDF. Temporary solution
+  # while we work out some NetCDF challenges.
+  tar_target(
+    out_skipnc_feather, {
+      out_dir <- "7_drivers_munge/out_skipnc"
+      purrr::map(gcm_data_daily_feather, function(fn, gcm_names, gcm_dates_df) {
+        gcm_name <- str_extract(fn, paste(gcm_names, collapse="|"))
+        gcm_time_period <- str_extract(fn, paste(gcm_dates_df$projection_period, collapse="|"))
+
+        read_feather(fn) %>%
+          split(.$cell) %>%
+          purrr::map(., function(data) {
+            cell <- unique(data$cell)
+            data_to_save <- data %>% select(-cell)
+            out_file <- sprintf("%s/GCM_%s_%s_%s.feather", out_dir, gcm_name, gcm_time_period, cell)
+            write_feather(data_to_save, out_file)
+            return(out_file)
+          })
+
+      }, gcm_names, gcm_dates_df)
+      return(out_dir)
+    },
+    format = "file"
+  ),
+
   # Group daily feather files by GCM to map over
   tar_target(gcm_data_daily_feather_group_by_gcm,
              tibble(gcm_file = gcm_data_daily_feather) %>%
