@@ -159,6 +159,8 @@ combine_sf_lakes <- function(out_ind, ...){
 }
 
 centroid_sf_lakes <- function(out_ind, lake_ind){
+  sf::sf_use_s2(FALSE)
+  on.exit(sf::sf_use_s2(TRUE))
   sf_lakes <- readRDS(scipiper::sc_retrieve(lake_ind))
   data_file <- scipiper::as_data_file(out_ind)
   saveRDS(st_centroid(sf_lakes), data_file)
