@@ -26,16 +26,16 @@ targets:
 
   # -- create makefile with targets for each file listed in gd -- #
   # for these two targets, trigger_file is used to keep this _always stale_, so it always gets rebuilt.
-  # kind of unnecessary to have a cache file that is always stale - perhaps should only be local?
-  # but we're tacking the time onto the hash in a way that wouldn't make sense w/ a data file
-  6_temp_coop_fetch/out/coop_all_files.rds.ind:
-    command: files_in_drive(out_ind = target_name,
+  # We're tacking the time onto the hash that represents a local-only file. the ".tind" file gets checked in,
+  # the local file does not
+  6_temp_coop_fetch/out/coop_all_files.rds.tind:
+    command: files_in_drive(out_tind = target_name,
       gd_path = coop_file_upload_location,
       trigger_file = '1_crosswalk_fetch/out/always_stale_time.txt',
       trigger_wait = 30)
 
   coop_wants:
-    command: filter_coop_all('6_temp_coop_fetch/out/coop_all_files.rds.ind',
+    command: filter_coop_all('6_temp_coop_fetch/out/coop_all_files.rds.tind',
       trigger_file = '1_crosswalk_fetch/out/always_stale_time.txt')
 
   coop_wants_fetch_plan:
