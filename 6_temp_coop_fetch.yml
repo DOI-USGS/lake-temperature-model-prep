@@ -10,7 +10,6 @@ packages:
 sources:
   - 6_temp_coop_fetch/src/filter_files.R
   - 6_temp_coop_fetch/src/task_fxns.R
-  - 6_temp_coop_fetch/src/download_and_indicate.R
   - 6_temp_coop_fetch/src/list_gd_files.R
 
 targets:
