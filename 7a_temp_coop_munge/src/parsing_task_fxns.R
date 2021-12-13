@@ -29,9 +29,9 @@ find_parser <- function(coop_wants, parser_filehash, trigger_file) {
 
     }  else if (grepl('lower_red|upper_red', coop_wants[i])) {
       parsers[i] <- 'parse_upper_lower_redlake_files'
-	
-	}  else if (grepl('Waterbody_Temperatures_by_State', coop_wants[i])) {
-      parsers[i] <- 'parse_navico_files'  
+
+	  }  else if (grepl('Waterbody_Temperatures_by_State', coop_wants[i])) {
+      parsers[i] <- 'parse_navico_files'
 
     }  else {
       parsers[i] <- paste0('parse_', tools::file_path_sans_ext(coop_wants[i]))
