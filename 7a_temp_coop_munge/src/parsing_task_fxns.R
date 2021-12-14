@@ -12,6 +12,7 @@ find_parser <- function(coop_wants, parser_filehash, trigger_file = NULL) {
     make_file_stale(trigger_file)
   }
 
+  coop_want_filenames <- coop_wants$name
   parser_files <- yaml::yaml.load_file(parser_filehash) %>% names()
   parser_env <- new.env()
   sapply(parser_files, source,  parser_env)
@@ -20,25 +21,25 @@ find_parser <- function(coop_wants, parser_filehash, trigger_file = NULL) {
 
   parsers <- c()
 
-  for (i in 1:length(coop_wants)) {
+  for (i in 1:length(coop_want_filenames)) {
 
-    if (grepl('manualentry', coop_wants[i])) {
+    if (grepl('manualentry', coop_want_filenames[i])) {
       parsers[i] <- 'parse_manualentry_files'
 
-    } else if (grepl('winnie\\D', coop_wants[i], ignore.case = TRUE)) {
+    } else if (grepl('winnie\\D', coop_want_filenames[i], ignore.case = TRUE)) {
       parsers[i] <- 'parse_winnie_files'
 
-    } else if (grepl('DNRdatarequest', coop_wants[i])) {
+    } else if (grepl('DNRdatarequest', coop_want_filenames[i])) {
       parsers[i] <- 'parse_mndnr_files'
 
-    } else if (grepl('lower_red|upper_red', coop_wants[i])) {
+    } else if (grepl('lower_red|upper_red', coop_want_filenames[i])) {
       parsers[i] <- 'parse_upper_lower_redlake_files'
 
-    } else if (grepl('Waterbody_Temperatures_by_State', coop_wants[i])) {
+    } else if (grepl('Waterbody_Temperatures_by_State', coop_want_filenames[i])) {
       parsers[i] <- 'parse_navico_files'
 
     } else {
-      parsers[i] <- paste0('parse_', tools::file_path_sans_ext(coop_wants[i]))
+      parsers[i] <- paste0('parse_', tools::file_path_sans_ext(coop_want_filenames[i]))
     }
 
   parser_exists <- parsers %in% parser_fxns
@@ -46,12 +47,12 @@ find_parser <- function(coop_wants, parser_filehash, trigger_file = NULL) {
   }
 
   if (!all(parser_exists)) {
-    stop(paste0('Cooperator data file(s) ', paste0(coop_wants[which(parser_exists == FALSE)], collapse = ', '), ' do not have parsers. Please write a parser and save to 7a_temp_coop_munge/src/data_parsers/
+    stop(paste0('Cooperator data file(s) ', paste0(coop_want_filenames[which(parser_exists == FALSE)], collapse = ', '), ' do not have parsers. Please write a parser and save to 7a_temp_coop_munge/src/data_parsers/
                 may need to rebuild 7a_temp_coop_munge/tmp/parser_files.yml to update the list'))
   }
 
   parsers_list <- as.list(parsers)
-  names(parsers_list) <- coop_wants
+  names(parsers_list) <- coop_want_filenames
   return(parsers_list)
 }
 
@@ -87,7 +88,7 @@ create_coop_munge_taskplan <- function(wants, parsers) {
   # This should first check for the out/.ind file for the parsed data? or depend on the .ind file?
 
   task_plan <- scipiper::create_task_plan(
-    task_names = wants,
+    task_names = wants$name,
     task_steps = list(coop_munge_step1, coop_munge_step2),
     add_complete = FALSE,
     final_steps = 'parse_and_write'
