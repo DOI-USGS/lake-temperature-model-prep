@@ -31,7 +31,12 @@ files_in_drive <- function(out_tind, gd_path, trigger_file = NULL, trigger_wait)
 # google's API.
 gd_freshen_dir <- function(out_tind, gd_path){
 
-  gd_files <- drive_ls(path = gd_path)
+
+  # Can access the GD file hash! (using ?tidyr::hoist here to access
+  # the checksum from inside the dribble `drive_resource` list item
+  gd_files <- drive_ls(path = gd_path) %>%
+    hoist(drive_resource, hash = list('md5Checksum')) %>%
+    dplyr::select(name, hash)
 
   local_file <- as_data_file(out_tind, ind_ext = 'tind')
   saveRDS(gd_files, file = local_file)
