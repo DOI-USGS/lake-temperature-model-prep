@@ -9,5 +9,5 @@
 #' The file is kept stale by writing the current time (with timezone offset) and a random number. The random
 #' number is used because this function could be called rapidly several times within the same second.
 make_file_stale <- function(filepath){
-  cat(file = filepath, paste0(format(Sys.time(), '%m/%d/%y %H:%M:%S %z; random ID: '), sample(1E6, 1)))
+  cat(file = filepath, paste0(format(Sys.time(), '%Y-%m-%d %H:%M:%S %z; random ID: '), sample(1E6, 1), '\n'))
 }

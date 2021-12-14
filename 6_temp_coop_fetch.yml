@@ -10,53 +10,42 @@ packages:
 sources:
   - 6_temp_coop_fetch/src/filter_files.R
   - 6_temp_coop_fetch/src/task_fxns.R
-  - 6_temp_coop_fetch/src/download_and_indicate.R
   - 6_temp_coop_fetch/src/list_gd_files.R
 
 targets:
 
   6_temp_coop_fetch:
     depends:
-      - 6_temp_coop_fetch/downloads/long_term_ntl.csv.ind
-      # THIS IS FAILING TO DOWNLOAD - 6_temp_coop_fetch/downloads/mendota_daily_buoy.csv.ind
-      # THIS IS FAILING TO DOWNLOAD - - 6_temp_coop_fetch/downloads/mendota_temps_long.csv.ind
+
       - 6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind
 
   # -- download LTER files and push to GD -- #
   coop_file_upload_location:
     command: as_id(I('1dutCiFEOoRObXLn6n3BRKhZDDAijK65Q'))
 
-  6_temp_coop_fetch/downloads/long_term_ntl.csv.ind:
-    command: download_and_indicate(in_ind = target_name,
-             url = I("https://lter.limnology.wisc.edu/sites/default/files/data/ntl29_v5.csv"),
-             push_location = coop_file_upload_location)
-
-  6_temp_coop_fetch/downloads/mendota_daily_buoy.csv.ind:
-    command: download_and_indicate(in_ind = target_name,
-              url = I("https://lter.limnology.wisc.edu/sites/default/files/data/ntl130_1_v7.csv"),
-              push_location = coop_file_upload_location)
-
-  6_temp_coop_fetch/downloads/mendota_temps_long.csv.ind:
-    command: download_and_indicate(in_ind = target_name,
-              url = I("https://lter.limnology.wisc.edu/sites/default/files/data/Lake_Mendota_temps_long.csv"),
-              push_location = coop_file_upload_location)
-
-
   # -- create makefile with targets for each file listed in gd -- #
-
-  # update dummy_date if you know there are updates in google drive (e.g., new cooperator file)
-  # that you want the peipline to recognize
-  6_temp_coop_fetch/out/coop_all_files.rds.ind:
-    command: files_in_drive(out_ind = target_name, gd_path = coop_file_upload_location, dummy_date = I('2021-12-08'))
+  # for these two targets, trigger_file is used to keep this _always stale_, so it always gets rebuilt.
+  # We're tacking the time onto the hash that represents a local-only file. the ".tind" file gets checked in,
+  # the local file does not
+  6_temp_coop_fetch/out/coop_all_files.rds.tind:
+    command: files_in_drive(out_tind = target_name,
+      gd_path = coop_file_upload_location,
+      trigger_file = '1_crosswalk_fetch/out/always_stale_time.txt',
+      trigger_wait = 30)
 
   coop_wants:
-    command: filter_coop_all('6_temp_coop_fetch/out/coop_all_files.rds.ind')
+    command: filter_coop_all('6_temp_coop_fetch/out/coop_all_files.rds.tind',
+      trigger_file = '1_crosswalk_fetch/out/always_stale_time.txt')
 
   coop_wants_fetch_plan:
     command: create_coop_taskplan(coop_wants)
 
   6_temp_coop_fetch_tasks.yml:
-    command: create_coop_fetch_makefile(target_name, coop_wants_fetch_plan, I('6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind'))
+    command: create_coop_fetch_makefile(target_name,
+      coop_wants_fetch_plan,
+      I('6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind'))
 
+  # do we trigger a rebuild if the file contents changes? not just the names?
   6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind:
-    command: loop_tasks(task_plan = coop_wants_fetch_plan, task_makefile = '6_temp_coop_fetch_tasks.yml')
+    command: loop_tasks(task_plan = coop_wants_fetch_plan,
+      task_makefile = '6_temp_coop_fetch_tasks.yml')

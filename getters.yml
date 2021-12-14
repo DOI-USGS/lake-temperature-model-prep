@@ -257,11 +257,6 @@ targets:
   4_params_munge/out/ndgf_bathy.rds:
     command: gd_get('4_params_munge/out/ndgf_bathy.rds.ind')
 
-  #### 6_temp_coop ####
-
-  6_temp_coop_fetch/out/coop_all_files.rds:
-    command: gd_get('6_temp_coop_fetch/out/coop_all_files.rds.ind')
-
   #### 6_wqp_fetch ####
   6_wqp_fetch/inout/wqptemp_partitions.feather:
     command: gd_get('6_wqp_fetch/inout/wqptemp_partitions.feather.ind')

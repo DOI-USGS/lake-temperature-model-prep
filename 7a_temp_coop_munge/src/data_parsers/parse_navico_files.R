@@ -11,7 +11,7 @@ parse_navico_files <- function(inind, outind){
 
   # read in data: identify sheets in data, read in raw data by sheet, and combine into one data set
   raw <- readxl::excel_sheets(infile) %>%
-    lapply(raw_sheets, function(x){
+    lapply(function(x){
       out <- read_xlsx(infile, sheet = x, col_types = cols)
       return(out)
     }) %>%
