@@ -12,8 +12,5 @@ filter_coop_all <- function(in_tind, trigger_file) {
 
 
   # in_tind is a LOCAL, time-based indicator file. It does not represent a cache file
-  gd_files <- readRDS(as_data_file(in_tind, ind_ext = 'tind'))
-  filenames <- gd_files$name
-
-  return(filenames)
+  readRDS(as_data_file(in_tind, ind_ext = 'tind'))
 }
