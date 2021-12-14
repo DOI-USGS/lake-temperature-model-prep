@@ -36,7 +36,8 @@ gd_freshen_dir <- function(out_tind, gd_path){
   # the checksum from inside the dribble `drive_resource` list item
   gd_files <- drive_ls(path = gd_path) %>%
     hoist(drive_resource, hash = list('md5Checksum')) %>%
-    dplyr::select(name, hash)
+    dplyr::select(name, hash) %>%
+    arrange(name)
 
   local_file <- as_data_file(out_tind, ind_ext = 'tind')
   saveRDS(gd_files, file = local_file)
