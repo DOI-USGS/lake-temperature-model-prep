@@ -1,13 +1,12 @@
 version: 0.3.0
 name: 1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind
 type: file
-hash: 25cc973aa82f9529bf21962fcd26ac49
-time: 2021-12-15 11:44:11 UTC
+hash: 0bb2e61ef65480a7c62ca3cb05507b38
+time: 2021-12-15 13:17:11 UTC
 depends:
   1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind: ecc9c6369fe3120fcfc93a7061bfeec6
-  6_temp_coop_fetch/in/Waterbody_Temperatures_by_State.xlsx.ind: 8e338c7c99cf9ef24e063b22909d94d5
 fixed: 932d13566ff80488e4bba71950970c2a
 code:
   functions:
-    fetch_navico_points: fe204db8af48cb1e9d04ef2d49edfded
+    fetch_navico_points: ac33f82938a90d32d4ebcafca87ee0fc
 

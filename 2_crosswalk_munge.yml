@@ -161,10 +161,15 @@ targets:
       intersect_ind_file = '2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds.ind',
       poly1_ID_name = I("NDGF_ID"))
 
+  2_crosswalk_munge/out/navico_lakes_sf.rds.ind:
+    command: merge_navico_lakes(target_name,
+      depth_sf_ind = '1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind',
+      temp_ind = '6_temp_coop_fetch/in/Waterbody_Temperatures_by_State.xlsx.ind')
+
   2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind:
     command: crosswalk_points_in_poly(target_name,
       poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
-      points_ind_file = '1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind',
+      points_ind_file = '2_crosswalk_munge/out/navico_lakes_sf.rds.ind',
       points_ID_name = I("Navico_ID"))
 
   2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind:
