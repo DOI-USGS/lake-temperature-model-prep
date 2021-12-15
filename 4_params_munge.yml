@@ -40,6 +40,7 @@ targets:
       - 4_params_munge/out/NY_manual_depths.rds.ind
       - 4_params_munge/out/lagos_depths.rds.ind
       - 4_params_munge/out/lagos_secchi.rds.ind
+      - 4_params_munge/out/navico_depths.rds.ind
 
 
   4_params_munge/out/toha_varying_kw.rds.ind:

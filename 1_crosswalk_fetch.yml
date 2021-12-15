@@ -119,7 +119,8 @@ targets:
 
   1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind:
     command: fetch_navico_points(target_name,
-      csv_ind = '1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
+      depth_ind = '1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind',
+      temp_ind = '6_temp_coop_fetch/in/Waterbody_Temperatures_by_State.xlsx.ind')
 
   1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind:
     command: fetch_Iowa_points(target_name,
