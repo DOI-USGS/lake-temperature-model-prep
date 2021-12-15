@@ -1,11 +1,11 @@
 version: 0.3.0
 name: 2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind
 type: file
-hash: d4a8e5e15fc2d605f7cce0c16d6e2a6a
-time: 2021-11-19 23:43:14 UTC
+hash: b90f5a86e28cc629b23df74ba1994838
+time: 2021-12-15 13:33:10 UTC
 depends:
   1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind: c85c2a6554d2495811586d7e19d80617
-  1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind: 9a6de47307db33ea5a4737b6e6cda39f
+  2_crosswalk_munge/out/navico_lakes_sf.rds.ind: efcc0fca4d0afd5ca65db9829ad832c9
 fixed: 37d6fca617d9b50e7086134380b8b6f8
 code:
   functions:
