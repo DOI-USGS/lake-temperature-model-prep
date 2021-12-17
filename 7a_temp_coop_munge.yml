@@ -61,4 +61,5 @@ targets:
       id_crosswalk = '2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind',
       wbic_crosswalk = '2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind',
       dow_crosswalk = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind',
-      iowa_crosswalk = '2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind')
+      iowa_crosswalk = '2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind',
+      navico_crosswalk = '2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind')

@@ -6,7 +6,7 @@ list_coop_files <- function(fileout, dirpath, trigger_file){
 
 crosswalk_coop_dat <- function(outind = target_name, inind,
                                id_crosswalk, wbic_crosswalk, dow_crosswalk,
-                               iowa_crosswalk) {
+                               iowa_crosswalk, navico_crosswalk) {
 
   outfile <- as_data_file(outind)
 
@@ -31,6 +31,8 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   dow2nhd <- distinct(dow2nhd) # get rid of duplicated obs
 
   iowa2nhd <- sc_retrieve(iowa_crosswalk) %>% readRDS() %>% distinct()
+
+  navico2nhd <- sc_retrieve(navico_crosswalk) %>% readRDS() %>% distinct()
 
   # merge each possible ID with nhdid
   # wbic
@@ -68,6 +70,10 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   # id
   dat_id <- filter(dat, !is.na(id)) %>%
     left_join(id2nhd, by = c('id' = 'micoorps_id'))
+
+  # navico
+  dat_davico <- filter(dat, !is.na(Navico_ID)) %>%
+    left_join(navico2nhd)
 
   # all together now
   # print out warning about what data you're dropping
