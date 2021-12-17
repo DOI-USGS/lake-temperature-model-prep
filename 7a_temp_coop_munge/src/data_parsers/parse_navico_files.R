@@ -24,7 +24,7 @@ parse_navico_files <- function(inind, outind){
                     lubridate::ymd_h(paste(Year, Month, Day, `Hour (UTC)`, sep = ' ')),
                   TimeZone = "UTC",
                   depth = 0,  # assumed surface samples
-                  id = paste("Navico_", MapWaterbodyId, sep = '')) %>%
+                  Navico_ID = paste("Navico_", MapWaterbodyId, sep = '')) %>%
     dplyr::mutate(DateTime = as.Date(date_complete),
                   time = format(date_complete, "%H:%M")) %>%
     dplyr::select(DateTime, time, TimeZone, depth, temp = AveWaterTempC, id)
