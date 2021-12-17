@@ -1,17 +1,18 @@
 version: 0.3.0
 name: 7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind
 type: file
-hash: 36c3290257f306f4434fe16c39bee79d
-time: 2021-12-08 16:51:43 UTC
+hash: c5c796bf829903ecfe186e8101b17f29
+time: 2021-12-17 19:04:35 UTC
 depends:
-  7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind: 18e546f365b79eaf7263d8d4698c5fc3
+  7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind: aff489a7f9d032c60c716ba8f29d5561
   2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind: 562d1bcaf19cef99e5e8ab24b745afc9
-  2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind: ad14fb68c3c3989cc198a1cc68ca4820
-  2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind: 33b19ab49b8127db8ac36a446aacc0de
+  2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind: 01298a39e89f144b6208bbeca16ba76e
+  2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind: b37685f136a00f08a5c3b5a7559e93c3
   2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind: 1be92da3aa67873b4730168ec2fb24e3
+  2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind: b90f5a86e28cc629b23df74ba1994838
 fixed: bbc18283bf2df758a8402aa1d8e19048
 code:
   functions:
-    crosswalk_coop_dat: dd7930077eff0b11117f626067d8b6e4
+    crosswalk_coop_dat: 1753f01c49532ebf9007c1a26b8f67d1
     merge_coop_dat: dc79d2fae7d5d7c4d98468b0470fc8bc
 
