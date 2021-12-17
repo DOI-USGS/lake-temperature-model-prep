@@ -72,7 +72,7 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
     left_join(id2nhd, by = c('id' = 'micoorps_id'))
 
   # navico
-  dat_davico <- filter(dat, !is.na(Navico_ID)) %>%
+  dat_navico <- filter(dat, !is.na(Navico_ID)) %>%
     left_join(navico2nhd)
 
   # all together now
