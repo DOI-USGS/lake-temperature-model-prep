@@ -46,7 +46,7 @@ targets:
   7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind:
     command: loop_tasks(task_plan = coop_munge_taskplan,
       task_makefile = '7a_temp_coop_munge_tasks.yml',
-      num_tries = 3)
+      num_tries = 1)
     depends:
       - '7a_temp_coop_munge/tmp/parser_files.yml'
       - '6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind'
