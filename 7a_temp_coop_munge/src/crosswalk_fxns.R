@@ -77,8 +77,9 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
 
   # all together now
   # print out warning about what data you're dropping
-  dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id, dat_iowa) %>%
-    tidyr::gather(key = state_id_type, value = state_id, DOW, id, WBIC, Iowa_ID) %>%
+  dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id, dat_iowa, dat_navico) %>%
+    tidyr::gather(key = state_id_type, value = state_id, DOW, id,
+                  WBIC, Iowa_ID, Navico_ID) %>%
     filter(!is.na(state_id))
 
   # find which coop files have missing crosswalks
