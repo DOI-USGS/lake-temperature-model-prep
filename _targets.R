@@ -149,6 +149,20 @@ targets_list <- list(
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
 
   # Need to munge GCM variables into useable GLM variables
+  tar_target(glm_vars_info,
+             tibble(
+               # TODO: MISSING LONGWAVE
+               var_name = c("Rain", "AirTemp", "Snow", "RelHum", "Shortwave", "Longwave", "WindSpeed"),
+               longname = c("Total daily rainfall",
+                            "Total daily snowfall derived from precipitation and air temp",
+                            "Average daily near surface air temperature",
+                            "Average daily percent relative humidity",
+                            "Average daily surface downward shortwave flux in air",
+                            "LONGWAVE EXPLANATION",
+                            "Average daily windspeed derived from anemometric zonal and anenometric meridional wind components"),
+               units = c("meters", "meters", "degrees Celcius", "", "???", "???", "???"),
+               precision = "float"
+             )),
   tar_target(
     gcm_data_daily_feather,
     munge_to_glm(gcm_data_raw_feather),
