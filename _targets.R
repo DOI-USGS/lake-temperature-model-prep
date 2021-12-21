@@ -121,8 +121,8 @@ targets_list <- list(
              tibble(
                projection_period = c('1980_1999', '2040_2059', '2080_2099'),
                start_datetime = c('1980-01-01 00:00:00', '2040-01-01 00:00:00', '2080-01-01 00:00:00'),
-               # TODO: scale up to the full time period
-               end_datetime = c('1980-01-15 23:00:00', '2040-01-15 00:00:00', '2080-01-15 00:00:00')
+               # Include midnight on the final day of the time period
+               end_datetime = c('2000-01-01 00:00:00', '2060-01-01 00:00:00', '2100-01-01 00:00:00')
              )),
   # Gathered manually from https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html
   tar_target(gcm_query_vars, c("pr", "tas", "qas", "rsns", "uas", "vas")), # missing longwave radiation
