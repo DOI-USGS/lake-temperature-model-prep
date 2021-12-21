@@ -142,7 +142,8 @@ targets_list <- list(
     # TODO: might need to split across variables, too. Once we scale up, our queries
     # might be too large and chunking by variable could help.
     pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df),
-    format = "file"
+    format = "file",
+    error = "continue"
   ),
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
