@@ -197,9 +197,11 @@ targets_list <- list(
     format = "file"
   ),
 
-  # Group daily feather files by GCM to map over
+  # Group daily feather files by GCM to map over and include
+  # branch file hashes to trigger rebuilds for groups as needed
   tar_target(gcm_data_daily_feather_group_by_gcm,
-             tibble(gcm_file = gcm_data_daily_feather) %>%
+              build_branch_file_hash_table(names(gcm_data_daily_feather)) %>%
+               rename(gcm_file = path) %>%
                mutate(gcm_name = str_extract(gcm_file, paste(gcm_names, collapse="|"))) %>%
                group_by(gcm_name) %>%
                tar_group(),
