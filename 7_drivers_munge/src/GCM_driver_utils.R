@@ -248,17 +248,26 @@ download_gcm_data <- function(out_file_template, query_geom,
   query_url <- sprintf("https://cida.usgs.gov/thredds/dodsC/notaro_%s_%s",
                        gcm_name, gcm_projection_period)
 
-  # construct and submit query
-  gcm_job <- geoknife(
-    stencil = query_simplegeom,
-    fabric = webdata(
-      url = query_url,
-      variables = query_vars,
-      times = query_dates
+  # Retry the GDP query multiple times if it doesn't work.
+  retry({
+    # construct and submit query
+    gcm_job <- geoknife(
+      stencil = query_simplegeom,
+      fabric = webdata(
+        url = query_url,
+        variables = query_vars,
+        times = query_dates
+      )
+      # The default knife algorithm is appropriate
     )
-    # The default knife algorithm is appropriate
-  )
-  wait(gcm_job)
+    wait(gcm_job)
+    gcm_job_status <- check(gcm_job)$statusType
+  },
+  # Check the value of the last thing in the expr above (denoted
+  # by the ".") to decide if you should retry or not
+  until = ~ . == "ProcessSucceeded",
+  max_tries = 5)
+
   my_data <- result(gcm_job, with.units = TRUE)
 
   # Build out_file name

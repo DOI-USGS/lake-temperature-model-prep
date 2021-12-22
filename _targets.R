@@ -8,7 +8,8 @@ tar_option_set(packages = c(
   "scipiper",
   "ggplot2",
   "geoknife",
-  "arrow"
+  "arrow",
+  "retry"
 ))
 
 source('7_drivers_munge/src/GCM_driver_utils.R')
@@ -116,7 +117,7 @@ targets_list <- list(
 
   # BUILD QUERY
   # Define list of GCMs
-  tar_target(gcm_names, c('ACCESS', 'GFDL')),#, 'CNRM', 'IPSL', 'MRI', 'MIROC')),
+  tar_target(gcm_names, c('ACCESS', 'GFDL', 'CNRM', 'IPSL', 'MRI', 'MIROC')),
   tar_target(gcm_dates_df,
              tibble(
                projection_period = c('1980_1999', '2040_2059', '2080_2099'),
