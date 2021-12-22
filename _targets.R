@@ -207,14 +207,24 @@ targets_list <- list(
                tar_group(),
              iteration = "group"),
 
+  # Create a single vector of all the time period's days to use as the NetCDF time dim
+  tar_target(
+    gcm_dates_all,
+    purrr::pmap(gcm_dates_df, function(projection_period, start_datetime, end_datetime) {
+      seq(as.Date(start_datetime), as.Date(end_datetime), by = 1)
+    }) %>% do.call("c", args = .)
+  ),
+
   # Create single NetCDF files for each of the GCMs
   tar_target(
     gcm_nc, {
+      # Grouped by GCM name so this should just return one value
       gcm_name <- unique(gcm_data_daily_feather_group_by_gcm$gcm_name)
+
       generate_gcm_nc(
         nc_file = sprintf("7_drivers_munge/out/7_GCM_%s.nc", gcm_name),
         gcm_raw_files = gcm_data_daily_feather_group_by_gcm$gcm_file,
-        dim_time_input = seq(as.Date(gcm_dates[1]), as.Date(gcm_dates[2]), by = 1),
+        dim_time_input = gcm_dates_all,
         dim_cell_input = grid_cells_sf$cell_no,
         vars_info = gcm_vars_info,
         global_att = sprintf("GCM Notaro %s", gcm_name)
