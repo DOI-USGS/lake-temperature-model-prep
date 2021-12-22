@@ -226,7 +226,7 @@ targets_list <- list(
         gcm_raw_files = gcm_data_daily_feather_group_by_gcm$gcm_file,
         dim_time_input = gcm_dates_all,
         dim_cell_input = grid_cells_sf$cell_no,
-        vars_info = gcm_vars_info,
+        vars_info = glm_vars_info,
         global_att = sprintf("GCM Notaro %s", gcm_name)
       )
     },
