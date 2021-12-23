@@ -9,6 +9,7 @@
 7a_temp_coop_munge/src/data_parsers/parse_mndnr_files.R: 57b1b027d9ba7c1e821cd2fc7c8e7bdc
 7a_temp_coop_munge/src/data_parsers/parse_mndow_coop_files.R: 6a6c233b3d6da67ee765bc11cb193d61
 7a_temp_coop_munge/src/data_parsers/parse_navico_files.R: 0c9a041eede5b547e57f5478707c3c0f
+7a_temp_coop_munge/src/data_parsers/parse_norfork_files.R: cbfc4277fc2a82ee05bef942419d22a3
 7a_temp_coop_munge/src/data_parsers/parse_redlake_files.R: 8496c673c467c09219bfdb6d85ffa964
 7a_temp_coop_munge/src/data_parsers/parse_tenmile_files.R: 651fa111c232347c504b2b29e4c921b8
 7a_temp_coop_munge/src/data_parsers/parse_test_coop_data.R: 805e63f3b545ee803362a9be65df1170
