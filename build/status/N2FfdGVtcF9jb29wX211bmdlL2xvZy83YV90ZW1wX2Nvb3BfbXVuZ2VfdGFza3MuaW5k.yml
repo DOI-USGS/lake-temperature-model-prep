@@ -1,14 +1,14 @@
 version: 0.3.0
 name: 7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind
 type: file
-hash: d2a85b650917de1790bda7b7503bf6cb
-time: 2021-12-14 15:59:26 UTC
+hash: aff489a7f9d032c60c716ba8f29d5561
+time: 2021-12-17 19:54:48 UTC
 depends:
   coop_munge_taskplan: 80a8446ba704aeec9ed9c9226d3275a0
   7a_temp_coop_munge_tasks.yml: faca091c42a613bfef349d0b89c38903
-  7a_temp_coop_munge/tmp/parser_files.yml: 4a6ad9d1cd8eb323c708134b5c9aba2d
+  7a_temp_coop_munge/tmp/parser_files.yml: 671b52165e06fa58b783b717c23f61c8
   6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind: 87dd2ffc8ca26d59b91f7b2e549842c3
-fixed: d47fa28c71f538b3724b78d50a486af1
+fixed: e6f1d209cfbefa8645f5dabb9d5e08c5
 code:
   functions: {}
 
