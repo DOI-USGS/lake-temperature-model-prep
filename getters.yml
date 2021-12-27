@@ -12,7 +12,7 @@ targets:
 
   #### 1_spatial ####
 
-  1_crosswalk_fetch/in/Navico_lakes_depths.csv:
+  1_crosswalk_fetch/in/Norfork_temperature_locations.csv:
     command: gd_get('1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
 
   1_crosswalk_fetch/in/Navico_lakes_depths.csv:

@@ -27,6 +27,7 @@ targets:
       - 1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind
       - 1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind
       - 1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind
+      - 1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind
       - 1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind
 
 # create the trigger file, which will not be checked into git
@@ -120,6 +121,10 @@ targets:
   1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind:
     command: fetch_navico_points(target_name,
       csv_ind = '1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
+
+  1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind:
+    command: fetch_norfork_points(target_name,
+      csv_ind = '1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
 
   1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind:
     command: fetch_Iowa_points(target_name,
