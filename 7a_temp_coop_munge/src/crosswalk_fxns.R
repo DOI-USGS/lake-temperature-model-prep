@@ -90,6 +90,8 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
 
   warning(paste0('Dropping ', sum(is.na(dat_all_linked$site_id)), ' temperature observations due to missing NHD ids.'))
 
+  browser()
+
   dat_all_linked <- filter(dat_all_linked, !is.na(site_id)) %>%
     distinct()
 

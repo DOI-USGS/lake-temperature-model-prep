@@ -21,7 +21,7 @@ parse_norfork_files <- function(inind, outind) {
       id = 'nhdhr_105341319',
       site = Site
     ) %>%
-    dplyr::select(DateTime, time, Timezone, depth, temp, id, site )
+    dplyr::select(DateTime, time, Timezone, depth, temp, id, site)
 
   # save data
   saveRDS(object = clean, file = outfile)
@@ -37,6 +37,7 @@ parse_norfork_files <- function(inind, outind) {
 #' @param skip number of sheets to skip, starting from 1
 #'
 read_norfork_xlsx <- function(file_in, skip = 2) {
+
   start <- skip + 1
 
   file_in %>%
