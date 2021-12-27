@@ -142,6 +142,9 @@ targets:
   2_crosswalk_munge/out/navico_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind')
 
+  2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind')
+
   #### 3_params_fetch #####
 
   3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip:
