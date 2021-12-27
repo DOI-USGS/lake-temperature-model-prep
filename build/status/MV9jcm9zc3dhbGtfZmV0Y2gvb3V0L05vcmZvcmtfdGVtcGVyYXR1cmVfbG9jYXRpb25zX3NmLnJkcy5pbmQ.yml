@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind
+type: file
+hash: 76dcbce48390acfecda257b347d61456
+time: 2021-12-27 20:15:41 UTC
+depends:
+  1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind: e05ea6b832d004886279bcaa5dfe592b
+fixed: c62b966ce3234afcd5f9efbbf117f1ca
+code:
+  functions:
+    fetch_norfork_points: 8513fe98bc1965b9396e7b94f5a846db
+
