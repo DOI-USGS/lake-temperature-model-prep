@@ -5,7 +5,7 @@
 #' @x num, depth (ft)
 #'
 convert_ft_to_m <- function(x) {
-  x * .03048
+  x * 0.3048
 }
 
 #' write a unique value to a text file when this function is called.
