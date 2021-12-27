@@ -18,10 +18,10 @@ parse_norfork_files <- function(inind, outind) {
       temp = `Temperature (C)`,
       # One lake with two sites. Manually set from
       # https://github.com/USGS-R/lake-temperature-model-prep/blob/0c037ddce5bdab7a7eb3a6ad07c0837972bddcd1/4_params_munge.yml#L63
-      id = 'nhdhr_105341319',
+      Norfork_ID = paste("Norfork_", `Unit ID`, sep = ''),
       site = Site
     ) %>%
-    dplyr::select(DateTime, time, Timezone, depth, temp, id, site)
+    dplyr::select(DateTime, time, Timezone, depth, temp, Norfork_ID, site)
 
   # save data
   saveRDS(object = clean, file = outfile)
