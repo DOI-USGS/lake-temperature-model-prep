@@ -233,7 +233,7 @@ fetch_norfork_points <- function(out_ind, csv_ind) {
   # convert data to sf object and save as rds
   # rename Site to site id, so that rds can later be passed to `crosswalk_points_in_poly`
   # which expects input dataframe to have 'site_id' column
-  norfolk_points_sf <- st_as_sf(norfork_data, coords = c('Long', 'Lat'), crs = 4326) %>%
+  norfork_points_sf <- st_as_sf(norfork_data, coords = c('Long', 'Lat'), crs = 4326) %>%
     mutate(site_id = sprintf("Norfork_%s", Site), .keep = "unused", .before = 1) %>%
     saveRDS(file = outfile)
 
