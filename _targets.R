@@ -174,6 +174,7 @@ targets_list <- list(
   # Create feather files that can be used in the GLM pipeline without
   # having to be munged and extracted via NetCDF. Temporary solution
   # while we work out some NetCDF challenges.
+  # TODO: delete once we finish the NetCDF DSG build (see issue #252)
   tar_target(
     out_skipnc_feather, {
       out_dir <- "7_drivers_munge/out_skipnc"
@@ -218,7 +219,7 @@ targets_list <- list(
   # Create single NetCDF files for each of the GCMs
   tar_target(
     gcm_nc, {
-      # Grouped by GCM name so this should just return one value
+      # Grouped by GCM name so this should just return one unique value
       gcm_name <- unique(gcm_data_daily_feather_group_by_gcm$gcm_name)
 
       generate_gcm_nc(
