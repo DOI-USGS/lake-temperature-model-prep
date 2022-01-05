@@ -317,9 +317,6 @@ munge_to_glm <- function(in_file) {
     # Also, removes `units` and `statistic` columns which are specific to each variable
     pivot_wider(id_cols = c("DateTime", "cell"), names_from = variable, values_from = val) %>%
 
-    # TODO: remove this. Just temporarily working with one timestep
-    # filter(DateTime < as.POSIXct("1999-01-02 00:00:00", tz = "UTC")) %>%
-
     # Unit conversions to get GLM-ready variables from GDP ones
     mutate(AirTemp = tas - 273.15, # Convert GDP air temperature (tas) from Kelvin to Celcius
            Rain = pr # TODO: Convert GDP precipitation (pr) from kg/m2/s to meters/hour
