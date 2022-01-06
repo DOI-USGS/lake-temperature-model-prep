@@ -1,3 +1,11 @@
+#' Convert from fahrenheit to celsius
+#'
+#' Convert temperatures from fahrenheit to celsius using a consistent conversion value
+#'
+#' @x num, temperature (deg F)
+#'
+fahrenheit_to_celsius <- function(x){ 5/9*(x - 32) }
+
 #' Convert from feet to meters
 #'
 #' Convert values from feet to meters using a consistent conversion value
