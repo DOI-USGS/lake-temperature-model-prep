@@ -38,6 +38,9 @@ find_parser <- function(coop_wants, parser_filehash, trigger_file = NULL) {
     } else if (grepl('Waterbody_Temperatures_by_State', coop_want_filenames[i])) {
       parsers[i] <- 'parse_navico_files'
 
+    } else if (grepl('Norfolk_', coop_want_filenames[i])) {
+      parsers[i] <- 'parse_norfork_files'
+
     } else {
       parsers[i] <- paste0('parse_', tools::file_path_sans_ext(coop_want_filenames[i]))
     }

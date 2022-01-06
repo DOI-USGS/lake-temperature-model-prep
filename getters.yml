@@ -12,6 +12,9 @@ targets:
 
   #### 1_spatial ####
 
+  1_crosswalk_fetch/in/Norfork_temperature_locations.csv:
+    command: gd_get('1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
+
   1_crosswalk_fetch/in/Navico_lakes_depths.csv:
     command: gd_get('1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
 
@@ -138,6 +141,9 @@ targets:
 
   2_crosswalk_munge/out/navico_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind')
+
+  2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind')
 
   #### 3_params_fetch #####
 

@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Norfolk_62BRG-2017.xlsx.ind
+type: file
+hash: 2462370074d4ca64742636f5f8308d2d
+time: 2021-12-23 19:56:22 UTC
+depends: {}
+fixed: 6b939ea7bf731d9daf7e3c4991d4b59a
+code:
+  functions: {}
+
