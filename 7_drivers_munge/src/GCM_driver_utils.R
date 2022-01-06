@@ -319,8 +319,17 @@ munge_notaro_to_glm <- function(in_file) {
     pivot_wider(id_cols = c("DateTime", "cell"), names_from = variable, values_from = val) %>%
 
     # Unit conversions to get GLM-ready variables from GDP ones
-    mutate(AirTemp = tas - 273.15, # Convert GDP air temperature (tas) from Kelvin to Celcius
-           Rain = pr # TODO: Convert GDP precipitation (pr) from kg/m2/s to meters/hour
+    mutate(
+      # Convert GDP air temperature (tas) from Kelvin to Celcius
+      AirTemp = tas - 273.15,
+
+      # Convert GDP precipitation (pr) from  kg m-2 s-1 to m/day
+      #  1. Eqn for pr: pr (kg m-2 s-1) = density of water (kg m-3) * rate of rainfall (m/s)
+      #  2. Solve for rate of rainfall:
+      #       rate of rainfall (m/day) = pr (kg m-2 s-1) / density of water (kg m-3) * 3600 sec/hr * 24 hr/day
+      #  3. Assume density of water is 1000 kg/m3
+      Rain = pr / 1000 * 3600 * 24
+
     ) %>%
 
     # Simply rename GDP variables into GLM variables
