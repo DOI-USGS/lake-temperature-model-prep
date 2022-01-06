@@ -321,7 +321,12 @@ build_branch_file_hash_table <- function(dynamic_branch_names) {
 #' @param in_file filepath to a feather file containing the hourly geoknife data
 munge_notaro_to_glm <- function(in_file) {
 
-  daily_data <- arrow::read_feather(in_file) %>%
+  raw_data <- arrow::read_feather(in_file)
+
+  # This line will fail if the units don't match our assumptions
+  validate_notaro_units_assumptions(raw_data)
+
+  daily_data <- raw_data %>%
 
     # Pivot to long format first to get cells as a column.
     pivot_longer(cols = -c(DateTime, variable, statistic, units),
@@ -390,4 +395,41 @@ munge_notaro_to_glm <- function(in_file) {
   arrow::write_feather(daily_data, out_file)
 
   return(out_file)
+}
+
+#' @title Check that units for variables downloaded match our assumptions.
+#' @description Before the rest of `munge_notaro_to_glm()` can run, we need
+#' to make sure that data are returned in the units that the conversion
+#' functions are set up to handle. If they have different units OR if there
+#' is a new variable not in our list of assumed units, then an error is thrown.
+#' @param data_in a data.frame with a least the columns `variable` and `units`
+validate_notaro_units_assumptions <- function(data_in) {
+
+  # Check units assumptions
+  units_check_out <- data_in %>%
+    select(variable, units) %>%
+    unique() %>%
+    mutate(passes_assumption = case_when(
+      variable == "pr" ~ units == "kg m-2 s-1",
+      variable == "ps" ~ units == "hPa",
+      variable == "tas" ~ units == "K",
+      variable == "qas" ~ units == "1",
+      variable == "rsns" ~ units == "W m-2",
+      variable == "LONGWAVE" ~ units == "W m-2",
+      variable == "uas" ~ units == "m s-1",
+      variable == "vas" ~ units == "m s-1",
+      # For any variable not in our checks, return false
+      TRUE ~ FALSE
+    ))
+
+  all_passed <- all(units_check_out$passes_assumption)
+
+  # Cause failure if any of these units are different or there is an
+  # variable in the dataset that does not appear in this list.
+  if(!all_passed) {
+    failed_i <- which(!units_check_out$passes_assumption)
+    stop_message <- sprintf("The following units do not match the assumptions: %s",
+                            paste(units_check_out$variable[failed_i], collapse = ", "))
+    stop(stop_message)
+  }
 }
