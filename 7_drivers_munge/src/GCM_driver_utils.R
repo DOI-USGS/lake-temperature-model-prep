@@ -304,6 +304,20 @@ build_branch_file_hash_table <- function(dynamic_branch_names) {
 #' values and converts into appropriate units. It creates a file with the exact
 #' same name, except that the "_raw" part of the `in_file` filepath is replaced
 #' with "_daily".
+#' @value a table saved as a feather file with the following columns:
+#' `time`: class Date denoting a single day
+#' `cell`: a numeric value indicating which cell in the grid that the data belongs to
+#' `Shortwave`: a numeric value copied from the Notaro `rsns` variable
+#' `Longwave`: FILL INFO IN HERE
+#' `AirTemp`: a numeric value converted from Kelvin to Celcius using the Notaro `tas` variable
+#' `RelHum`: FILL INFO IN HERE
+#' `WindSpeed`: a numeric value representing the product of the Southerly and Westerly
+#' velocities (Notaro variables `uas` and `vas`, respectively)
+#' `Rain`: a numeric value; the rate of rainfall in meters per day. Derived from the Notaro
+#' precipitation flux (`pr`), assuming density of water is 1000 kg/m3.
+#' `Snow`: a numeric value; the rate of snowfall in meters per day. Derived from the `Rain`
+#' column and assumes the snow depth is 10 times the water equivalent (`Rain`) when the
+#' temperature (`AirTemp`) is below freezing.
 #' @param in_file filepath to a feather file containing the hourly geoknife data
 munge_notaro_to_glm <- function(in_file) {
 
