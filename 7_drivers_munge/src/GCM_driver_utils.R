@@ -298,13 +298,14 @@ build_branch_file_hash_table <- function(dynamic_branch_names) {
     unnest(path)
 }
 
-#' @title Summarize hourly output from geoknife to daily
-#' @description the final GCM driver data will need to be daily, but geoknife
-#' returns hourly values. This step summarizes the data into daily values. It
-#' creates a file with the exact same name, except that the "_raw" part of the
-#' `in_file` filepath is replaced with "_daily".
+#' @title Convert Notaro GCM data to GLM-ready data
+#' @description The final GCM driver data will need to be daily, but geoknife
+#' returns hourly values. This step summarizes the Notaro raw data into daily
+#' values and converts into appropriate units. It creates a file with the exact
+#' same name, except that the "_raw" part of the `in_file` filepath is replaced
+#' with "_daily".
 #' @param in_file filepath to a feather file containing the hourly geoknife data
-munge_to_glm <- function(in_file) {
+munge_notaro_to_glm <- function(in_file) {
 
   daily_data <- arrow::read_feather(in_file) %>%
 
