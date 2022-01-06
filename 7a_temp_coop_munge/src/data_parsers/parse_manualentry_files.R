@@ -26,7 +26,7 @@ parse_manualentry_files <- function(inind, outind) {
 
   # reformat/munge data
   dat_clean <- raw_dat %>%
-    mutate(depth = ifelse(depth.units %in% 'f', feet_to_meters(depth), depth),
+    mutate(depth = ifelse(depth.units %in% 'f', convert_ft_to_m(depth), depth),
            temp = ifelse(temp.units %in% "F", fahrenheit_to_celsius(temperature), temperature)) %>%
     mutate(DateTime = as.Date(Date), DOW = as.character(DOW)) %>%
     dplyr::select(DateTime, depth, temp, DOW)

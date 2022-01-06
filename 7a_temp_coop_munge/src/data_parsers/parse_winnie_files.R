@@ -61,7 +61,7 @@ parse_winnie_files <- function(inind, outind) {
 
   # units
   cleaned_dat <- cleaned_dat %>%
-    mutate(depth = feet_to_meters(depth),
+    mutate(depth = convert_ft_to_m(depth),
            temp = fahrenheit_to_celsius(temp),
            DOW = '11014700',
            time = strftime(DateTime, format="%H:%M"),
@@ -121,7 +121,7 @@ parse_winnie_files <- function(inind, outind) {
 
   # units
   cleaned_dat <- cleaned_dat %>%
-    mutate(depth = feet_to_meters(depth),
+    mutate(depth = convert_ft_to_m(depth),
            temp = fahrenheit_to_celsius(temp),
            DOW = '11014700',
            time = strftime(Time, format="%H:%M"),
@@ -170,7 +170,7 @@ parse_winnie_files <- function(inind, outind) {
 
     # units
     cleaned_dat <- cleaned_dat %>%
-      mutate(depth = feet_to_meters(depth),
+      mutate(depth = convert_ft_to_m(depth),
              temp = fahrenheit_to_celsius(temp),
              DOW = '11014700',
              DateTime = as.Date(DateTime)) %>%
@@ -222,7 +222,7 @@ parse_winnie_files <- function(inind, outind) {
 
   # units
   cleaned_dat <- cleaned_dat %>%
-    mutate(depth = feet_to_meters(depth),
+    mutate(depth = convert_ft_to_m(depth),
            temp = fahrenheit_to_celsius(temp),
            DOW = '11014700',
            DateTime = as.Date(DateTime),
