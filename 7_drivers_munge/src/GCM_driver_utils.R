@@ -298,15 +298,35 @@ build_branch_file_hash_table <- function(dynamic_branch_names) {
     unnest(path)
 }
 
-#' @title Summarize hourly output from geoknife to daily
-#' @description the final GCM driver data will need to be daily, but geoknife
-#' returns hourly values. This step summarizes the data into daily values. It
-#' creates a file with the exact same name, except that the "_raw" part of the
-#' `in_file` filepath is replaced with "_daily".
+#' @title Convert Notaro GCM data to GLM-ready data
+#' @description The final GCM driver data will need to be daily, but geoknife
+#' returns hourly values. This step summarizes the Notaro raw data into daily
+#' values and converts into appropriate units. It creates a file with the exact
+#' same name, except that the "_raw" part of the `in_file` filepath is replaced
+#' with "_daily".
+#' @value a table saved as a feather file with the following columns:
+#' `time`: class Date denoting a single day
+#' `cell`: a numeric value indicating which cell in the grid that the data belongs to
+#' `Shortwave`: a numeric value copied from the Notaro `rsns` variable
+#' `Longwave`: FILL INFO IN HERE
+#' `AirTemp`: a numeric value converted from Kelvin to Celcius using the Notaro `tas` variable
+#' `RelHum`: FILL INFO IN HERE
+#' `WindSpeed`: a numeric value representing the product of the Southerly and Westerly
+#' velocities (Notaro variables `uas` and `vas`, respectively)
+#' `Rain`: a numeric value; the rate of rainfall in meters per day. Derived from the Notaro
+#' precipitation flux (`pr`), assuming density of water is 1000 kg/m3.
+#' `Snow`: a numeric value; the rate of snowfall in meters per day. Derived from the `Rain`
+#' column and assumes the snow depth is 10 times the water equivalent (`Rain`) when the
+#' temperature (`AirTemp`) is below freezing.
 #' @param in_file filepath to a feather file containing the hourly geoknife data
-munge_to_glm <- function(in_file) {
+munge_notaro_to_glm <- function(in_file) {
 
-  daily_data <- arrow::read_feather(in_file) %>%
+  raw_data <- arrow::read_feather(in_file)
+
+  # This line will fail if the units don't match our assumptions
+  validate_notaro_units_assumptions(raw_data)
+
+  daily_data <- raw_data %>%
 
     # Pivot to long format first to get cells as a column.
     pivot_longer(cols = -c(DateTime, variable, statistic, units),
@@ -318,8 +338,17 @@ munge_to_glm <- function(in_file) {
     pivot_wider(id_cols = c("DateTime", "cell"), names_from = variable, values_from = val) %>%
 
     # Unit conversions to get GLM-ready variables from GDP ones
-    mutate(AirTemp = tas - 273.15, # Convert GDP air temperature (tas) from Kelvin to Celcius
-           Rain = pr # TODO: Convert GDP precipitation (pr) from kg/m2/s to meters/hour
+    mutate(
+      # Convert GDP air temperature (tas) from Kelvin to Celcius
+      AirTemp = tas - 273.15,
+
+      # Convert GDP precipitation (pr) from  kg m-2 s-1 to m/day
+      #  1. Eqn for pr: pr (kg m-2 s-1) = density of water (kg m-3) * rate of rainfall (m/s)
+      #  2. Solve for rate of rainfall:
+      #       rate of rainfall (m/day) = pr (kg m-2 s-1) / density of water (kg m-3) * 3600 sec/hr * 24 hr/day
+      #  3. Assume density of water is 1000 kg/m3
+      Rain = pr / 1000 * 3600 * 24
+
     ) %>%
 
     # Simply rename GDP variables into GLM variables
@@ -366,4 +395,41 @@ munge_to_glm <- function(in_file) {
   arrow::write_feather(daily_data, out_file)
 
   return(out_file)
+}
+
+#' @title Check that units for variables downloaded match our assumptions.
+#' @description Before the rest of `munge_notaro_to_glm()` can run, we need
+#' to make sure that data are returned in the units that the conversion
+#' functions are set up to handle. If they have different units OR if there
+#' is a new variable not in our list of assumed units, then an error is thrown.
+#' @param data_in a data.frame with a least the columns `variable` and `units`
+validate_notaro_units_assumptions <- function(data_in) {
+
+  # Check units assumptions
+  units_check_out <- data_in %>%
+    select(variable, units) %>%
+    unique() %>%
+    mutate(passes_assumption = case_when(
+      variable == "pr" ~ units == "kg m-2 s-1",
+      variable == "ps" ~ units == "hPa",
+      variable == "tas" ~ units == "K",
+      variable == "qas" ~ units == "1",
+      variable == "rsns" ~ units == "W m-2",
+      variable == "LONGWAVE" ~ units == "W m-2",
+      variable == "uas" ~ units == "m s-1",
+      variable == "vas" ~ units == "m s-1",
+      # For any variable not in our checks, return false
+      TRUE ~ FALSE
+    ))
+
+  all_passed <- all(units_check_out$passes_assumption)
+
+  # Cause failure if any of these units are different or there is an
+  # variable in the dataset that does not appear in this list.
+  if(!all_passed) {
+    failed_i <- which(!units_check_out$passes_assumption)
+    stop_message <- sprintf("The following units do not match the assumptions: %s",
+                            paste(units_check_out$variable[failed_i], collapse = ", "))
+    stop(stop_message)
+  }
 }

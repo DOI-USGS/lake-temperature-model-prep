@@ -125,10 +125,18 @@ targets_list <- list(
                # Include midnight on the final day of the time period
                end_datetime = c('2000-01-01 00:00:00', '2060-01-01 00:00:00', '2100-01-01 00:00:00')
              )),
-  # Gathered manually from https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html
-  tar_target(gcm_query_vars, c("pr", "tas", "qas", "rsns", "uas", "vas")), # missing longwave radiation
 
-  # Download data from GDP for each tile & GCM name combination.
+  # Notaro variable definitions (see https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html)
+  #   pr = Total precipitation flux
+  #   ps = Surface Pressure
+  #   tas = Near surface air temperature
+  #   qas = Near surface air specific humidity
+  #   rsns = Net downward shortwave energy flux
+  #   uas = Anemometric zonal (westerly) wind component
+  #   vas = Anenometric meridional (southerly) wind component
+  tar_target(gcm_query_vars, c("pr", "ps", "tas", "qas", "rsns", "uas", "vas")), # missing longwave radiation
+
+  # Download data from GDP for each tile, GCM name, and GCM projection period combination.
   # If the cells in a tile don't change, then the tile should not need to rebuild.
   tar_target(
     gcm_data_raw_feather,
@@ -149,24 +157,10 @@ targets_list <- list(
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
 
-  # Need to munge GCM variables into useable GLM variables
-  tar_target(glm_vars_info,
-             tibble(
-               # TODO: MISSING LONGWAVE
-               var_name = c("Rain", "AirTemp", "Snow", "RelHum", "Shortwave", "Longwave", "WindSpeed"),
-               longname = c("Total daily rainfall",
-                            "Total daily snowfall derived from precipitation and air temp",
-                            "Average daily near surface air temperature",
-                            "Average daily percent relative humidity",
-                            "Average daily surface downward shortwave flux in air",
-                            "LONGWAVE EXPLANATION",
-                            "Average daily windspeed derived from anemometric zonal and anenometric meridional wind components"),
-               units = c("meters", "meters", "degrees Celcius", "", "???", "???", "???"),
-               precision = "float"
-             )),
+  # Munge GCM variables into useable GLM variables and correct units
   tar_target(
     gcm_data_daily_feather,
-    munge_to_glm(gcm_data_raw_feather),
+    munge_notaro_to_glm(gcm_data_raw_feather),
     pattern = map(gcm_data_raw_feather),
     format = "file"
   ),
@@ -207,6 +201,22 @@ targets_list <- list(
                group_by(gcm_name) %>%
                tar_group(),
              iteration = "group"),
+
+  # Setup table of GLM variable definitions to use in NetCDF file metadata
+  tar_target(glm_vars_info,
+             tibble(
+               # TODO: MISSING LONGWAVE
+               var_name = c("Rain", "Snow", "AirTemp", "RelHum", "Shortwave", "Longwave", "WindSpeed"),
+               longname = c("Total daily rainfall",
+                            "Total daily snowfall derived from precipitation and air temp",
+                            "Average daily near surface air temperature",
+                            "Average daily percent relative humidity",
+                            "Average daily surface downward shortwave flux in air",
+                            "LONGWAVE EXPLANATION",
+                            "Average daily windspeed derived from anemometric zonal and anenometric meridional wind components"),
+               units = c("m/day", "m/day", "degrees Celcius", "percent", "W/m2", "W/m2", "m/s"),
+               precision = "float"
+             )),
 
   # Create a single vector of all the time period's days to use as the NetCDF time dim
   tar_target(
