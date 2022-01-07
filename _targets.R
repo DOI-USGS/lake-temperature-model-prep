@@ -8,10 +8,12 @@ tar_option_set(packages = c(
   "scipiper",
   "ggplot2",
   "geoknife",
-  "arrow"
+  "arrow",
+  "retry"
 ))
 
 source('7_drivers_munge/src/GCM_driver_utils.R')
+source('7_drivers_munge/src/GCM_driver_nc_utils.R')
 
 targets_list <- list(
 
@@ -115,35 +117,138 @@ targets_list <- list(
 
   # BUILD QUERY
   # Define list of GCMs
-  tar_target(gcm_names, c('ACCESS', 'GFDL')),#, 'CNRM', 'IPSL', 'MRI', 'MIROC')),
-  tar_target(gcm_vars, c("evspsbl", "hfss")),
-  tar_target(gcm_dates, c('1999-01-01', '1999-01-15')),
+  tar_target(gcm_names, c('ACCESS', 'GFDL', 'CNRM', 'IPSL', 'MRI', 'MIROC')),
+  tar_target(gcm_dates_df,
+             tibble(
+               projection_period = c('1980_1999', '2040_2059', '2080_2099'),
+               start_datetime = c('1980-01-01 00:00:00', '2040-01-01 00:00:00', '2080-01-01 00:00:00'),
+               # Include midnight on the final day of the time period
+               end_datetime = c('2000-01-01 00:00:00', '2060-01-01 00:00:00', '2100-01-01 00:00:00')
+             )),
 
-  # Download data from GDP for each tile & GCM name combination.
+  # Notaro variable definitions (see https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html)
+  #   pr = Total precipitation flux
+  #   ps = Surface Pressure
+  #   tas = Near surface air temperature
+  #   qas = Near surface air specific humidity
+  #   rsns = Net downward shortwave energy flux
+  #   uas = Anemometric zonal (westerly) wind component
+  #   vas = Anenometric meridional (southerly) wind component
+  tar_target(gcm_query_vars, c("pr", "ps", "tas", "qas", "rsns", "uas", "vas")), # missing longwave radiation
+
+  # Download data from GDP for each tile, GCM name, and GCM projection period combination.
   # If the cells in a tile don't change, then the tile should not need to rebuild.
   tar_target(
     gcm_data_raw_feather,
     download_gcm_data(
-      out_file_template = "7_drivers_munge/tmp/7_GCM_%s_tile%s_raw.feather",
+      out_file_template = "7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_raw.feather",
       query_geom = query_cells_centroids_list_by_tile,
       gcm_name = gcm_names,
-      query_vars = gcm_vars,
-      query_dates = gcm_dates
+      gcm_projection_period = gcm_dates_df$projection_period,
+      query_vars = gcm_query_vars,
+      query_dates = c(gcm_dates_df$start_datetime, gcm_dates_df$end_datetime)
     ),
     # TODO: might need to split across variables, too. Once we scale up, our queries
     # might be too large and chunking by variable could help.
-    pattern = cross(query_cells_centroids_list_by_tile, gcm_names),
-    format = "file"
+    pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df),
+    format = "file",
+    error = "continue"
   ),
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
-  # TODO - munge data
+
+  # Munge GCM variables into useable GLM variables and correct units
+  tar_target(
+    gcm_data_daily_feather,
+    munge_notaro_to_glm(gcm_data_raw_feather),
+    pattern = map(gcm_data_raw_feather),
+    format = "file"
+  ),
+
+  # Create feather files that can be used in the GLM pipeline without
+  # having to be munged and extracted via NetCDF. Temporary solution
+  # while we work out some NetCDF challenges.
+  # TODO: delete once we finish the NetCDF DSG build (see issue #252)
+  tar_target(
+    out_skipnc_feather, {
+      out_dir <- "7_drivers_munge/out_skipnc"
+      purrr::map(gcm_data_daily_feather, function(fn, gcm_names, gcm_dates_df) {
+        gcm_name <- str_extract(fn, paste(gcm_names, collapse="|"))
+        gcm_time_period <- str_extract(fn, paste(gcm_dates_df$projection_period, collapse="|"))
+
+        read_feather(fn) %>%
+          split(.$cell) %>%
+          purrr::map(., function(data) {
+            cell <- unique(data$cell)
+            data_to_save <- data %>% select(-cell)
+            out_file <- sprintf("%s/GCM_%s_%s_%s.feather", out_dir, gcm_name, gcm_time_period, cell)
+            write_feather(data_to_save, out_file)
+            return(out_file)
+          })
+
+      }, gcm_names, gcm_dates_df)
+      return(out_dir)
+    },
+    format = "file"
+  ),
+
+  # Group daily feather files by GCM to map over and include
+  # branch file hashes to trigger rebuilds for groups as needed
+  tar_target(gcm_data_daily_feather_group_by_gcm,
+              build_branch_file_hash_table(names(gcm_data_daily_feather)) %>%
+               rename(gcm_file = path) %>%
+               mutate(gcm_name = str_extract(gcm_file, paste(gcm_names, collapse="|"))) %>%
+               group_by(gcm_name) %>%
+               tar_group(),
+             iteration = "group"),
+
+  # Setup table of GLM variable definitions to use in NetCDF file metadata
+  tar_target(glm_vars_info,
+             tibble(
+               # TODO: MISSING LONGWAVE
+               var_name = c("Rain", "Snow", "AirTemp", "RelHum", "Shortwave", "Longwave", "WindSpeed"),
+               longname = c("Total daily rainfall",
+                            "Total daily snowfall derived from precipitation and air temp",
+                            "Average daily near surface air temperature",
+                            "Average daily percent relative humidity",
+                            "Average daily surface downward shortwave flux in air",
+                            "LONGWAVE EXPLANATION",
+                            "Average daily windspeed derived from anemometric zonal and anenometric meridional wind components"),
+               units = c("m/day", "m/day", "degrees Celcius", "percent", "W/m2", "W/m2", "m/s"),
+               precision = "float"
+             )),
+
+  # Create a single vector of all the time period's days to use as the NetCDF time dim
+  tar_target(
+    gcm_dates_all,
+    purrr::pmap(gcm_dates_df, function(projection_period, start_datetime, end_datetime) {
+      seq(as.Date(start_datetime), as.Date(end_datetime), by = 1)
+    }) %>% do.call("c", args = .)
+  ),
+
+  # Create single NetCDF files for each of the GCMs
+  tar_target(
+    gcm_nc, {
+      # Grouped by GCM name so this should just return one unique value
+      gcm_name <- unique(gcm_data_daily_feather_group_by_gcm$gcm_name)
+
+      generate_gcm_nc(
+        nc_file = sprintf("7_drivers_munge/out/7_GCM_%s.nc", gcm_name),
+        gcm_raw_files = gcm_data_daily_feather_group_by_gcm$gcm_file,
+        dim_time_input = gcm_dates_all,
+        dim_cell_input = grid_cells_sf$cell_no,
+        vars_info = glm_vars_info,
+        global_att = sprintf("GCM Notaro %s", gcm_name)
+      )
+    },
+    pattern = map(gcm_data_daily_feather_group_by_gcm)
+  ),
 
 
   ##### Get list of final output files to link back to scipiper pipeline #####
   tar_target(
     gcm_files_out,
-    c(gcm_data_raw_feather, lake_cell_xwalk_csv)
+    c(gcm_nc, lake_cell_xwalk_csv)
   )
 )
 

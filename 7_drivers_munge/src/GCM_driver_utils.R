@@ -222,6 +222,9 @@ sf_pts_to_simplegeom <- function(sf_obj) {
 #' GDP. Will reproject to EPS = 4326 to query GDP. Expects a column called
 #' `tile_no` to represent the current group of grid cells being queried.
 #' @param gcm_name name of one of the six GCMs to use to construct the query URL.
+#' @param gcm_projection_period name given to the different projection periods. Each
+#' GCM dataset has a separate URL for downloading data from these different periods.
+#' Should be one of `1980_1999`, `2040_2059`, or `2080_2099`.
 #' @param query_vars character vector of the variables that should be downloaded
 #' from each of the GCMs. For a list of what variables are available, see
 #' https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html.
@@ -232,7 +235,7 @@ sf_pts_to_simplegeom <- function(sf_obj) {
 #' @param query_knife the algorithm used to summarize the ouput. Currently `NULL`,
 #' which uses `geoknife` defaults.
 download_gcm_data <- function(out_file_template, query_geom,
-                              gcm_name, query_vars,
+                              gcm_name, gcm_projection_period, query_vars,
                               query_dates, query_knife = NULL) {
 
   # Reproject query cell centroids to WGS84
@@ -242,26 +245,191 @@ download_gcm_data <- function(out_file_template, query_geom,
   query_simplegeom <- sf_pts_to_simplegeom(query_geom_WGS84)
 
   # Build query_url
-  query_url <- sprintf("https://cida.usgs.gov/thredds/dodsC/notaro_%s_1980_1999", gcm_name)
+  query_url <- sprintf("https://cida.usgs.gov/thredds/dodsC/notaro_%s_%s",
+                       gcm_name, gcm_projection_period)
 
-  # construct and submit query
-  gcm_job <- geoknife(
-    stencil = query_simplegeom,
-    fabric = webdata(
-      url = query_url,
-      variables = query_vars,
-      times = query_dates
+  # Retry the GDP query multiple times if it doesn't work.
+  retry({
+    # construct and submit query
+    gcm_job <- geoknife(
+      stencil = query_simplegeom,
+      fabric = webdata(
+        url = query_url,
+        variables = query_vars,
+        times = query_dates
+      )
+      # The default knife algorithm is appropriate
     )
-    #TODO: should we specify the `knife`??
-  )
-  wait(gcm_job)
+    wait(gcm_job)
+    gcm_job_status <- check(gcm_job)$statusType
+  },
+  # Check the value of the last thing in the expr above (denoted
+  # by the ".") to decide if you should retry or not
+  until = ~ . == "ProcessSucceeded",
+  max_tries = 5)
+
   my_data <- result(gcm_job, with.units = TRUE)
 
   # Build out_file name
-  out_file <- sprintf(out_file_template, gcm_name, query_geom$tile_no[1])
+  out_file <- sprintf(out_file_template,
+                      gcm_name,
+                      gcm_projection_period,
+                      query_geom$tile_no[1])
 
   # write file
   arrow::write_feather(my_data, out_file)
 
   return(out_file)
+}
+
+#' @title Pull out individual file information from a dynamically mapped target
+#' @description Use a dynamically mapped target to extract information about
+#' the individual branch files to build a table that can group files and then
+#' trigger rebuilds when individual files within a group change.
+#' @param dynamic_branch_names character vector of the names of each branch created
+#' from running `names()` using the target dynamically branched target as input.
+#' @return a tibble with three columns (`name` = target name of the branch, `path`
+#' = character string of the file created by that branch, and `data` = hash code
+#' indicating the current state of the file) and a row for each branch.
+build_branch_file_hash_table <- function(dynamic_branch_names) {
+  # Get metadata for all the branches of the dynamic target
+  tar_meta(all_of(dynamic_branch_names), c("path", "data")) %>%
+    # There is just one path per branch, so remove the `list` format from this column
+    unnest(path)
+}
+
+#' @title Convert Notaro GCM data to GLM-ready data
+#' @description The final GCM driver data will need to be daily, but geoknife
+#' returns hourly values. This step summarizes the Notaro raw data into daily
+#' values and converts into appropriate units. It creates a file with the exact
+#' same name, except that the "_raw" part of the `in_file` filepath is replaced
+#' with "_daily".
+#' @value a table saved as a feather file with the following columns:
+#' `time`: class Date denoting a single day
+#' `cell`: a numeric value indicating which cell in the grid that the data belongs to
+#' `Shortwave`: a numeric value copied from the Notaro `rsns` variable
+#' `Longwave`: FILL INFO IN HERE
+#' `AirTemp`: a numeric value converted from Kelvin to Celcius using the Notaro `tas` variable
+#' `RelHum`: FILL INFO IN HERE
+#' `WindSpeed`: a numeric value representing the product of the Southerly and Westerly
+#' velocities (Notaro variables `uas` and `vas`, respectively)
+#' `Rain`: a numeric value; the rate of rainfall in meters per day. Derived from the Notaro
+#' precipitation flux (`pr`), assuming density of water is 1000 kg/m3.
+#' `Snow`: a numeric value; the rate of snowfall in meters per day. Derived from the `Rain`
+#' column and assumes the snow depth is 10 times the water equivalent (`Rain`) when the
+#' temperature (`AirTemp`) is below freezing.
+#' @param in_file filepath to a feather file containing the hourly geoknife data
+munge_notaro_to_glm <- function(in_file) {
+
+  raw_data <- arrow::read_feather(in_file)
+
+  # This line will fail if the units don't match our assumptions
+  validate_notaro_units_assumptions(raw_data)
+
+  daily_data <- raw_data %>%
+
+    # Pivot to long format first to get cells as a column.
+    pivot_longer(cols = -c(DateTime, variable, statistic, units),
+                 names_to = "cell", values_to = "val") %>%
+    mutate(cell = as.numeric(cell)) %>%
+
+    # Now pivot wider to makes each variable a column for easy, readable munging
+    # Also, removes `units` and `statistic` columns which are specific to each variable
+    pivot_wider(id_cols = c("DateTime", "cell"), names_from = variable, values_from = val) %>%
+
+    # Unit conversions to get GLM-ready variables from GDP ones
+    mutate(
+      # Convert GDP air temperature (tas) from Kelvin to Celcius
+      AirTemp = tas - 273.15,
+
+      # Convert GDP precipitation (pr) from  kg m-2 s-1 to m/day
+      #  1. Eqn for pr: pr (kg m-2 s-1) = density of water (kg m-3) * rate of rainfall (m/s)
+      #  2. Solve for rate of rainfall:
+      #       rate of rainfall (m/day) = pr (kg m-2 s-1) / density of water (kg m-3) * 3600 sec/hr * 24 hr/day
+      #  3. Assume density of water is 1000 kg/m3
+      Rain = pr / 1000 * 3600 * 24
+
+    ) %>%
+
+    # Simply rename GDP variables into GLM variables
+    mutate(RelHum = qas,
+           Shortwave = rsns,
+           Longwave = rsns # TODO: find longwave from GDP
+    ) %>%
+
+    # Calculate GLM variables using other existing variables
+    mutate(Snow = ifelse(AirTemp < 0, Rain*10, 0), # When air temp is below freezing, any precip should be considered snow
+           Rain = ifelse(AirTemp < 0, 0, Rain),
+           # Calculate the Windspeed from wind velocity values (westerly & southerly)
+           WindSpeed = sqrt(uas^2 + vas^2)
+    ) %>%
+
+    # Create a column with just the date to use for summarizing
+    mutate(date = as.Date(DateTime)) %>%
+
+    # Keep only the columns we need
+    select(time = date,
+           cell,
+           Shortwave,
+           Longwave,
+           AirTemp,
+           RelHum,
+           WindSpeed,
+           Rain,
+           Snow
+    ) %>%
+
+    # Convert from hourly to daily data
+    group_by(time, cell) %>%
+    # TODO: should we `na.rm = TRUE`?
+    summarize(across(.cols = -WindSpeed, .fns = ~ mean(.x, na.rm = FALSE)),
+              WindSpeed = mean(WindSpeed^3)^(1/3),
+              n = length(time),
+              .groups = "keep") %>%
+    ungroup() %>%
+    # This drops Jan 1, 1980
+    filter(n == 24) %>% select(-n)
+
+  # Save the daily data
+  out_file <- gsub("_raw.feather", "_daily.feather", in_file)
+  arrow::write_feather(daily_data, out_file)
+
+  return(out_file)
+}
+
+#' @title Check that units for variables downloaded match our assumptions.
+#' @description Before the rest of `munge_notaro_to_glm()` can run, we need
+#' to make sure that data are returned in the units that the conversion
+#' functions are set up to handle. If they have different units OR if there
+#' is a new variable not in our list of assumed units, then an error is thrown.
+#' @param data_in a data.frame with a least the columns `variable` and `units`
+validate_notaro_units_assumptions <- function(data_in) {
+
+  # Check units assumptions
+  units_check_out <- data_in %>%
+    select(variable, units) %>%
+    unique() %>%
+    mutate(passes_assumption = case_when(
+      variable == "pr" ~ units == "kg m-2 s-1",
+      variable == "ps" ~ units == "hPa",
+      variable == "tas" ~ units == "K",
+      variable == "qas" ~ units == "1",
+      variable == "rsns" ~ units == "W m-2",
+      variable == "LONGWAVE" ~ units == "W m-2",
+      variable == "uas" ~ units == "m s-1",
+      variable == "vas" ~ units == "m s-1",
+      # For any variable not in our checks, return false
+      TRUE ~ FALSE
+    ))
+
+  all_passed <- all(units_check_out$passes_assumption)
+
+  # Cause failure if any of these units are different or there is an
+  # variable in the dataset that does not appear in this list.
+  if(!all_passed) {
+    failed_i <- which(!units_check_out$passes_assumption)
+    stop_message <- sprintf("The following units do not match the assumptions: %s",
+                            paste(units_check_out$variable[failed_i], collapse = ", "))
+    stop(stop_message)
+  }
 }
