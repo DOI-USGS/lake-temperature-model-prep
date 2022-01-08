@@ -5,6 +5,7 @@ tar_option_set(packages = c(
   "tidyverse",
   "sf",
   "ncdf4",
+  "ncdfgeom",
   "scipiper",
   "ggplot2",
   "geoknife",
@@ -123,7 +124,9 @@ targets_list <- list(
                projection_period = c('1980_1999', '2040_2059', '2080_2099'),
                start_datetime = c('1980-01-01 00:00:00', '2040-01-01 00:00:00', '2080-01-01 00:00:00'),
                # Include midnight on the final day of the time period
-               end_datetime = c('2000-01-01 00:00:00', '2060-01-01 00:00:00', '2100-01-01 00:00:00')
+               end_datetime = c('2000-01-01 00:00:00', '2060-01-01 00:00:00', '2100-01-01 00:00:00'),
+               start_nc_date = c('1980-01-02', '2040-01-02', '2080-01-02'),
+               end_nc_date = c('2000-01-01', '2060-01-01', '2100-01-01')
              )),
 
   # Notaro variable definitions (see https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html)
@@ -157,40 +160,63 @@ targets_list <- list(
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
 
-  # Munge GCM variables into useable GLM variables and correct units
-  tar_target(
-    gcm_data_daily_feather,
-    munge_notaro_to_glm(gcm_data_raw_feather),
-    pattern = map(gcm_data_raw_feather),
-    format = "file"
-  ),
+  # # Munge GCM variables into useable GLM variables and correct units
+  # tar_target(
+  #   gcm_data_daily_feather,
+  #   munge_notaro_to_glm(gcm_data_raw_feather),
+  #   pattern = map(gcm_data_raw_feather),
+  #   format = "file"
+  # ),
 
-  # Create feather files that can be used in the GLM pipeline without
-  # having to be munged and extracted via NetCDF. Temporary solution
-  # while we work out some NetCDF challenges.
-  # TODO: delete once we finish the NetCDF DSG build (see issue #252)
-  tar_target(
-    out_skipnc_feather, {
-      out_dir <- "7_drivers_munge/out_skipnc"
-      purrr::map(gcm_data_daily_feather, function(fn, gcm_names, gcm_dates_df) {
-        gcm_name <- str_extract(fn, paste(gcm_names, collapse="|"))
-        gcm_time_period <- str_extract(fn, paste(gcm_dates_df$projection_period, collapse="|"))
+  # # Create feather files that can be used in the GLM pipeline without
+  # # having to be munged and extracted via NetCDF. Temporary solution
+  # # while we work out some NetCDF challenges.
+  # # TODO: delete once we finish the NetCDF DSG build (see issue #252)
+  # tar_target(
+  #   out_skipnc_feather, {
+  #     out_dir <- "7_drivers_munge/out_skipnc"
+  #     purrr::map(gcm_data_daily_feather, function(fn, gcm_names, gcm_dates_df) {
+  #       gcm_name <- str_extract(fn, paste(gcm_names, collapse="|"))
+  #       gcm_time_period <- str_extract(fn, paste(gcm_dates_df$projection_period, collapse="|"))
+  #
+  #       read_feather(fn) %>%
+  #         split(.$cell) %>%
+  #         purrr::map(., function(data) {
+  #           cell <- unique(data$cell)
+  #           data_to_save <- data %>% select(-cell)
+  #           out_file <- sprintf("%s/GCM_%s_%s_%s.feather", out_dir, gcm_name, gcm_time_period, cell)
+  #           write_feather(data_to_save, out_file)
+  #           return(out_file)
+  #         })
+  #
+  #     }, gcm_names, gcm_dates_df)
+  #     return(out_dir)
+  #   },
+  #   format = "file"
+  # ),
 
-        read_feather(fn) %>%
-          split(.$cell) %>%
-          purrr::map(., function(data) {
-            cell <- unique(data$cell)
-            data_to_save <- data %>% select(-cell)
-            out_file <- sprintf("%s/GCM_%s_%s_%s.feather", out_dir, gcm_name, gcm_time_period, cell)
-            write_feather(data_to_save, out_file)
-            return(out_file)
-          })
+  # FOR NOW, USE LINDSAY'S OUT_SKIPNC FEATHER FILES, BROUGHT IN MANUALLY
+  # mapping over gcm_names, gcm_dates_df, and query_cells to read in Lindsay's created feather files
+  tar_target(out_skipnc_feather,
+             sprintf('7_drivers_munge/out_skipnc/GCM_%s_%s_%s.feather', gcm_names, gcm_dates_df$projection_period, query_cells),
+             format = 'file',
+             pattern = cross(gcm_names, gcm_dates_df, query_cells)),
 
-      }, gcm_names, gcm_dates_df)
-      return(out_dir)
-    },
-    format = "file"
-  ),
+  # FOR NOW recombine back into daily feather files, named by TILE
+  tar_target(gcm_data_daily_feather,{
+    out_file <- sprintf("7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_daily.feather",
+                        gcm_names,
+                        gcm_dates_df$projection_period,
+                        unique(query_cells_centroids_list_by_tile$tile_no))
+    tile_cells <- query_cells_centroids_list_by_tile$cell_no
+    purrr::map_df(tile_cells, function(cell, gcm_names, gcm_dates_df) {
+      arrow::read_feather(sprintf('7_drivers_munge/out_skipnc/GCM_%s_%s_%s.feather', gcm_names, gcm_dates_df$projection_period, cell)) %>%
+        mutate(cell = cell, .after=time)
+    }, gcm_names, gcm_dates_df) %>% write_feather(out_file)
+    return(out_file)
+  },
+  format = 'file',
+  pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df)),
 
   # Group daily feather files by GCM to map over and include
   # branch file hashes to trigger rebuilds for groups as needed
@@ -221,8 +247,10 @@ targets_list <- list(
   # Create a single vector of all the time period's days to use as the NetCDF time dim
   tar_target(
     gcm_dates_all,
-    purrr::pmap(gcm_dates_df, function(projection_period, start_datetime, end_datetime) {
-      seq(as.Date(start_datetime), as.Date(end_datetime), by = 1)
+    purrr::pmap(gcm_dates_df, function(projection_period, start_datetime, end_datetime, start_nc_date, end_nc_date) {
+      seq(as.POSIXct(start_nc_date, tz = 'GMT'), by = 'days', length.out = diff(as.Date(c(start_nc_date, end_nc_date))))
+      # seq(as.Date(start_datetime)+1, as.Date(end_datetime)-1, by = 1)
+      # seq(as.Date(start_datetime), as.Date(end_datetime), by = 1)
     }) %>% do.call("c", args = .)
   ),
 
@@ -238,6 +266,8 @@ targets_list <- list(
         dim_time_input = gcm_dates_all,
         dim_cell_input = grid_cells_sf$cell_no,
         vars_info = glm_vars_info,
+        crs_info = grid_params,
+        spatial_info = grid_cell_centroids_sf,
         global_att = sprintf("GCM Notaro %s", gcm_name)
       )
     },
