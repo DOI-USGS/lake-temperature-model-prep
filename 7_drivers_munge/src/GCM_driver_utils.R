@@ -78,18 +78,10 @@ construct_grid <- function(cellsize, nx, ny, xmin, ymin, crs) {
   return(grid_sf)
 }
 
-# TODO: scale up. For now, this just subsets the lakes
-# to 5 NML sites in WI. Will want to scale up to all of MN and then
-# try for every lake in centroid_lakes_sf Once we scale
-# up completely, we shouldn't need this function.
+# TODO: Fancier version. This is a very rudimentary way to get all MN lakes.
 subset_lake_centroids <- function(centroids_sf) {
   centroids_sf %>%
-    filter(site_id %in% c(
-      "nhdhr_77358110",
-      "nhdhr_70331671",
-      "nhdhr_{88374465-DA2B-47F8-BFC6-002E7DF1353E}",
-      "nhdhr_70333049",
-      "nhdhr_74924207"))
+    st_intersection(st_as_sf(maps::map('state', 'minnesota', plot=FALSE, fill=TRUE)))
 }
 
 #' @title Match grid cells to the grid tiles.
