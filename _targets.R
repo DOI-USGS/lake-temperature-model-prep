@@ -264,14 +264,14 @@ targets_list <- list(
         nc_file = sprintf("7_drivers_munge/out/7_GCM_%s.nc", gcm_name),
         gcm_raw_files = gcm_data_daily_feather_group_by_gcm$gcm_file,
         dim_time_input = gcm_dates_all,
-        dim_cell_input = grid_cells_sf$cell_no,
         vars_info = glm_vars_info,
         crs_info = grid_params,
         spatial_info = grid_cell_centroids_sf,
         global_att = sprintf("GCM Notaro %s", gcm_name)
       )
     },
-    pattern = map(gcm_data_daily_feather_group_by_gcm)
+    pattern = map(gcm_data_daily_feather_group_by_gcm),
+    error = 'continue'
   ),
 
 
