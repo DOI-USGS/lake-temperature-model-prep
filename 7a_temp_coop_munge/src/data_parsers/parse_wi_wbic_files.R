@@ -12,7 +12,7 @@ parse_WI_Profile_Data_1995to2015 <- function(inind, outind) {
   # there are, but time stamp is not helping. Take first value of each lake/date/depth combination
   dat_clean <- raw_dat %>%
     mutate(DateTime = as.Date(date),
-           depth = ifelse(depth.units %in% 'f', feet_to_meters(depth), depth),
+           depth = ifelse(depth.units %in% 'f', convert_ft_to_m(depth), depth),
            temp = ifelse(temp.units %in% "F", fahrenheit_to_celsius(temperature), temperature),
            time = format(date, format = '%H:%M'),
            timezone = 'CST/CDT') %>%

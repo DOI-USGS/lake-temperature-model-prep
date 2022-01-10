@@ -23,7 +23,7 @@ parse_upper_lower_redlake_files <- function(inind, outind) {
   cleaned_dat <- cleaned_dat %>%
     #filter(time == time_keep) %>%
     mutate(DateTime = as.Date(.[[date_col]]),
-           depth = ifelse(depth.units %in% 'f', feet_to_meters(depth), depth),
+           depth = ifelse(depth.units %in% 'f', convert_ft_to_m(depth), depth),
            temp = ifelse(temp.units %in% 'C', temperature, fahrenheit_to_celsius(temperature)),
            timezone = 'GMT-5') %>%
     dplyr::select(DateTime, time, timezone, depth, temp, DOW) %>%
@@ -34,7 +34,7 @@ parse_upper_lower_redlake_files <- function(inind, outind) {
   if (grepl('2015', infile)) {
     cleaned_dat <- raw_dat %>%
       mutate(DateTime = as.Date(.[[date_col]]),
-             depth = ifelse(depth.units %in% 'f', feet_to_meters(depth), depth),
+             depth = ifelse(depth.units %in% 'f', convert_ft_to_m(depth), depth),
              temp = ifelse(temp.units %in% 'C', temperature, fahrenheit_to_celsius(temperature))) %>%
       dplyr::select(DateTime, depth, temp, DOW) %>%
       group_by(DateTime) %>%

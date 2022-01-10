@@ -49,7 +49,7 @@ parse_URL_Temp_Logger_2006_to_2017 <- function(inind, outind) {
   df_clean <- df %>%
     mutate(DOW = "04003501",
            temp = fahrenheit_to_celsius(WaterTempF),
-           depth = feet_to_meters(11),
+           depth = convert_ft_to_m(11),
            DateTime = as.Date(Date, format = "%m/%d/%y"),
            time = strftime(Time, format = '%H:%M'),
            timezone = 'CST/CDT') %>%
@@ -67,7 +67,7 @@ parse_MN_fisheries_all_temp_data_Jan2018 <- function(inind, outind) {
   #convert to meters depth and deg C temp
   # no time data, not clear if repeated values are from multiple sites or multiple times
   clean <- raw %>% mutate(temp = fahrenheit_to_celsius(TEMP_F),
-                          depth = feet_to_meters(DEPTH_FT),
+                          depth = convert_ft_to_m(DEPTH_FT),
                           DateTime = as.Date(SAMPLING_DATE,
                                              format = "%m/%d/%Y")) %>%
     dplyr::select(DateTime, depth, temp, DOW)
@@ -104,7 +104,7 @@ parse_LotW_WQ_Gretchen_H <- function(inind, outind) {
   raw <- readxl::read_excel(infile)
   clean <- raw %>% filter(!grepl(pattern = "Dates in Red", x = notes) & !is.na(temp.units) & !is.na(temperature)) %>%
     mutate(DOW = gsub(pattern = "-", replacement = "", x = DOW),
-           depth = feet_to_meters(depth),
+           depth = convert_ft_to_m(depth),
            temp = ifelse(temp.units == "F", yes = fahrenheit_to_celsius(temperature),
                          no = temperature)) %>% rename(DateTime = Date) %>%
     dplyr::select(DateTime, temp, depth, DOW) %>% mutate(DateTime = as.Date(DateTime))
@@ -137,7 +137,7 @@ parse_ML_observed_temperatures <- function(inind, outind) {
   outfile <- as_data_file(outind)
   raw <- data.table::fread(infile)
   clean <- raw %>% mutate(temp = fahrenheit_to_celsius(temp.f),
-                          depth = feet_to_meters(depth.ft),
+                          depth = convert_ft_to_m(depth.ft),
                           DateTime = as.Date(Date, format = "%m/%d/%Y"),
                           DOW = "48000200") %>% dplyr::select(DateTime, temp, depth, DOW)
   saveRDS(object = clean, file = outfile)
