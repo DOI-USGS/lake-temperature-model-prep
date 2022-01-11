@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/us_states_sf.rds.ind
+type: file
+hash: 97affcebc43f352e2118fafcb09f26d3
+time: 2022-01-11 18:03:36 UTC
+depends:
+  1_crosswalk_fetch/out/us_counties_sf.rds.ind: 89c74c4dc428e9cafb703754cbd48c0f
+fixed: 0624f8179d9193ed189c42bbee16a72d
+code:
+  functions:
+    us_counties_to_states: 39d8cb13082affd33b7018fe2a445b93
+

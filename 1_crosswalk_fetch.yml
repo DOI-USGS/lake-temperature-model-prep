@@ -14,6 +14,7 @@ sources:
   - 1_crosswalk_fetch/src/fetch_NHD.R
   - 1_crosswalk_fetch/src/munge_crosswalk.R
   - 1_crosswalk_fetch/src/fetch_wqp_sites.R
+  - 1_crosswalk_fetch/src/fetch_zip_url_sf.R
   - lib/src/generic_utils.R
 
 targets:
@@ -66,6 +67,11 @@ targets:
   1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind:
     command: loop_tasks(nhd_HR_download_plan, '1_crosswalk_fetch_nhd_tasks.yml')
 
+  1_crosswalk_fetch/out/us_counties_sf.rds.ind:
+    command: fetch_zip_url_sf(
+      ind_file = target_name,
+      zip_url = I('https://www2.census.gov/geo/tiger/GENZ2018/shp/cb_2018_us_county_5m.zip'),
+      layer_name = I('cb_2018_us_county_5m'))
 
   1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind:
     command: fetch_mndow_lakes(

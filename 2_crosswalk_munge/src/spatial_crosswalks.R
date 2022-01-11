@@ -188,3 +188,16 @@ buffer_sf_lakes <- function(out_ind, lake_ind, buffer_width){
   gd_put(out_ind, data_file)
 
 }
+
+us_counties_to_states <- function(ind_file, us_counties_ind) {
+  us_counties_sf <- readRDS(sc_retrieve(us_counties_ind))
+  conus_states <- group_by(us_counties_sf, state) %>%
+    summarise() %>%
+    st_geometry() %>%
+    st_transform(crs = 4326)
+
+  # write, post, and promise the file is posted
+  data_file <- scipiper::as_data_file(ind_file)
+  saveRDS(conus_states, data_file)
+  gd_put(ind_file, data_file)
+}

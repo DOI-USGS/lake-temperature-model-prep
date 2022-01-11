@@ -25,6 +25,7 @@ targets:
       - 2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/winslow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/centroid_lakes_sf.rds.ind
+      - 2_crosswalk_munge/out/us_states_sf.rds.ind
       - 2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind
@@ -147,6 +148,12 @@ targets:
     command: centroid_sf_lakes(
       out_ind = target_name,
       lake_ind = "1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind")
+
+  2_crosswalk_munge/out/us_states_sf.rds.ind:
+    command: us_counties_to_states(target_name, '1_crosswalk_fetch/out/us_counties_sf.rds.ind')
+
+  #2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind:
+  #  command:
 
   2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds.ind:
     command: crosswalk_poly_intersect_poly(
