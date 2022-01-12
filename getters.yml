@@ -27,6 +27,9 @@ targets:
   1_crosswalk_fetch/out/canonical_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
 
+  1_crosswalk_fetch/out/us_counties_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/us_counties_sf.rds.ind')
+
   1_crosswalk_fetch/out/mndow_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind')
 
@@ -129,6 +132,9 @@ targets:
 
   2_crosswalk_munge/out/centroid_lakes_sf.rds:
     command: gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind')
+
+  2_crosswalk_munge/out/lake_to_state_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind')
 
   2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds:
     command: gd_get('2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds.ind')
