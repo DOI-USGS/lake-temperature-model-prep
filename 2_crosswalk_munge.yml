@@ -25,7 +25,6 @@ targets:
       - 2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/winslow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/centroid_lakes_sf.rds.ind
-      - 2_crosswalk_munge/out/us_states_sf.rds.ind
       - 2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind
       - 2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds.ind
@@ -150,17 +149,15 @@ targets:
       out_ind = target_name,
       lake_ind = "1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind")
 
-  2_crosswalk_munge/out/us_states_sf.rds.ind:
-    command: us_counties_to_states(target_name, '1_crosswalk_fetch/out/us_counties_sf.rds.ind')
-
   # Lakes that fall in Canada are given in NA
   # Lakes that intersect multiple states will appear
   # more than once in the crosswalk
   2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind:
-    command: crosswalk_lakes_intersect_states(
+    command: crosswalk_lakes_intersect_regions(
       ind_file = target_name,
       lakes_ind = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
-      states_ind = '2_crosswalk_munge/out/us_states_sf.rds.ind')
+      us_counties_ind = '1_crosswalk_fetch/out/us_counties_sf.rds.ind',
+      summarize_to_states = I(TRUE))
 
   2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds.ind:
     command: crosswalk_poly_intersect_poly(

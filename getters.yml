@@ -133,9 +133,6 @@ targets:
   2_crosswalk_munge/out/centroid_lakes_sf.rds:
     command: gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind')
 
-  2_crosswalk_munge/out/us_states_sf.rds:
-    command: gd_get('2_crosswalk_munge/out/us_states_sf.rds.ind')
-
   2_crosswalk_munge/out/lake_to_state_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind')
 
