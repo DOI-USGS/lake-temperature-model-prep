@@ -46,10 +46,12 @@ targets_list <- list(
   # Load and prepare lake centroids for matching to the GCM grid using
   # the `centroid_lakes_sf.rds` file from our `scipiper` pipeline
   tar_target(lake_centroids_sf_rds, gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind'), format='file'),
+  tar_target(lake_to_state_xwalk_rds, gd_get('2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind'), format='file'),
   tar_target(query_lake_centroids_sf,
              readRDS(lake_centroids_sf_rds) %>%
-               # Subset to 5 lakes for now for testing
-               subset_lake_centroids() %>%
+               left_join(readRDS(lake_to_state_xwalk_rds), by = "site_id") %>%
+               # Subset to just MN for now
+               filter(state == "MN") %>%
                # Lake centroids should be in the same CRS as the GCM grid
                sf::st_transform(grid_params$crs)
   ),

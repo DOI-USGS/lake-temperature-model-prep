@@ -78,12 +78,6 @@ construct_grid <- function(cellsize, nx, ny, xmin, ymin, crs) {
   return(grid_sf)
 }
 
-# TODO: Fancier version. This is a very rudimentary way to get all MN lakes.
-subset_lake_centroids <- function(centroids_sf) {
-  centroids_sf %>%
-    st_intersection(st_as_sf(maps::map('state', 'minnesota', plot=FALSE, fill=TRUE)))
-}
-
 #' @title Match grid cells to the grid tiles.
 #' @description Using grid cell centroids, this spatially
 #' intersects the cells to the bigger tiles and returns a
