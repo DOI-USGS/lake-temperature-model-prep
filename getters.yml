@@ -12,6 +12,9 @@ targets:
 
   #### 1_spatial ####
 
+  1_crosswalk_fetch/in/Norfork_temperature_locations.csv:
+    command: gd_get('1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
+
   1_crosswalk_fetch/in/Navico_lakes_depths.csv:
     command: gd_get('1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
 
@@ -23,6 +26,9 @@ targets:
 
   1_crosswalk_fetch/out/canonical_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
+
+  1_crosswalk_fetch/out/us_counties_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/us_counties_sf.rds.ind')
 
   1_crosswalk_fetch/out/mndow_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind')
@@ -127,14 +133,23 @@ targets:
   2_crosswalk_munge/out/centroid_lakes_sf.rds:
     command: gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind')
 
+  2_crosswalk_munge/out/lake_to_state_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind')
+
   2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds:
     command: gd_get('2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds.ind')
 
   2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind')
 
+  2_crosswalk_munge/out/navico_lakes_sf.rds:
+    command: gd_get('2_crosswalk_munge/out/navico_lakes_sf.rds.ind')
+
   2_crosswalk_munge/out/navico_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind')
+
+  2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind')
 
   #### 3_params_fetch #####
 
@@ -256,11 +271,6 @@ targets:
 
   4_params_munge/out/ndgf_bathy.rds:
     command: gd_get('4_params_munge/out/ndgf_bathy.rds.ind')
-
-  #### 6_temp_coop ####
-
-  6_temp_coop_fetch/out/coop_all_files.rds:
-    command: gd_get('6_temp_coop_fetch/out/coop_all_files.rds.ind')
 
   #### 6_wqp_fetch ####
   6_wqp_fetch/inout/wqptemp_partitions.feather:

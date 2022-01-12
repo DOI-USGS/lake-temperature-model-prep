@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/ntl29_v10_0.csv.ind
+type: file
+hash: edb7ae5089f907c94dd8323765c0d9d5
+time: 2021-12-10 11:51:23 UTC
+depends: {}
+fixed: f172edbfc22fa4816954d0c149d1ba55
+code:
+  functions: {}
+

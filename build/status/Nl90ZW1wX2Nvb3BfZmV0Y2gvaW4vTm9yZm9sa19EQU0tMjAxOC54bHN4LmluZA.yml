@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Norfolk_DAM-2018.xlsx.ind
+type: file
+hash: 9683348b0e7749ba25353f2a0968c0c7
+time: 2021-12-23 20:08:54 UTC
+depends: {}
+fixed: 85458ab456879c694819223a96aa07aa
+code:
+  functions: {}
+

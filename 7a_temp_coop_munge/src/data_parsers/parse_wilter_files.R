@@ -15,7 +15,7 @@ parse_mendota_daily_buoy <- function(inind, outind) {
   sc_indicate(ind_file = outind, data_file = outfile)
 }
 
-parse_long_term_ntl <- function(inind, outind) {
+parse_ntl29_v10_0 <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
   raw_file <- data.table::fread(infile, select = c("lakeid", "sampledate",
