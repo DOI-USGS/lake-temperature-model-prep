@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/navico_lakes_sf.rds.ind
+type: file
+hash: efcc0fca4d0afd5ca65db9829ad832c9
+time: 2021-12-15 13:26:59 UTC
+depends:
+  1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind: 0bb2e61ef65480a7c62ca3cb05507b38
+  6_temp_coop_fetch/in/Waterbody_Temperatures_by_State.xlsx.ind: 8e338c7c99cf9ef24e063b22909d94d5
+fixed: 897fc68e78b0fdab9c789e5a669fcc64
+code:
+  functions:
+    merge_navico_lakes: fde1530e304a4bbf27a19fd323cc3f24
+

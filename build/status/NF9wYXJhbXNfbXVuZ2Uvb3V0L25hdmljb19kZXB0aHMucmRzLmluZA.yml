@@ -1,12 +1,13 @@
 version: 0.3.0
 name: 4_params_munge/out/navico_depths.rds.ind
 type: file
-hash: 70e585f9ab15d883cb7bb16290fa2253
-time: 2021-11-19 23:49:45 UTC
+hash: 7cefa2e5f97c991eceeeb72d7f4cb437
+time: 2021-12-15 13:45:47 UTC
 depends:
-  2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind: d4a8e5e15fc2d605f7cce0c16d6e2a6a
+  1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind: 0bb2e61ef65480a7c62ca3cb05507b38
+  2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind: b90f5a86e28cc629b23df74ba1994838
 fixed: 8de0b412e34c6c4872d93fca0b13f8b9
 code:
   functions:
-    munge_navico_depths: ca3747a6ecb070fbf79accee1e4e703d
+    munge_navico_depths: 3d883cd8c811aa04882412009b0c301e
 
