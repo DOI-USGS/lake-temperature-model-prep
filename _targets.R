@@ -30,6 +30,15 @@ targets_list <- list(
     ny = 85
   )),
 
+  # Document GCM grid information
+  tar_target(grid_info, tibble(
+    grid_map_variable = 'gcm_grid_map',
+    grid_mapping_name = "lambert_conformal_conic",
+    standard_parallel = c(36, 52),
+    longitude_of_central_meridian = -97,
+    latitude_of_projection_origin = 45,
+  )),
+
   # Create larger tiles to use for querying GDP with groups of cells.
   # Constructing tiles to be made of 100 cells in a 10x10 grid.
   # TODO: this can be much larger! JR thinks GDP can handle ~1000 cells
@@ -265,7 +274,8 @@ targets_list <- list(
         gcm_raw_files = gcm_data_daily_feather_group_by_gcm$gcm_file,
         dim_time_input = gcm_dates_all,
         vars_info = glm_vars_info,
-        crs_info = grid_params,
+        grid_info = grid_info,
+        grid_params = grid_params,
         spatial_info = grid_cell_centroids_sf,
         global_att = sprintf("GCM Notaro %s", gcm_name)
       )
