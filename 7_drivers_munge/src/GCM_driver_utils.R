@@ -240,6 +240,11 @@ download_gcm_data <- function(out_file_template, query_geom,
 
   # Retry the GDP query multiple times if it doesn't work.
   retry({
+
+    # TODO: temporary fix to be able to download data. Change
+    # after https://github.com/USGS-R/geoknife/issues/366 resolved.
+    gconfig('sleep.time' = 45, 'wait' = TRUE)
+
     # construct and submit query
     gcm_job <- geoknife(
       stencil = query_simplegeom,
@@ -250,7 +255,7 @@ download_gcm_data <- function(out_file_template, query_geom,
       )
       # The default knife algorithm is appropriate
     )
-    wait(gcm_job)
+
     gcm_job_status <- check(gcm_job)$statusType
   },
   # Check the value of the last thing in the expr above (denoted
