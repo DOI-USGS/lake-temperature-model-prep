@@ -125,7 +125,7 @@ targets_list <- list(
                projection_period = c('1980_2099'),
                start_datetime = c('1980-01-01 00:00:00'),
                # Include midnight on the final day of the time period
-               end_datetime = c('2100-01-01 00:00:00')
+               end_datetime = c('2099-12-31 11:59:59')
              )),
 
   # Notaro variable definitions (see http://gdp-netcdfdev.cr.usgs.gov:8080/thredds/dodsC/notaro_debias_mri.html)
