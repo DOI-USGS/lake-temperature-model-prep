@@ -14,6 +14,8 @@ sources:
   - 1_crosswalk_fetch/src/fetch_NHD.R
   - 1_crosswalk_fetch/src/munge_crosswalk.R
   - 1_crosswalk_fetch/src/fetch_wqp_sites.R
+  - 1_crosswalk_fetch/src/fetch_zip_url_sf.R
+  - lib/src/generic_utils.R
 
 targets:
   1_crosswalk_fetch:
@@ -26,7 +28,17 @@ targets:
       - 1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind
       - 1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind
       - 1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind
+      - 1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind
       - 1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind
+
+# create the trigger file, which will not be checked into git
+# I see no reason to have different trigger files for different sections of the pipeline
+# if this is used elsewhere, since the intent is to keep modifying it
+# or the trigger file could be checked into git so that people building this part
+# for the first time don't get "Can't build implicit target 1_crosswalk_fetch/out/always_stale_time.txt"
+# if this recipe is missing and the file doesn't exist
+  1_crosswalk_fetch/out/always_stale_time.txt:
+    command: make_file_stale(target_name)
 
   wqp_temperature_charnames:
     command: c(I(c(
@@ -55,6 +67,11 @@ targets:
   1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind:
     command: loop_tasks(nhd_HR_download_plan, '1_crosswalk_fetch_nhd_tasks.yml')
 
+  1_crosswalk_fetch/out/us_counties_sf.rds.ind:
+    command: fetch_zip_url_sf(
+      ind_file = target_name,
+      zip_url = I('https://www2.census.gov/geo/tiger/GENZ2018/shp/cb_2018_us_county_5m.zip'),
+      layer_name = I('cb_2018_us_county_5m'))
 
   1_crosswalk_fetch/out/mndow_lakes_sf.rds.ind:
     command: fetch_mndow_lakes(
@@ -110,6 +127,10 @@ targets:
   1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind:
     command: fetch_navico_points(target_name,
       csv_ind = '1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
+
+  1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind:
+    command: fetch_norfork_points(target_name,
+      csv_ind = '1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
 
   1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind:
     command: fetch_Iowa_points(target_name,
