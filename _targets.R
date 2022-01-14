@@ -30,7 +30,7 @@ targets_list <- list(
     ny = 141
   )),
 
-  # Document GCM grid information
+  # Document GCM grid information (for use when building NetCDF)
   tar_target(grid_info, tibble(
     grid_map_variable = 'gcm_grid_map',
     grid_mapping_name = "lambert_conformal_conic",
@@ -169,21 +169,13 @@ targets_list <- list(
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
 
-  # # Munge GCM variables into useable GLM variables and correct units
-  # tar_target(
-  #   glm_ready_gcm_data_feather,
-  #   munge_notaro_to_glm(gcm_data_raw_feather),
-  #   pattern = map(gcm_data_raw_feather),
-  #   format = "file"
-  # ),
-
-  # FOR NOW, USE LINDSAY'S GLM_READY FEATHER FILES, BROUGHT IN MANUALLY
-  # mapping over gcm_names, gcm_dates_df, and query_cells_centroids_list_by_tile
-  # to read in Lindsay's created feather files
-  tar_target(glm_ready_gcm_data_feather,
-             sprintf('7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_munged.feather', gcm_names, gcm_dates_df$projection_period, unique(query_cells_centroids_list_by_tile$tile_no)),
-             format = 'file',
-             pattern = cross(gcm_names, gcm_dates_df, query_cells_centroids_list_by_tile)),
+  # Munge GCM variables into useable GLM variables and correct units
+  tar_target(
+    glm_ready_gcm_data_feather,
+    munge_notaro_to_glm(gcm_data_raw_feather),
+    pattern = map(gcm_data_raw_feather),
+    format = "file"
+  ),
 
   # Create feather files that can be used in the GLM pipeline without
   # having to be munged and extracted via NetCDF. Temporary solution
