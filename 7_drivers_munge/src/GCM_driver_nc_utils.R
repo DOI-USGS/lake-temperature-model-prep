@@ -105,7 +105,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, dim_time_input,
     # variables will be added to the existing file. See details for more.
     # @param overwrite boolean error if file exists.
     ncdfgeom::write_timeseries_dsg(nc_file,
-                         instance_names = as.character(gcm_cells),
+                         instance_names = gcm_cells,
                          lats = cell_lats,
                          lons = cell_lons,
                          alts = NA,
