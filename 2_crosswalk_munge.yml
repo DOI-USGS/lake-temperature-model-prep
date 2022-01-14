@@ -25,9 +25,11 @@ targets:
       - 2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/winslow_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/centroid_lakes_sf.rds.ind
+      - 2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind
       - 2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind
 
   2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind:
@@ -147,6 +149,16 @@ targets:
       out_ind = target_name,
       lake_ind = "1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind")
 
+  # Lakes that fall in Canada are given in NA
+  # Lakes that intersect multiple states will appear
+  # more than once in the crosswalk
+  2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind:
+    command: crosswalk_lakes_intersect_regions(
+      ind_file = target_name,
+      lakes_ind = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      us_counties_ind = '1_crosswalk_fetch/out/us_counties_sf.rds.ind',
+      summarize_to_states = I(TRUE))
+
   2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds.ind:
     command: crosswalk_poly_intersect_poly(
       target_name,
@@ -161,11 +173,22 @@ targets:
       intersect_ind_file = '2_crosswalk_munge/out/ndgf_nhdhr_intersect.rds.ind',
       poly1_ID_name = I("NDGF_ID"))
 
+  2_crosswalk_munge/out/navico_lakes_sf.rds.ind:
+    command: merge_navico_lakes(target_name,
+      depth_sf_ind = '1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind',
+      temp_ind = '6_temp_coop_fetch/in/Waterbody_Temperatures_by_State.xlsx.ind')
+
   2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind:
     command: crosswalk_points_in_poly(target_name,
       poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
-      points_ind_file = '1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind',
+      points_ind_file = '2_crosswalk_munge/out/navico_lakes_sf.rds.ind',
       points_ID_name = I("Navico_ID"))
+
+  2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind:
+    command: crosswalk_points_in_poly(target_name,
+      poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      points_ind_file = '1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind',
+      points_ID_name = I("Norfork_ID"))
 
   2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind:
     command: crosswalk_points_in_poly(target_name,

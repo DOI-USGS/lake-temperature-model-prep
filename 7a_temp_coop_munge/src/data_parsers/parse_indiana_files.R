@@ -11,7 +11,7 @@ parse_Indiana_Glacial_Lakes_WQ_IN_DNR <- function(inind, outind) {
     tidyr::gather(key = 'depth', value = 'temp', -id, -Date) %>%
     mutate(temp = fahrenheit_to_celsius(temp),
            DateTime = as.Date(Date),
-           depth = feet_to_meters(as.numeric(depth))) %>%
+           depth = convert_ft_to_m(as.numeric(depth))) %>%
     dplyr::select(DateTime, depth, temp, id)
 
   saveRDS(object = clean, file = outfile)
@@ -49,7 +49,7 @@ parse_Indiana_GlacialLakes_TempDOprofiles_5.6.13 <- function(inind, outind) {
     mutate(id = paste(vaw_name, vaw_waterID, sep = '_'),
            DateTime = as.Date(samp_startdate)) %>%
     dplyr::select(DateTime, id, depth = flc_depth, temp = flc_watertemp) %>%
-    mutate(depth = feet_to_meters(depth),
+    mutate(depth = convert_ft_to_m(depth),
            temp = fahrenheit_to_celsius(temp)) %>%
     filter(!depth < 0)
     dplyr::select(DateTime, depth, temp, id)

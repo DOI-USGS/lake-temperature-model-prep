@@ -224,6 +224,22 @@ fetch_navico_points <- function(out_ind, csv_ind) {
   gd_put(out_ind, outfile)
 }
 
+fetch_norfork_points <- function(out_ind, csv_ind) {
+  outfile <- as_data_file(out_ind)
+
+  norfork_data <- scipiper::sc_retrieve(csv_ind) %>%
+    read_csv(col_types = 'ccddc', na = 'NULL')
+
+  # convert data to sf object and save as rds
+  # rename Site to site id, so that rds can later be passed to `crosswalk_points_in_poly`
+  # which expects input dataframe to have 'site_id' column
+  norfork_points_sf <- st_as_sf(norfork_data, coords = c('Long', 'Lat'), crs = 4326) %>%
+    mutate(site_id = sprintf("Norfork_%s", `Unit ID`), .keep = "unused", .before = 1) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+}
+
 fetch_Iowa_points <- function(out_ind, csv_ind){
   outfile <- as_data_file(out_ind)
 

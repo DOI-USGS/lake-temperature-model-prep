@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/us_counties_sf.rds.ind
+type: file
+hash: 89c74c4dc428e9cafb703754cbd48c0f
+time: 2022-01-11 17:51:51 UTC
+depends: {}
+fixed: 92014aeb5393100166303c3599ce3540
+code:
+  functions:
+    fetch_zip_url_sf: 7d0a2ba8dacdec430bfd17e335f1d40b
+

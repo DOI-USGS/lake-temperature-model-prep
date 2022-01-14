@@ -15,6 +15,7 @@ sources:
   - 7a_temp_coop_munge/src/data_merge_fxns.R
   - 7a_temp_coop_munge/src/crosswalk_fxns.R
   - lib/src/require_local.R
+  - lib/src/generic_utils.R
 
 targets:
 
@@ -22,12 +23,15 @@ targets:
     depends:
      - 7a_temp_coop_munge/out/all_coop_dat_linked.feather.ind
 
+# here, trigger_file is used to keep this parser_file list _always stale_, so it always gets rebuilt.
   7a_temp_coop_munge/tmp/parser_files.yml:
     command: list_coop_files(target_name,
-      dirpath = I('7a_temp_coop_munge/src/data_parsers'), dummy = I('2021-09-13'))
+      dirpath = I('7a_temp_coop_munge/src/data_parsers'),
+      trigger_file = '1_crosswalk_fetch/out/always_stale_time.txt')
 
   coop_parsers:
-    command: find_parser(coop_wants, '7a_temp_coop_munge/tmp/parser_files.yml')
+    command: find_parser(coop_wants, '7a_temp_coop_munge/tmp/parser_files.yml',
+      trigger_file = '1_crosswalk_fetch/out/always_stale_time.txt')
 
   coop_munge_taskplan:
     command: create_coop_munge_taskplan(wants = coop_wants, parsers = coop_parsers)
@@ -42,8 +46,10 @@ targets:
   7a_temp_coop_munge/log/7a_temp_coop_munge_tasks.ind:
     command: loop_tasks(task_plan = coop_munge_taskplan,
       task_makefile = '7a_temp_coop_munge_tasks.yml',
-      num_tries = 3)
-    depends: '7a_temp_coop_munge/tmp/parser_files.yml'
+      num_tries = 1)
+    depends:
+      - '7a_temp_coop_munge/tmp/parser_files.yml'
+      - '6_temp_coop_fetch/log/6_temp_coop_fetch_tasks.ind'
 
 
   # -- bind together all data using final indicator file of 7a_temp_coop_munge_tasks.yml -- #
@@ -55,4 +61,6 @@ targets:
       id_crosswalk = '2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind',
       wbic_crosswalk = '2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind',
       dow_crosswalk = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind',
-      iowa_crosswalk = '2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind')
+      iowa_crosswalk = '2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind',
+      navico_crosswalk = '2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind',
+      norfork_crosswalk = '2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind')

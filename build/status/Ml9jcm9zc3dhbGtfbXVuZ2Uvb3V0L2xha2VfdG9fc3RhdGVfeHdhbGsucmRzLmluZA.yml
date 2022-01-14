@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind
+type: file
+hash: 95fbdd8997482db0886c02d96d1041fb
+time: 2022-01-12 16:25:37 UTC
+depends:
+  1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind: c85c2a6554d2495811586d7e19d80617
+  1_crosswalk_fetch/out/us_counties_sf.rds.ind: 89c74c4dc428e9cafb703754cbd48c0f
+fixed: 79ed5cdb5199423ea1d90e787c9be740
+code:
+  functions:
+    crosswalk_lakes_intersect_regions: e3903ffad318142dd59520b81935153a
+

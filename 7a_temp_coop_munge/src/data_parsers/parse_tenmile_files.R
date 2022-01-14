@@ -306,7 +306,7 @@ parse_Tenmile_2007_Temperatures <-
   }
 
   dat_out <- dat %>%
-    mutate(depth = feet_to_meters(Feet)) %>%
+    mutate(depth = convert_ft_to_m(Feet)) %>%
     dplyr::select(-Feet) %>%
     tidyr::gather(key = key, value = temp, -depth) %>%
     mutate(DateTime = rep(dates, each = nrow(dat)),

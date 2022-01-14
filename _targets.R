@@ -23,10 +23,10 @@ targets_list <- list(
   tar_target(grid_params, tibble(
     crs = "+proj=lcc +lat_0=45 + lon_0=-97 +lat_1=36 +lat_2=52 +x_0=0 +y_0=0 +ellps=WGS84 +units=m",
     cellsize = 25000,
-    xmin = -200000,
-    ymin = -1125000,
-    nx = 110,
-    ny = 85
+    xmin = -2700000,
+    ymin = -1750000,
+    nx = 217,
+    ny = 141
   )),
 
   # Create larger tiles to use for querying GDP with groups of cells.
@@ -46,10 +46,12 @@ targets_list <- list(
   # Load and prepare lake centroids for matching to the GCM grid using
   # the `centroid_lakes_sf.rds` file from our `scipiper` pipeline
   tar_target(lake_centroids_sf_rds, gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind'), format='file'),
+  tar_target(lake_to_state_xwalk_rds, gd_get('2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind'), format='file'),
   tar_target(query_lake_centroids_sf,
              readRDS(lake_centroids_sf_rds) %>%
-               # Subset to 5 lakes for now for testing
-               subset_lake_centroids() %>%
+               left_join(readRDS(lake_to_state_xwalk_rds), by = "site_id") %>%
+               # Subset to just MN for now
+               filter(state == "MN") %>%
                # Lake centroids should be in the same CRS as the GCM grid
                sf::st_transform(grid_params$crs)
   ),
@@ -117,24 +119,24 @@ targets_list <- list(
 
   # BUILD QUERY
   # Define list of GCMs
-  tar_target(gcm_names, c('ACCESS', 'GFDL', 'CNRM', 'IPSL', 'MRI', 'MIROC')),
+  tar_target(gcm_names, c('ACCESS', 'GFDL', 'CNRM', 'IPSL', 'MRI', 'MIROC5')),
   tar_target(gcm_dates_df,
              tibble(
-               projection_period = c('1980_1999', '2040_2059', '2080_2099'),
-               start_datetime = c('1980-01-01 00:00:00', '2040-01-01 00:00:00', '2080-01-01 00:00:00'),
+               projection_period = c('1980_2099'),
+               start_datetime = c('1980-01-01 00:00:00'),
                # Include midnight on the final day of the time period
-               end_datetime = c('2000-01-01 00:00:00', '2060-01-01 00:00:00', '2100-01-01 00:00:00')
+               end_datetime = c('2099-12-31 11:59:59')
              )),
 
-  # Notaro variable definitions (see https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html)
-  #   pr = Total precipitation flux
-  #   ps = Surface Pressure
-  #   tas = Near surface air temperature
-  #   qas = Near surface air specific humidity
-  #   rsns = Net downward shortwave energy flux
-  #   uas = Anemometric zonal (westerly) wind component
-  #   vas = Anenometric meridional (southerly) wind component
-  tar_target(gcm_query_vars, c("pr", "ps", "tas", "qas", "rsns", "uas", "vas")), # missing longwave radiation
+  # Notaro variable definitions (see http://gdp-netcdfdev.cr.usgs.gov:8080/thredds/dodsC/notaro_debias_mri.html)
+  tar_target(gcm_query_vars, c(
+    "prcp_debias", # Precipitation (mm/day)
+    "tas_debias", # Air temp (deg C)
+    "rh_debias", # Relative humidity (%)
+    "rsds_debias", # Surface shortwave radiation (W/m2)
+    "rsdl_debias", # Surface longwave radiation (W/m2)
+    "windspeed_debias" # Wind speed (m/s)
+    )),
 
   # Download data from GDP for each tile, GCM name, and GCM projection period combination.
   # If the cells in a tile don't change, then the tile should not need to rebuild.
@@ -159,7 +161,7 @@ targets_list <- list(
 
   # Munge GCM variables into useable GLM variables and correct units
   tar_target(
-    gcm_data_daily_feather,
+    glm_ready_gcm_data_feather,
     munge_notaro_to_glm(gcm_data_raw_feather),
     pattern = map(gcm_data_raw_feather),
     format = "file"
@@ -172,7 +174,7 @@ targets_list <- list(
   tar_target(
     out_skipnc_feather, {
       out_dir <- "7_drivers_munge/out_skipnc"
-      purrr::map(gcm_data_daily_feather, function(fn, gcm_names, gcm_dates_df) {
+      purrr::map(glm_ready_gcm_data_feather, function(fn, gcm_names, gcm_dates_df) {
         gcm_name <- str_extract(fn, paste(gcm_names, collapse="|"))
         gcm_time_period <- str_extract(fn, paste(gcm_dates_df$projection_period, collapse="|"))
 
@@ -195,7 +197,7 @@ targets_list <- list(
   # Group daily feather files by GCM to map over and include
   # branch file hashes to trigger rebuilds for groups as needed
   tar_target(gcm_data_daily_feather_group_by_gcm,
-              build_branch_file_hash_table(names(gcm_data_daily_feather)) %>%
+              build_branch_file_hash_table(names(glm_ready_gcm_data_feather)) %>%
                rename(gcm_file = path) %>%
                mutate(gcm_name = str_extract(gcm_file, paste(gcm_names, collapse="|"))) %>%
                group_by(gcm_name) %>%
@@ -212,7 +214,7 @@ targets_list <- list(
                             "Average daily near surface air temperature",
                             "Average daily percent relative humidity",
                             "Average daily surface downward shortwave flux in air",
-                            "LONGWAVE EXPLANATION",
+                            "Average daily surface downward longwave flux in air",
                             "Average daily windspeed derived from anemometric zonal and anenometric meridional wind components"),
                units = c("m/day", "m/day", "degrees Celcius", "percent", "W/m2", "W/m2", "m/s"),
                precision = "float"

@@ -15,6 +15,13 @@ mglp_depths_from_TDOx <- function(out_ind, TDOx_ind, mglp_xwalk_ind){
 
 munge_mglp_mi_perc_bathy <- function(out_ind, bathy_csv_ind, mglp_xwalk_ind, lake_poly_ind){
 
+  # we now use sf > v1.0, which causes issues with some NHD polygons and the spherical coordinates
+  # see info on the change: https://r-spatial.org/r/2020/06/17/s2.html#sf-10-goodbye-flat-earth-welcome-s2-spherical-geometry
+
+  # to avoid these NHD issues, we'd either need to edit the files or avoid the error by avoiding use of the
+  # S2 engine. We do that by toggling off use of S2 here.
+  sf::sf_use_s2(FALSE)
+  on.exit(sf::sf_use_s2(TRUE))
 
   lakes <- scipiper::sc_retrieve(lake_poly_ind) %>% readRDS()
   # multiple matches to
