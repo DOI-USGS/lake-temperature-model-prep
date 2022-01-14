@@ -204,12 +204,12 @@ targets_list <- list(
   #   format = "file"
   # ),
 
-  # FOR NOW, USE LINDSAY'S OUT_SKIPNC FEATHER FILES, BROUGHT IN MANUALLY
-  # mapping over gcm_names, gcm_dates_df, and query_cells to read in Lindsay's created feather files
-  tar_target(out_skipnc_feather,
-             sprintf('7_drivers_munge/out_skipnc/GCM_%s_%s_%s.feather', gcm_names, gcm_dates_df$projection_period, query_cells),
-             format = 'file',
-             pattern = cross(gcm_names, gcm_dates_df, query_cells)),
+  # # FOR NOW, USE LINDSAY'S OUT_SKIPNC FEATHER FILES, BROUGHT IN MANUALLY
+  # # mapping over gcm_names, gcm_dates_df, and query_cells to read in Lindsay's created feather files
+  # tar_target(out_skipnc_feather,
+  #            sprintf('7_drivers_munge/out_skipnc/GCM_%s_%s_%s.feather', gcm_names, gcm_dates_df$projection_period, query_cells),
+  #            format = 'file',
+  #            pattern = cross(gcm_names, gcm_dates_df, query_cells)),
 
   # FOR NOW recombine back into daily feather files, named by TILE
   tar_target(gcm_data_daily_feather,{
