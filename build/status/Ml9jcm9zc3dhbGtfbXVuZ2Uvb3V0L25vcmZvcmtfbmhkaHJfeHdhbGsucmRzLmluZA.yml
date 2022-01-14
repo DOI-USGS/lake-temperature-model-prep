@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind
+type: file
+hash: ae216d5b0f1f2509c8618cbc6e7064e5
+time: 2021-12-27 20:57:32 UTC
+depends:
+  1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind: c85c2a6554d2495811586d7e19d80617
+  1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind: 17f55647d9746921458d04cd8be73fe2
+fixed: ae4a0b9678210769d4c721936b9ec68d
+code:
+  functions:
+    crosswalk_points_in_poly: decfbef26db8ec6379845917fd38d1ba
+

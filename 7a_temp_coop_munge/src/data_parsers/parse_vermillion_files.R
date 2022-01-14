@@ -60,7 +60,7 @@ parse_Lake_Vermilion_2016 <- function(inind, outind) {
     mutate(time = strftime(as.POSIXct(DateTime, format = "%m/%d/%Y %H:%M"), '%H:%M'),
            temp = fahrenheit_to_celsius(temp),
            DateTime = as.Date(DateTime, format = "%m/%d/%Y"),
-           depth = feet_to_meters(8),
+           depth = convert_ft_to_m(8),
            DOW = '69037801',
            timezone = 'GMT-5',
            site = 'open water logger') %>%
@@ -104,7 +104,7 @@ parse_Logger_Temps_2009_Open_Water <- function(inind, outind) {
     mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
            time = format(strptime(time, format = '%m/%d/%y %I:%M:%S %p', tz = 'Etc/GMT+5'), '%H:%M'),
            temp = fahrenheit_to_celsius(temp),
-           depth = feet_to_meters(8),
+           depth = convert_ft_to_m(8),
            DOW = '69037801',
            timezone = 'GMT-5',
            site = 'open water logger') %>%
@@ -125,7 +125,7 @@ parse_Logger_Temps_2010_Open_Water <- function(inind, outind) {
     mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
            time = format(strptime(time, format = '%m/%d/%y %I:%M:%S %p', tz = 'Etc/GMT+6'), '%H:%M'),
            temp = fahrenheit_to_celsius(temp),
-           depth = feet_to_meters(8),
+           depth = convert_ft_to_m(8),
            DOW = '69037801',
            timezone = 'GMT-6',
            site = 'open water logger') %>%
@@ -151,7 +151,7 @@ parse_Logger_Temps_2011_Open_Water <- function(inind, outind) {
     mutate(DateTime = as.Date(time, format = "%Y-%m-%d"),
            time = format(strptime(time, format = '%Y-%m-%d %H:%M:%S', tz = 'Etc/GMT+6'), '%H:%M'),
            temp = fahrenheit_to_celsius(temp),
-           depth = feet_to_meters(8),
+           depth = convert_ft_to_m(8),
            DOW = '69037801',
            timezone = 'GMT-6',
            site = 'open water logger') %>%
@@ -175,7 +175,7 @@ parse_Open_Water_Logger_2013 <- function(inind, outind) {
            time = format(strptime(time, format = '%m/%d/%y %I:%M:%S %p', tz = 'Etc/GMT+6'), '%H:%M'),
            timezone = 'GMT-6',
            temp = fahrenheit_to_celsius(temp),
-           depth = feet_to_meters(8),
+           depth = convert_ft_to_m(8),
            DOW = '69037801',
            site = 'open water logger') %>%
     #filter(time == "02:36:01 PM") %>%
@@ -201,7 +201,7 @@ parse_Temp_Logger_Data_2015 <- function(inind, outind) {
     filter(!is.na(temp)) %>%
     mutate(DateTime = as.Date(`Time, GMT-06:00`, format = "%m/%d/%y"),
            temp = fahrenheit_to_celsius(temp),
-           depth = feet_to_meters(8), DOW = '69037801',
+           depth = convert_ft_to_m(8), DOW = '69037801',
            timezone = 'GMT-6',
            site = 'open water logger') %>%
     #group_by(DateTime) %>%
@@ -223,7 +223,7 @@ parse_Vermilion_Logger_2014 <- function(inind, outind) {
     mutate(DateTime = as.Date(time, format = "%m/%d/%y"),
            time = format(strptime(time, format = '%m/%d/%y %I:%M:%S %p', tz = 'Etc/GMT+6'), '%H:%M'),
            temp = fahrenheit_to_celsius(temp),
-           depth = feet_to_meters(8),
+           depth = convert_ft_to_m(8),
            DOW = '69037801',
            timezone = 'GMT-6',
            site = 'open water logger') %>% # assuming to be similar site to open water loggers from other years

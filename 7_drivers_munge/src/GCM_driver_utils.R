@@ -78,20 +78,6 @@ construct_grid <- function(cellsize, nx, ny, xmin, ymin, crs) {
   return(grid_sf)
 }
 
-# TODO: scale up. For now, this just subsets the lakes
-# to 5 in WI. Will want to scale up to all of MN and then
-# try for every lake in centroid_lakes_sf Once we scale
-# up completely, we shouldn't need this function.
-subset_lake_centroids <- function(centroids_sf) {
-
-  set.seed(19) # Same subset of 5 every time
-  wi_sf <- st_as_sf(maps::map('state', 'wisconsin', plot=FALSE, fill=TRUE))
-
-  centroids_sf %>%
-    st_intersection(wi_sf) %>%
-    sample_n(5)
-}
-
 #' @title Match grid cells to the grid tiles.
 #' @description Using grid cell centroids, this spatially
 #' intersects the cells to the bigger tiles and returns a
@@ -223,8 +209,7 @@ sf_pts_to_simplegeom <- function(sf_obj) {
 #' `tile_no` to represent the current group of grid cells being queried.
 #' @param gcm_name name of one of the six GCMs to use to construct the query URL.
 #' @param gcm_projection_period name given to the different projection periods. Each
-#' GCM dataset has a separate URL for downloading data from these different periods.
-#' Should be one of `1980_1999`, `2040_2059`, or `2080_2099`.
+#' GCM dataset contains data for all of the available projection time periods.
 #' @param query_vars character vector of the variables that should be downloaded
 #' from each of the GCMs. For a list of what variables are available, see
 #' https://cida.usgs.gov/thredds/ncss/notaro_GFDL_2040_2059/dataset.html.
@@ -245,11 +230,21 @@ download_gcm_data <- function(out_file_template, query_geom,
   query_simplegeom <- sf_pts_to_simplegeom(query_geom_WGS84)
 
   # Build query_url
-  query_url <- sprintf("https://cida.usgs.gov/thredds/dodsC/notaro_%s_%s",
-                       gcm_name, gcm_projection_period)
+  query_url <- sprintf(
+    "http://gdp-netcdfdev.cr.usgs.gov:8080/thredds/dodsC/notaro_debias_%s",
+    tolower(gcm_name))
+
+  # Stop now if you aren't on VPN
+  if(!RCurl::url.exists(paste0(query_url, ".html")))
+    stop("You must be connected to USGS VPN to download debiased GCMs")
 
   # Retry the GDP query multiple times if it doesn't work.
   retry({
+
+    # TODO: temporary fix to be able to download data. Change
+    # after https://github.com/USGS-R/geoknife/issues/366 resolved.
+    gconfig('sleep.time' = 45, 'wait' = TRUE)
+
     # construct and submit query
     gcm_job <- geoknife(
       stencil = query_simplegeom,
@@ -260,7 +255,7 @@ download_gcm_data <- function(out_file_template, query_geom,
       )
       # The default knife algorithm is appropriate
     )
-    wait(gcm_job)
+
     gcm_job_status <- check(gcm_job)$statusType
   },
   # Check the value of the last thing in the expr above (denoted
@@ -299,23 +294,21 @@ build_branch_file_hash_table <- function(dynamic_branch_names) {
 }
 
 #' @title Convert Notaro GCM data to GLM-ready data
-#' @description The final GCM driver data will need to be daily, but geoknife
-#' returns hourly values. This step summarizes the Notaro raw data into daily
-#' values and converts into appropriate units. It creates a file with the exact
-#' same name, except that the "_raw" part of the `in_file` filepath is replaced
-#' with "_daily".
+#' @description The final GCM driver data needs certain column names and units
+#' to be used for GLM. This function converts GCM variables into appropriate
+#' units and saves a file with the exact same name as the in file, except that
+#' the "_raw" part of the `in_file` filepath is replaced with "_munged".
 #' @value a table saved as a feather file with the following columns:
 #' `time`: class Date denoting a single day
 #' `cell`: a numeric value indicating which cell in the grid that the data belongs to
-#' `Shortwave`: a numeric value copied from the Notaro `rsns` variable
-#' `Longwave`: FILL INFO IN HERE
-#' `AirTemp`: a numeric value converted from Kelvin to Celcius using the Notaro `tas` variable
-#' `RelHum`: FILL INFO IN HERE
-#' `WindSpeed`: a numeric value representing the product of the Southerly and Westerly
-#' velocities (Notaro variables `uas` and `vas`, respectively)
-#' `Rain`: a numeric value; the rate of rainfall in meters per day. Derived from the Notaro
-#' precipitation flux (`pr`), assuming density of water is 1000 kg/m3.
-#' `Snow`: a numeric value; the rate of snowfall in meters per day. Derived from the `Rain`
+#' `Shortwave`: shortwave radiation (W/m2); a numeric value copied from the Notaro `rsds_debias` variable
+#' `Longwave`: longwave radiation (W/m2); a numeric value copied from the Notaro `rsdl_debias` variable
+#' `AirTemp`: air temperature (C); a numeric value copied from the Notaro `tas_debias` variable
+#' `RelHum`: relative humidity (%); a numeric value copied from the Notaro `rh_debias` variable
+#' `WindSpeed`: wind speed (m/s); a numeric value copied from the Notaro `rsdl_debias` variable
+#' `Rain`: rate of precipitation as water (m/day); a numeric value converted to m/day from the
+#' Notaro variable `prcp_debias` which is in mm/day.
+#' `Snow`: the rate of snowfall (m/day); a numeric value derived from the `Rain`
 #' column and assumes the snow depth is 10 times the water equivalent (`Rain`) when the
 #' temperature (`AirTemp`) is below freezing.
 #' @param in_file filepath to a feather file containing the hourly geoknife data
@@ -328,44 +321,38 @@ munge_notaro_to_glm <- function(in_file) {
 
   daily_data <- raw_data %>%
 
+    # Create a column with the actual date
+    # `DateTime` has a POSIXct value for the first day of every year
+    # `time(day of year)` is a numeric value from 0-364 (365 for leap years)
+    mutate(date = as.Date(DateTime) + `time(day of year)`) %>%
+    select(-DateTime, -`time(day of year)`) %>%
+
     # Pivot to long format first to get cells as a column.
-    pivot_longer(cols = -c(DateTime, variable, statistic, units),
+    pivot_longer(cols = -c(date, variable, statistic, units),
                  names_to = "cell", values_to = "val") %>%
     mutate(cell = as.numeric(cell)) %>%
 
     # Now pivot wider to makes each variable a column for easy, readable munging
     # Also, removes `units` and `statistic` columns which are specific to each variable
-    pivot_wider(id_cols = c("DateTime", "cell"), names_from = variable, values_from = val) %>%
+    pivot_wider(id_cols = c("date", "cell"), names_from = variable, values_from = val) %>%
 
-    # Unit conversions to get GLM-ready variables from GDP ones
+    # Unit conversions to get GLM-ready variables from GCM ones
     mutate(
-      # Convert GDP air temperature (tas) from Kelvin to Celcius
-      AirTemp = tas - 273.15,
-
-      # Convert GDP precipitation (pr) from  kg m-2 s-1 to m/day
-      #  1. Eqn for pr: pr (kg m-2 s-1) = density of water (kg m-3) * rate of rainfall (m/s)
-      #  2. Solve for rate of rainfall:
-      #       rate of rainfall (m/day) = pr (kg m-2 s-1) / density of water (kg m-3) * 3600 sec/hr * 24 hr/day
-      #  3. Assume density of water is 1000 kg/m3
-      Rain = pr / 1000 * 3600 * 24
-
+      Rain = prcp_debias / 1000 # mm to m
     ) %>%
 
-    # Simply rename GDP variables into GLM variables
-    mutate(RelHum = qas,
-           Shortwave = rsns,
-           Longwave = rsns # TODO: find longwave from GDP
+    # Simply rename GCM variables into GLM variables
+    mutate(AirTemp = tas_debias,
+           RelHum = rh_debias,
+           Shortwave = rsds_debias,
+           Longwave = rsdl_debias,
+           WindSpeed = windspeed_debias
     ) %>%
 
     # Calculate GLM variables using other existing variables
     mutate(Snow = ifelse(AirTemp < 0, Rain*10, 0), # When air temp is below freezing, any precip should be considered snow
-           Rain = ifelse(AirTemp < 0, 0, Rain),
-           # Calculate the Windspeed from wind velocity values (westerly & southerly)
-           WindSpeed = sqrt(uas^2 + vas^2)
+           Rain = ifelse(AirTemp < 0, 0, Rain)
     ) %>%
-
-    # Create a column with just the date to use for summarizing
-    mutate(date = as.Date(DateTime)) %>%
 
     # Keep only the columns we need
     select(time = date,
@@ -377,21 +364,10 @@ munge_notaro_to_glm <- function(in_file) {
            WindSpeed,
            Rain,
            Snow
-    ) %>%
-
-    # Convert from hourly to daily data
-    group_by(time, cell) %>%
-    # TODO: should we `na.rm = TRUE`?
-    summarize(across(.cols = -WindSpeed, .fns = ~ mean(.x, na.rm = FALSE)),
-              WindSpeed = mean(WindSpeed^3)^(1/3),
-              n = length(time),
-              .groups = "keep") %>%
-    ungroup() %>%
-    # This drops Jan 1, 1980
-    filter(n == 24) %>% select(-n)
+    )
 
   # Save the daily data
-  out_file <- gsub("_raw.feather", "_daily.feather", in_file)
+  out_file <- gsub("_raw.feather", "_munged.feather", in_file)
   arrow::write_feather(daily_data, out_file)
 
   return(out_file)
@@ -410,14 +386,12 @@ validate_notaro_units_assumptions <- function(data_in) {
     select(variable, units) %>%
     unique() %>%
     mutate(passes_assumption = case_when(
-      variable == "pr" ~ units == "kg m-2 s-1",
-      variable == "ps" ~ units == "hPa",
-      variable == "tas" ~ units == "K",
-      variable == "qas" ~ units == "1",
-      variable == "rsns" ~ units == "W m-2",
-      variable == "LONGWAVE" ~ units == "W m-2",
-      variable == "uas" ~ units == "m s-1",
-      variable == "vas" ~ units == "m s-1",
+      variable == "prcp_debias" ~ units == "mm/day",
+      variable == "tas_debias" ~ units == "C",
+      variable == "rh_debias" ~ units == "%",
+      variable == "rsds_debias" ~ units == "W/m2",
+      variable == "rsdl_debias" ~ units == "W/m2",
+      variable == "windspeed_debias" ~ units == "m/s",
       # For any variable not in our checks, return false
       TRUE ~ FALSE
     ))

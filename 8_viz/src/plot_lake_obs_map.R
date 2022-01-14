@@ -2,27 +2,17 @@ library(tidyverse)
 library(httr)
 library(sf)
 
-fetch_zip_url_sf <- function(zip_url, layer_name){
-
-  destination = tempfile(pattern = layer_name, fileext='.zip')
-  file <- httr::GET(zip_url, httr::write_disk(destination, overwrite=T), httr::progress())
-  shp_path <- tempdir()
-  unzip(destination, exdir = shp_path)
-
-  sf::st_read(shp_path, layer=layer_name) %>%
-    sf::st_transform(crs = 4326) %>%
-    mutate(state = dataRetrieval::stateCdLookup(STATEFP)) %>%
-    dplyr::select(state, county = NAME)
-
-}
-us_counties_sf <- fetch_zip_url_sf(
-  I('https://www2.census.gov/geo/tiger/GENZ2018/shp/cb_2018_us_county_5m.zip'),
-  layer_name = I('cb_2018_us_county_5m'))
-
-plot_lake_obs_map <- function(fileout_base, temp_obs_ind = '7b_temp_merge/out/temp_data_with_sources.feather.ind', lakes_sf_fl, us_counties_sf, plot_crs = "+init=epsg:2811"){
+plot_lake_obs_map <- function(fileout_base, temp_obs_ind = '7b_temp_merge/out/temp_data_with_sources.feather.ind', lakes_sf_fl, us_counties_ind, plot_crs = "+init=epsg:2811"){
 
   # Read the data
   temp_data <- feather::read_feather(scipiper::as_data_file(temp_obs_ind)) # replace as_data_file with sc_retrieve when practical
+  us_counties <- readRDS(scipiper::sc_retrieve(us_counties_ind))
+
+  # Merge counties into states & transform to appropriate CRS
+  conus_states <- us_counties %>%
+    group_by(state) %>%
+    summarize() %>%
+    st_transform(plot_crs)
 
   # Generate tables of relevant counts
   lake_obs_counts <- temp_data %>%
@@ -62,9 +52,6 @@ plot_lake_obs_map <- function(fileout_base, temp_obs_ind = '7b_temp_merge/out/te
   obs_counts_simple <- obs_counts %>%
     group_by(obs_date_bin) %>%
     summarize(n=sum(n_sites_at), .groups='drop')
-
-  # merge county polygons into state polygons
-  conus_states <- group_by(us_counties_sf, state) %>% summarise() %>% st_geometry() %>% st_transform(crs = plot_crs)
 
   # compute the bounding box
   box_sf <- tibble(
@@ -149,5 +136,5 @@ plot_lake_obs_map(
   fileout_base = '8_viz/out/lake_obs_map.png',
   temp_obs_ind = '7b_temp_merge/out/temp_data_with_sources.feather.ind',
   lakes_sf_fl = "1_crosswalk_fetch/out/canonical_lakes_sf.rds",
-  us_counties_sf = us_counties_sf,
+  us_counties_ind = '1_crosswalk_fetch/out/us_counties_sf.rds.ind',
   plot_crs = I("+init=epsg:2811"))

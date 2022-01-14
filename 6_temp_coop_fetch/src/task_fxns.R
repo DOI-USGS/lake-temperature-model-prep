@@ -19,7 +19,7 @@ create_coop_taskplan <- function(wants) {
   )
 
   task_plan <- scipiper::create_task_plan(
-    task_names = wants,
+    task_names = wants$name,
     task_steps = list(coop_fetch_step1, coop_fetch_step2),
     final_steps = 'check_and_write_ind',
     add_complete = FALSE

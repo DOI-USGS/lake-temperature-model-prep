@@ -67,6 +67,8 @@ crosswalk_poly_over_poly <- function(ind_file, poly1_ind_file, poly2_ind_file, p
 
 crosswalk_poly_intersect_poly <- function(ind_file, poly1_ind_file, poly2_ind_file, poly1_ID_name, crs){
 
+  sf::sf_use_s2(FALSE)
+  on.exit(sf::sf_use_s2(TRUE))
   poly1_data <- readRDS(sc_retrieve(ind_file = poly1_ind_file))
   poly2_data <- readRDS(sc_retrieve(ind_file = poly2_ind_file))
 
@@ -157,6 +159,8 @@ combine_sf_lakes <- function(out_ind, ...){
 }
 
 centroid_sf_lakes <- function(out_ind, lake_ind){
+  sf::sf_use_s2(FALSE)
+  on.exit(sf::sf_use_s2(TRUE))
   sf_lakes <- readRDS(scipiper::sc_retrieve(lake_ind))
   data_file <- scipiper::as_data_file(out_ind)
   saveRDS(st_centroid(sf_lakes), data_file)
@@ -183,4 +187,41 @@ buffer_sf_lakes <- function(out_ind, lake_ind, buffer_width){
   saveRDS(sf_donut_lakes, data_file)
   gd_put(out_ind, data_file)
 
+}
+
+# Intersects lake polygons with state polygons to match each lake to
+# one or more states. If the lake doesn't match any (e.g. it's in
+# Canada), it is given an `NA` in the `state` column.
+# The `summarize_to_states` argument can be used to ask for a
+# lake-to-county crosswalk by setting it to FALSE.
+crosswalk_lakes_intersect_regions <- function(ind_file, lakes_ind, us_counties_ind, summarize_to_states = TRUE) {
+
+  lakes_sf <- readRDS('2_crosswalk_munge/out/centroid_lakes_sf.rds')#readRDS(sc_retrieve(lakes_ind))
+  us_counties_sf <- readRDS('1_crosswalk_fetch/out/us_counties_sf.rds')#readRDS(sc_retrieve(us_counties_ind))
+
+
+  if(summarize_to_states) {
+    states_sf <- group_by(us_counties_sf, state) %>%
+      summarise() %>%
+      st_transform(crs = 4326)
+    regions_sf <- states_sf
+    region_cols_to_keep <- c('state')
+  } else {
+    regions_sf <- us_counties_sf
+    region_cols_to_keep <- c('state', 'county')
+  }
+
+  crosswalked_polygons <- lakes_sf %>%
+    st_make_valid() %>%
+    st_zm() %>%
+    st_join(st_make_valid(regions_sf), join = st_intersects)
+
+  crosswalked_ids <- crosswalked_polygons %>%
+    st_drop_geometry() %>%
+    dplyr::select(site_id, dplyr::all_of(region_cols_to_keep))
+
+  # write, post, and promise the file is posted
+  data_file <- scipiper::as_data_file(ind_file)
+  saveRDS(crosswalked_ids, data_file)
+  gd_put(ind_file, data_file)
 }
