@@ -3,11 +3,11 @@
 #' @title Creates a NetCDF file with GCM driver data
 #' @description For each of the GCMs, create a single NetCDF file containing all the
 #' variables and all the grid cells.
-#' @param nc_file netcdf file name output
+#' @param nc_file netcdf outfile name
 #' @param gcm_raw_files vector of feather file paths, one for each tile with data for the current GCM.
 #' @param vars_info variables and descriptions to store in NetCDF
 #' @param grid_info projection information to add to NetCDF as grid mapping
-#' @param grid_params grid cell parameters - added to NetCDF as global attributes
+#' @param grid_params grid cell parameters to add to NetCDF as global attributes
 #' @param spatial_info cell_nos, x indices, y indices, and projected coordinates of grid cell centroids
 #' @param global_att global attribute description for the observations (e.g. notaro_ACCESS_1980_1999)
 #' @param overwrite T/F if the nc file should be overwritten if it exists already
@@ -19,7 +19,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_info, grid_p
     unlink(nc_file)
   }
 
-  # Read in all data for the selected (tar_group) GCM
+  # Read in all data for the current (tar_group) GCM
   gcm_data <- purrr::map_df(gcm_raw_files, function(gcm_raw_file) {
     arrow::read_feather(gcm_raw_file)
   }) %>% arrange(cell)
@@ -56,7 +56,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_info, grid_p
     pivot_longer(cols = -c(time, cell), names_to = "variable", values_to = "value") %>%
     arrange(cell)
 
-  # Loop over data variables to populate netCDF using ncdfgeom::write_timeseries_dsg()
+  # Loop over data variables to populate NetCDF using ncdfgeom::write_timeseries_dsg()
   for (variable in vars_info$var_name) {
     # Filter long-format data to selected variable
     variable_metadata <- vars_info %>% filter(var_name == variable)
@@ -72,7 +72,8 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_info, grid_p
     var_data_prec <- variable_metadata$precision
     var_data_metadata <- list(name = variable_metadata$var_name, long_name = variable_metadata$longname)
 
-    # Check if nc file already exists, and therefore should be added to
+    # Check if nc file already exists, and therefore should be added to,
+    # or if needs to be created
     var_add_to_existing <- ifelse(file.exists(nc_file), TRUE, FALSE)
 
     # write this variable to the netcdf file:
@@ -97,13 +98,12 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_info, grid_p
                          overwrite = overwrite)
   }
 
-  # Reopen netCDF file in order to add grid mapping
-  # and redefine coordinate variables to auxiliary coordinate variables
-  # as the coordinated data are projected cartesian coordinates
+  # Reopen NetCDF file in order to add grid mapping
+  # and redefine coordinate variables as auxiliary coordinate variables
+  # since the coordinate data are projected cartesian coordinates
   nc <- RNetCDF::open.nc(nc_file, write=TRUE)
 
-  # Add grid_mapping variable
-  # define as a new scalar netCDF variable
+  # Add grid_mapping variable as a new scalar NetCDF variable
   RNetCDF::var.def.nc(nc, grid_info$grid_map_variable, "NC_CHAR", NA)
   RNetCDF::att.put.nc(nc, grid_info$grid_map_variable, "grid_mapping_name", "NC_CHAR", grid_info$grid_mapping_name)
   RNetCDF::att.put.nc(nc, grid_info$grid_map_variable, "standard_parallel", "NC_DOUBLE", unlist(grid_info$standard_parallel))
@@ -117,7 +117,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_info, grid_p
   })
 
   # Rename lat lon coordinate variables to reflect that they contain
-  # auxiliary coordinates, updating attributes to meet NetCDF CF conventions
+  # auxiliary coordinates, and update attributes to meet NetCDF CF conventions
   # for projected coordinates
   projected_coord_vars <- tibble(
     old_name = c('lon', 'lat'),
@@ -133,8 +133,8 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_info, grid_p
     RNetCDF::att.put.nc(nc, new_name, "grid_mapping", "NC_CHAR", grid_info$grid_map_variable)
   })
 
-  # # define separate projected coordinate variables
-  # # use if preserving lon/lat variables and adding auxiliary coordinates separately
+  # # Define separate projected coordinate variables
+  # # (use if preserving lon/lat variables and adding auxiliary coordinates separately)
   # projected_coord_vars <- tibble(
   #   name = c('jx', 'iy'),
   #   long_name = c('x-coordinate in Cartesian system', 'y-coordinate in Cartesian system'),
