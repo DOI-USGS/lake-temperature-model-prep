@@ -34,7 +34,7 @@ targets_list <- list(
   tar_target(grid_info, tibble(
     grid_map_variable = 'gcm_grid_map',
     grid_mapping_name = "lambert_conformal_conic",
-    standard_parallel = c(36, 52),
+    standard_parallel = list(c(36, 52)),
     longitude_of_central_meridian = -97,
     latitude_of_projection_origin = 45,
   )),
@@ -135,9 +135,7 @@ targets_list <- list(
                projection_period = c('1980_2099'),
                start_datetime = c('1980-01-01 00:00:00'),
                # Include midnight on the final day of the time period
-               end_datetime = c('2099-12-31 11:59:59'),
-               start_nc_date = c('1980-01-02', '2040-01-02', '2080-01-02'),
-               end_nc_date = c('2000-01-01', '2060-01-01', '2100-01-01')
+               end_datetime = c('2099-12-31 11:59:59')
              )),
 
   # Notaro variable definitions (see http://gdp-netcdfdev.cr.usgs.gov:8080/thredds/dodsC/notaro_debias_mri.html)
@@ -171,13 +169,21 @@ targets_list <- list(
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
 
-  # Munge GCM variables into useable GLM variables and correct units
-  tar_target(
-    glm_ready_gcm_data_feather,
-    munge_notaro_to_glm(gcm_data_raw_feather),
-    pattern = map(gcm_data_raw_feather),
-    format = "file"
-  ),
+  # # Munge GCM variables into useable GLM variables and correct units
+  # tar_target(
+  #   glm_ready_gcm_data_feather,
+  #   munge_notaro_to_glm(gcm_data_raw_feather),
+  #   pattern = map(gcm_data_raw_feather),
+  #   format = "file"
+  # ),
+
+  # FOR NOW, USE LINDSAY'S GLM_READY FEATHER FILES, BROUGHT IN MANUALLY
+  # mapping over gcm_names, gcm_dates_df, and query_cells_centroids_list_by_tile
+  # to read in Lindsay's created feather files
+  tar_target(glm_ready_gcm_data_feather,
+             sprintf('7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_munged.feather', gcm_names, gcm_dates_df$projection_period, unique(query_cells_centroids_list_by_tile$tile_no)),
+             format = 'file',
+             pattern = cross(gcm_names, gcm_dates_df, query_cells_centroids_list_by_tile)),
 
   # Create feather files that can be used in the GLM pipeline without
   # having to be munged and extracted via NetCDF. Temporary solution
@@ -232,16 +238,6 @@ targets_list <- list(
                precision = "float"
              )),
 
-  # Create a single vector of all the time period's days to use as the NetCDF time dim
-  tar_target(
-    gcm_dates_all,
-    purrr::pmap(gcm_dates_df, function(projection_period, start_datetime, end_datetime, start_nc_date, end_nc_date) {
-      seq(as.POSIXct(start_nc_date, tz = 'GMT'), by = 'days', length.out = diff(as.Date(c(start_nc_date, end_nc_date))))
-      # seq(as.Date(start_datetime)+1, as.Date(end_datetime)-1, by = 1)
-      # seq(as.Date(start_datetime), as.Date(end_datetime), by = 1)
-    }) %>% do.call("c", args = .)
-  ),
-
   # Create single NetCDF files for each of the GCMs
   tar_target(
     gcm_nc, {
@@ -251,7 +247,6 @@ targets_list <- list(
       generate_gcm_nc(
         nc_file = sprintf("7_drivers_munge/out/7_GCM_%s.nc", gcm_name),
         gcm_raw_files = gcm_data_daily_feather_group_by_gcm$gcm_file,
-        dim_time_input = gcm_dates_all,
         vars_info = glm_vars_info,
         grid_info = grid_info,
         grid_params = grid_params,
