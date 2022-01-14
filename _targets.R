@@ -6,6 +6,7 @@ tar_option_set(packages = c(
   "sf",
   "ncdf4",
   "ncdfgeom",
+  "RNetCDF",
   "scipiper",
   "ggplot2",
   "geoknife",
