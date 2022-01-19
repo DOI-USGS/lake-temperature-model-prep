@@ -67,11 +67,11 @@ targets:
   1_crosswalk_fetch/out/iadnr_contours_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind')
 
-  1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind')
-
   1_crosswalk_fetch/out/iadnr_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind')
+
+  1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind')
 
   # Shapefile download available at https://www.nd.gov/gis/apps/Download/?clipping=Full&coord=LL83&format=SHAPE&layers=NDGAMEFISH.NDGF_LAKESVW
   # Before uploading, I edited the lake id column using: `mutate(LAKE = sprintf("ndgf_%s", LAKE)) %>% rename(site_id = LAKE)`
