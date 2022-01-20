@@ -302,19 +302,29 @@ parse_2017_2020_data <- function(x, keep_cols, lakeid_col, temp_as_f = F, use_re
     as.numeric(gsub(".*?([0-9]+).*", "\\1", x))
   })
 
-  # handle date and time
-  if(any(class(dat$date) == 'character')) {dat$date <- lubridate::mdy(dat$date)}
+  # handle date
+  if(any(class(dat$date) == 'character')) {
+    dat$date <- lubridate::mdy(dat$date) %>% as.Date
+  }
 
-  # check for AM/PM designation
-  if(any(sapply(dat$time, function(x) nchar(x) > 9))) {
+  # check for datetimes and AM/PM designation
+  if(any(sapply(dat$time, function(x) class(x) == "POSIXct"))) {
+
+    dat$time <- strftime(dat$time, format = "%H:%M") %>% as.character()
+
+  } else if(any(sapply(dat$time, function(x) nchar(x) > 9))) {
+
     dat$time <- ifelse(nchar(dat$time) == 11,
                        substr(dat$time, 1, 5),
                        substr(dat$time, 1, 4))
+
   } else {
+
     # 2018-2020 data has a little extra whitespace and often includes the seconds
     dat$time <- format(dat$time, '%H:%M') %>%
       as.character(.) %>%
       substr(., 1, 5)
+
   }
 
   # convert temp if necessary
