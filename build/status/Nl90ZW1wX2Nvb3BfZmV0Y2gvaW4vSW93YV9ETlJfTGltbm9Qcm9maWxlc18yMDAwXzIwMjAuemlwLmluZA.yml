@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Iowa_DNR_LimnoProfiles_2000_2020.zip.ind
+type: file
+hash: 2dd22bb5e2048571751d6f2cf30415da
+time: 2022-01-19 20:02:42 UTC
+depends: {}
+fixed: 4b394a1eff82762ed0d55e00a51490e8
+code:
+  functions: {}
+
