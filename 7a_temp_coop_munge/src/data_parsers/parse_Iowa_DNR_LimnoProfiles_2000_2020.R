@@ -72,7 +72,7 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
   # Clean data from 2010 & 2011-2016-------------------------------------------
   # these two data sets are hairy - some are true xls others are htm and there
   # is no rhyme or reason to when/why it is that way. many helper functions
-  # support `load_xls_or_htm_file`
+  # support `parse_2010_2016_data`
   dat_2010 <- files_2010 %>%
     purrr::map_dfr(~ parse_2010_2016_data(.,
                                           keep_cols = c('Sampling_Date',
@@ -122,18 +122,22 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
                                           lakeid_col = 1,
                                           temp_as_f = F,
                                           use_readr = F)) %>%
+    dplyr::mutate(Timezone = NA) %>%
     dplyr::rename(depth = depth..m.,
-                  temp = temperature..deg.c.)
+                  temp = temperature..deg.c.) %>%
+    dplyr::select('date', 'time', 'Timezone', 'depth', 'temp', 'lakeid')
 
-  dat_2018_2020_2 <- files_2018_20202 %>%
+  dat_2018_2020_2 <- files_2018_2020_2 %>%
     purrr::map_dfr(~ parse_2017_2020_data(.,
                                           keep_cols = c('Lake', 'Date', 'Time',
                                                         'Depth (m)', 'Temperature (Deg C)'),
                                           lakeid_col = 1,
                                           temp_as_f = F,
                                           use_readr = T)) %>%
+    dplyr::mutate(Timezone = NA) %>%
     dplyr::rename(depth = `depth (m)`,
-           temp = `temperature (deg c)`)
+           temp = `temperature (deg c)`) %>%
+    dplyr::select('date', 'time', 'Timezone', 'depth', 'temp', 'lakeid')
 
 
 
