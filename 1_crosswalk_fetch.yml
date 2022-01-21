@@ -85,7 +85,6 @@ targets:
       sb_id = I('57d97341e4b090824ffb0e6f'),
       layer = I('model_lakes'))
 
-
   1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind:
     command: LAGOS_zip_to_sf(
       out_ind = target_name,
@@ -135,3 +134,7 @@ targets:
   1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind:
     command: fetch_Iowa_points(target_name,
       csv_ind = '1_crosswalk_fetch/in/Iowa_Lake_Locations.csv.ind')
+
+  1_crosswalk_fetch/out/UniversityofMissouri_2017-2020_Profiles_sf.rds.ind:
+    command: fetch_norfork_points(target_name,
+      csv_ind = '1_crosswalk_fetch/in/UniversityofMissouri_2017-2020_Profiles.csv.ind')

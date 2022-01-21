@@ -253,3 +253,19 @@ fetch_Iowa_points <- function(out_ind, csv_ind){
 
   gd_put(out_ind, outfile)
 }
+
+fetch_univ_mo_points <- function(out_ind, csv_ind) {
+  outfile <- as_data_file(out_ind)
+
+  univ_mo_data <- scipiper::sc_retrieve(csv_ind) %>%
+    read_csv(col_types = 'cicnn', na = 'NULL')
+
+  # convert data to sf object and save as rds
+  # rename Site to site id, so that rds can later be passed to `crosswalk_points_in_poly`
+  # which expects input dataframe to have 'site_id' column
+  univ_mo_points_sf <- st_as_sf(univ_mo_data, coords = c('Long', 'Lat'), crs = 4326) %>%
+    mutate(site_id = sprintf("MO_Lake_ID_%s", `Lake ID Number`), .keep = "unused", .before = 1) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+}
