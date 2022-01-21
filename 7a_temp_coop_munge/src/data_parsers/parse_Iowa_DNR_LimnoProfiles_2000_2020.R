@@ -1,4 +1,3 @@
-inind <- "6_temp_coop_fetch/in/Iowa_DNR_LimnoProfiles_2000_2020.zip.ind"
 
 parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
@@ -23,6 +22,18 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
   files_2017b <- files_from_zip[grepl('Iowa_profiles_2017b', files_from_zip)]
   files_2018_2020 <- files_from_zip[grepl('Iowa_profiles_2018-2020', files_from_zip)]
 
+  ## There are a few datasets that need further parsing
+  ## this dataset has two problematic files,hence the `!is.na` at the end:
+  ## 2005_L113_2005173014.xls (one record - kept it in)
+  ## and 2005_L111_2005154004.xls (no data) - easiest to just remove it
+  files_2004_2007 <- files_2004_2007[!(basename(files_2004_2007) %in%
+                                         '2005_L111_2005154004.xls')]
+
+  ## `2019_R3_Profiles.csv` is in an unexpected format. it was faster to just
+  ## munge separately
+  files_2018_2020_1 <- files_2018_2020[basename(files_2018_2020) == '2019_R3_Profiles.csv']
+  files_2018_2020_2 <- files_2018_2020[!(files_2018_2020 %in% files_2018_2020_2)]
+
   # Clean data from 2000-2003 ------------------------------------------------
   # This function handles data where the deepest value is not the final value
   # in the profile. If there are multiple "max depths" then the final value is
@@ -35,12 +46,6 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
     dplyr::mutate(time = NA, Timezone = NA)
 
   # Clean data from 2004-2007 ------------------------------------------------
-  # this dataset has two problematic files,hence the `!is.na` at the end:
-  # 2005_L113_2005173014.xls (one record - kept it in)
-  # and 2005_L111_2005154004.xls (no data) - easiest to just remove it
-  files_2004_2007 <- files_2004_2007[!(basename(files_2004_2007) %in%
-                                                '2005_L111_2005154004.xls')]
-
   # skip_rows is set to zero because there is a lot of trickery in the columns
   # therefore `date` is extracted from the file name not the data set
   dat_2004_2007 <- files_2004_2007 %>%
@@ -110,10 +115,17 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
     dplyr::select(date, time, Timezone, depth, temp, lakeid)
 
   # Clean data from 2018-2020 ---------------------------------------------------
-  ## `2019_R3_Profiles.csv` is in an unexpected format. it was faster to just munge
-  ## separately
+  dat_2018_2020_1 <- files_2018_2020_1 %>%
+    purrr::map_dfr(~ parse_2017_2020_data(.,
+                                          keep_cols = c('DATE', 'DATE.1', 'TIME',
+                                                        'Depth..m.', 'Temperature..Deg.C.'),
+                                          lakeid_col = 1,
+                                          temp_as_f = F,
+                                          use_readr = F)) %>%
+    dplyr::rename(depth = depth..m.,
+                  temp = temperature..deg.c.)
 
-  dat_2018_2020_1 <- files_2018_2020[c(1:5, 7:9)] %>%
+  dat_2018_2020_2 <- files_2018_20202 %>%
     purrr::map_dfr(~ parse_2017_2020_data(.,
                                           keep_cols = c('Lake', 'Date', 'Time',
                                                         'Depth (m)', 'Temperature (Deg C)'),
@@ -124,15 +136,7 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
            temp = `temperature (deg c)`)
 
 
-  dat_2018_2020_2 <- files_2018_2020[6] %>%
-    purrr::map_dfr(~ parse_2017_2020_data(.,
-                                          keep_cols = c('DATE', 'DATE.1', 'TIME',
-                                                        'Depth..m.', 'Temperature..Deg.C.'),
-                                          lakeid_col = 1,
-                                          temp_as_f = F,
-                                          use_readr = F)) %>%
-    dplyr::rename(depth = depth..m.,
-           temp = temperature..deg.c.)
+
 
   # clean data -------------------
   data_clean <- dplyr::bind_rows(dat_2000_2003,
