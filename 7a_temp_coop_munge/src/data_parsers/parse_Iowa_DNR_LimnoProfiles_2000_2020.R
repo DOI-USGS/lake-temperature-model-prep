@@ -172,18 +172,18 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
 #' of the data logger. According to cooperators, the ascent data should
 #' be removed.
 #'
-#' @param x chr, full file path
+#' @param file_path chr, full file path
 #' @param skip_rows int, number of rows to skip when reading in data. Be sure to . Start the
 #' @param keep_cols chr, vector of column names to keep.
 #' @param subset_lakeid num, vector for start/stop values passed to `base::substr` in `extract_lakeid`
 #' Column name spelling should match. Case does not matter because
 #' all values to be changed `tolower` within the function.
 #'
-parse_2000_2009_data <- function(x, skip_rows = 0, keep_cols,
+parse_2000_2009_data <- function(file_path, skip_rows = 0, keep_cols,
                                  subset_lakeid = c(6, 9)) {
 
-  dat <- suppressMessages(readxl::read_xls(x, skip = skip_rows, col_names = F))
-  names(dat) <- suppressMessages(readxl::read_xls(x, n_max = 1, col_names = F)) %>%
+  dat <- suppressMessages(readxl::read_xls(file_path, skip = skip_rows, col_names = F))
+  names(dat) <- suppressMessages(readxl::read_xls(file_path, n_max = 1, col_names = F)) %>%
     unlist %>%
     .[c(1:ncol(dat))] %>%  # some data sets have an empty last row
     tolower
@@ -243,7 +243,7 @@ parse_2000_2009_data <- function(x, skip_rows = 0, keep_cols,
 #' mismatched formats. this parser can differentiate between `xls` and
 #' `htm` (labeled as `xls`)
 #'
-#' @param x path, full file path
+#' @param file_path path, full file path
 #' @param keep_cols chr, vector of columns names that should be preserved
 #' @param subset_lakeid num, vector for start/stop values passed to `base::substr` in `extract_lakeid`
 #' Column name spelling should match. Case does not matter because
@@ -256,39 +256,40 @@ parse_2000_2009_data <- function(x, skip_rows = 0, keep_cols,
 #' @param htm_verbose logical, if `TRUE` a message that identifies an HTM file
 #' is returned. Argument used if data is `htm` format.
 #'
-parse_2010_2016_data <- function(x, keep_cols, subset_lakeid, htm_datetime = F,
+parse_2010_2016_data <- function(file_path, keep_cols, subset_lakeid, htm_datetime = F,
                                  htm_data_start = 2, htm_verbose = F) {
   tc_out <- tryCatch(
-    { read_iowa_xls_tbl(x, keep_cols, data_start = 3) }, # current thinking is that all true xls start on row 3
+    { read_iowa_xls_tbl(file_path, keep_cols, data_start = 3) }, # current thinking is that all true xls start on row 3
     error = function(cond) {
       if(htm_verbose) {print(paste(basename(x), ' is in HTM format', sep = ''))}
-      read_iowa_htm_tbl(x, keep_cols, htm_datetime, htm_data_start)
+      read_iowa_htm_tbl(file_path, keep_cols, htm_datetime, htm_data_start)
     }
   )
 
-  # add LakeID and date columns from file name if necessary
-  tc_out$lakeid <- extract_lakeid(x, start = subset_lakeid[1], stop = subset_lakeid[2])
+  # add LakeID from file name if necessary
+  tc_out$lakeid <- extract_lakeid(file_path,
+                                  start = subset_lakeid[1], stop = subset_lakeid[2])
 
   return(tc_out)
 }
 
 #' Parse Iowas data from 2017-2020
 #'
-#' @param x chr, full file path
+#' @param file_path chr, full file path
 #' @param keep_cols chr, vector of column names to keep.
 #' @param lakeid_col num, Column index for the location of the Lake ID field. The column that is used to ID the Iowa lake moves around and changes names from file to file.
 #' @param temp_as_f logical, should temp values be converted from F to C? Note, this does convert the vector but the field name will not change.
 #' @param use_readr logical, not all files are read well by `readr::read_csv`. If `use_readr = F` then `read.csv` is used.
 #' Column name spelling should match. Case does not matter because
 #' all values to be changed `tolower` within the function.
-parse_2017_2020_data <- function(x, keep_cols, lakeid_col, temp_as_f = F, use_readr = T){
+parse_2017_2020_data <- function(file_path, keep_cols, lakeid_col, temp_as_f = F, use_readr = T){
 
-  if(grepl('*xlsx', x)) {
-    dat <- readxl::read_xlsx(x)
+  if(grepl('*xlsx', file_path)) {
+    dat <- readxl::read_xlsx(file_path)
   } else if (use_readr){
-    dat <- readr::read_csv(x)
+    dat <- readr::read_csv(file_path)
   } else {
-    dat <- read.csv(x)
+    dat <- read.csv(file_path)
   }
 
   # select key columns, normalize
@@ -355,20 +356,20 @@ parse_2017_2020_data <- function(x, keep_cols, lakeid_col, temp_as_f = F, use_re
 
 #' Read in 2010-2016 data from HTM disguised as XLS
 #'
-#' @param x chr, full file path
+#' @param file_path chr, full file path
 #' @param keep_cols chr, vector of column names that should be preserved
 #' @param data_start num, row number where the data starts
 #'
-read_iowa_xls_tbl <- function(x, keep_cols, data_start){
+read_iowa_xls_tbl <- function(file_path, keep_cols, data_start){
 
   sk <- data_start - 1
 
   # read data
-  out <- suppressMessages(readxl::read_xls(x, skip = sk, col_names = F))
+  out <- suppressMessages(readxl::read_xls(file_path, skip = sk, col_names = F))
 
   # add names
   names(out) <- suppressMessages(
-    readxl::read_xls(x, n_max = 1, col_names = F) %>%
+    readxl::read_xls(file_path, n_max = 1, col_names = F) %>%
       unlist %>%
       tolower
   )
@@ -383,15 +384,15 @@ read_iowa_xls_tbl <- function(x, keep_cols, data_start){
 #' Read in 2010-2016 data from HTM disguised as XLS
 #'
 #'
-#' @param x chr, full file path
+#' @param file_path chr, full file path
 #' @param keep_cols chr, vector of column names that should be preserved
 #' @param datetime logical, is there a datetime column?
 #' @param data_start num, row number where the data starts
 #'
-read_iowa_htm_tbl <- function(x, keep_cols, datetime = F, data_start = 3){
+read_iowa_htm_tbl <- function(file_path, keep_cols, datetime = F, data_start = 3){
 
   # read data
-  out <- rvest::html_table(rvest::read_html(x, col_names = F)) %>%
+  out <- rvest::html_table(rvest::read_html(file_path, col_names = F)) %>%
     .[[1]] %>%
     na_if("") %>% #%>% # scraping HTML often results in `""` in cells at the end
     remove_na_rows
@@ -482,14 +483,14 @@ trim_to_max_depth <- function(df, depth_col = 1) {
 #' date from filename (formatted as a julian day). This function returns
 #' the sample date in `Date` format.
 #'
-#' @param x chr, full file path
+#' @param file_path chr, full file path
 #' @param subset_yr int, provide a start and stop values as a vector. Used to select sample year and similar to `start`/`stop` in `base::substr()`.
 #' @param subset_jday int, provide a start and stop values as a vector. Used to select sample year and similar to `start`/`stop` in `base::substr()`.
 #'
-extract_date <- function(x, subset_yr, subset_jday) {
+extract_date <- function(file_path, subset_yr, subset_jday) {
   # get year and julian day from file name
-  yr <- substr(basename(x), subset_yr[1], subset_yr[2])
-  julian_day <- as.numeric(substr(basename(x),
+  yr <- substr(basename(file_path), subset_yr[1], subset_yr[2])
+  julian_day <- as.numeric(substr(basename(file_path),
                                   subset_jday[1], subset_jday[2]))
 
   # build origin
@@ -507,11 +508,11 @@ extract_date <- function(x, subset_yr, subset_jday) {
 #' lake id as a numeric value for use with the LakeID field in
 #' `1_crosswalk_fetch/in/Iowa_Lake_Locations.csv`
 #'
-#' @param x chr, full file path
+#' @param file_path chr, full file path
 #' @param ... further arguments passed to `substr` (`start` and `stop`)
 #'
-extract_lakeid <- function(x, ...) {
-  clean_name <- substr(basename(x), ...) %>%
+extract_lakeid <- function(file_path, ...) {
+  clean_name <- substr(basename(file_path), ...) %>%
     gsub(".*?([0-9]+).*", "\\1", .) %>%
     as.numeric
 
