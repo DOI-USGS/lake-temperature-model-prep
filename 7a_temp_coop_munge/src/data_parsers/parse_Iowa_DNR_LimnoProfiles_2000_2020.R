@@ -193,7 +193,7 @@ parse_2000_2009_data <- function(file_path, skip_rows = 0, keep_cols,
     dplyr::mutate(depth = as.numeric(depth), temp = as.numeric(temp))
 
   # add LakeID and date columns from file name if necessary
-  dat$lakeid <- extract_lakeid(x, start = subset_lakeid[1],
+  dat$lakeid <- extract_lakeid(file_path, start = subset_lakeid[1],
                                stop = subset_lakeid[2])
 
   # wrangle date and time
@@ -201,7 +201,7 @@ parse_2000_2009_data <- function(file_path, skip_rows = 0, keep_cols,
 
   ## No date field present
   if(!any(c('date', 'sampling_date_time') %in% df_names)) {
-    dat$date <- extract_date(x, subset_yr = c(1,4), subset_jday = c(15, 17))
+    dat$date <- extract_date(file_path, subset_yr = c(1,4), subset_jday = c(15, 17))
   }
 
   if('time' %in% names(dat)) {
@@ -229,7 +229,7 @@ parse_2000_2009_data <- function(file_path, skip_rows = 0, keep_cols,
       # return(dat)
     }
   } else {
-    message(paste('File ', basename(x),
+    message(paste('File ', basename(file_path),
                 ' appears to be empty or has problematic data. Data only has ',
                 dat_rows, ' row(s) of data', sep = ''))
   }
