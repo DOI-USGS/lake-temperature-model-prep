@@ -32,7 +32,7 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
   ## `2019_R3_Profiles.csv` is in an unexpected format. it was faster to just
   ## munge separately
   files_2018_2020_1 <- files_2018_2020[basename(files_2018_2020) == '2019_R3_Profiles.csv']
-  files_2018_2020_2 <- files_2018_2020[!(files_2018_2020 %in% files_2018_2020_2)]
+  files_2018_2020_2 <- files_2018_2020[!(files_2018_2020 %in% files_2018_2020_1)]
 
   # Clean data from 2000-2003 ------------------------------------------------
   # This function handles data where the deepest value is not the final value
@@ -289,7 +289,7 @@ parse_2017_2020_data <- function(file_path, keep_cols, lakeid_col, temp_as_f = F
   } else if (use_readr){
     dat <- readr::read_csv(file_path)
   } else {
-    dat <- read.csv(file_path)
+    dat <- read.csv(file_path, fileEncoding = 'latin1')
   }
 
   # select key columns, normalize
