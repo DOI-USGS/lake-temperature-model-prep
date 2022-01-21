@@ -51,8 +51,7 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
   dat_2004_2007 <- files_2004_2007 %>%
     purrr::map_dfr(~ parse_2000_2009_data(.,
                                           skip_rows = 1,
-                                          keep_cols = c('Date', 'Depth',
-                                                        'Temp'),
+                                          keep_cols = c('Date', 'Depth', 'Temp'),
                                           subset_lakeid = c(6, 9))) %>%
     dplyr::mutate(time = NA, Timezone = NA) %>%
     dplyr::filter(!is.na(depth))
@@ -151,9 +150,8 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
                           dat_2017b,
                           dat_2018_2020_1,
                           dat_2018_2020_2) %>%
-    dplyr::mutate(Iowa_ID = paste('Iowa_', lakeid, sep = ''), # for matching the xwalk
-      DateTime = as.Date(date)) %>% # there is a mix of POSIXct and Date in the indiv dfs
-    dplyr::select(DateTime = date, time, Timezone, depth, temp, Iowa_ID) #holdover column from 2017-2020 data
+    dplyr::mutate(Iowa_ID = paste('Iowa_', lakeid, sep = '')) %>% # for matching the xwalk
+    dplyr::select(DateTime = date, time, Timezone, depth, temp, Iowa_ID) # remove holdover columns from 2017-2020 data
 
   # out -------------------
   saveRDS(object = data_clean, file = outfile)
@@ -164,7 +162,7 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
 
 # Parsers by subfolder -----------------------------------------
 
-#' Parse Iowa DNR data from 2000-2007
+#' Parse Iowa DNR data from 2000-2009
 #'
 #' This data does not contain lake id, date, or time in the data file. Instead,
 #' these values are extracted from the name of the file. This parser also
@@ -201,7 +199,8 @@ parse_2000_2009_data <- function(file_path, skip_rows = 0, keep_cols,
 
   ## No date field present
   if(!any(c('date', 'sampling_date_time') %in% df_names)) {
-    dat$date <- extract_date(file_path, subset_yr = c(1,4), subset_jday = c(15, 17))
+    dat$date <- extract_date(file_path, subset_yr = c(1,4),
+                             subset_jday = c(15, 17))
   }
 
   if('time' %in% names(dat)) {
@@ -211,11 +210,8 @@ parse_2000_2009_data <- function(file_path, skip_rows = 0, keep_cols,
     dat$time <- format(dat$time, "%H:%M")
   }
 
-  # datetime present
-  if('sampling_date' %in% df_names){
-    dat$date <- as.Date(dat$sampling_date_time)
-    dat$time <- format(dat$sampling_date_time, "%H:%M")
-  }
+  # final date normalization to ensure `as.Date` (some are coming in as `POSIXct`)
+  dat$date <- as.Date(dat$date)
 
   # Check to see if data.frame has data
   dat_rows <- nrow(dat)
@@ -237,11 +233,11 @@ parse_2000_2009_data <- function(file_path, skip_rows = 0, keep_cols,
   return(dat)
 }
 
-#' Determine if a file is `xls` or `htm`
+#' Parse Iowa DNR data from 2010-2016
 #'
 #' Data parser for data from 2010-2016. These files are in a variety of
 #' mismatched formats. this parser can differentiate between `xls` and
-#' `htm` (labeled as `xls`)
+#' `htm` files that are labeled as `xls`
 #'
 #' @param file_path path, full file path
 #' @param keep_cols chr, vector of columns names that should be preserved
@@ -282,7 +278,8 @@ parse_2010_2016_data <- function(file_path, keep_cols, subset_lakeid, htm_dateti
 #' @param use_readr logical, not all files are read well by `readr::read_csv`. If `use_readr = F` then `read.csv` is used.
 #' Column name spelling should match. Case does not matter because
 #' all values to be changed `tolower` within the function.
-parse_2017_2020_data <- function(file_path, keep_cols, lakeid_col, temp_as_f = F, use_readr = T){
+parse_2017_2020_data <- function(file_path, keep_cols, lakeid_col,
+                                 temp_as_f = F, use_readr = T){
 
   if(grepl('*xlsx', file_path)) {
     dat <- readxl::read_xlsx(file_path)
@@ -313,10 +310,13 @@ parse_2017_2020_data <- function(file_path, keep_cols, lakeid_col, temp_as_f = F
 
   # handle date
   if(any(class(dat$date) == 'character')) {
-    dat$date <- lubridate::mdy(dat$date) %>% as.Date
+    dat$date <- lubridate::mdy(dat$date)
   }
 
-  # check for datetimes and AM/PM designation
+  # ensure all dates are `as.Date` (some come in as `POSIXct`)
+  dat$date <- as.Date(dat$date)
+
+  # handle time - check for datetimes and AM/PM designation
   if(any(sapply(dat$time, function(x) class(x) == "POSIXct"))) {
 
     dat$time <- strftime(dat$time, format = "%H:%M") %>% as.character()
