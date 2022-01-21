@@ -269,7 +269,7 @@ parse_2010_2016_data <- function(x, keep_cols, subset_lakeid, htm_datetime = F,
 #' @param x chr, full file path
 #' @param keep_cols chr, vector of column names to keep.
 #' @param lakeid_col num, Column index for the location of the Lake ID field. The column that is used to ID the Iowa lake moves around and changes names from file to file.
-#' @param temp_as_f logical, should temp values be converted from F to C?
+#' @param temp_as_f logical, should temp values be converted from F to C? Note, this does convert the vector but the field name will not change.
 #' @param use_readr logical, not all files are read well by `readr::read_csv`. If `use_readr = F` then `read.csv` is used.
 #' Column name spelling should match. Case does not matter because
 #' all values to be changed `tolower` within the function.
