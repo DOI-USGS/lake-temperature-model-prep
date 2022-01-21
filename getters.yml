@@ -30,6 +30,9 @@ targets:
   1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind')
 
+  1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind')
+
   1_crosswalk_fetch/out/UniversityofMissouri_2017-2020_Profiles_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/UniversityofMissouri_2017-2020_Profiles_sf.rds.ind')
 
