@@ -136,5 +136,5 @@ targets:
       csv_ind = '1_crosswalk_fetch/in/Iowa_Lake_Locations.csv.ind')
 
   1_crosswalk_fetch/out/UniversityofMissouri_2017-2020_Profiles_sf.rds.ind:
-    command: fetch_norfork_points(target_name,
+    command: fetch_univ_mo_points(target_name,
       csv_ind = '1_crosswalk_fetch/in/UniversityofMissouri_2017-2020_Profiles.csv.ind')

@@ -264,7 +264,7 @@ fetch_univ_mo_points <- function(out_ind, csv_ind) {
   # rename Site to site id, so that rds can later be passed to `crosswalk_points_in_poly`
   # which expects input dataframe to have 'site_id' column
   univ_mo_points_sf <- st_as_sf(univ_mo_data, coords = c('Long', 'Lat'), crs = 4326) %>%
-    mutate(site_id = sprintf("MO_Lake_ID_%s", `Lake ID Number`), .keep = "unused", .before = 1) %>%
+    mutate(site_id = sprintf("Missouri_%s", `Lake ID Number`), .keep = "unused", .before = 1) %>%
     saveRDS(file = outfile)
 
   gd_put(out_ind, outfile)
