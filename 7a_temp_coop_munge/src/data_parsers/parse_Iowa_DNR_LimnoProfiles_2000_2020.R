@@ -153,7 +153,7 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
                           dat_2018_2020_2) %>%
     dplyr::mutate(Iowa_ID = paste('Iowa_', lakeid, sep = ''), # for matching the xwalk
       DateTime = as.Date(date)) %>% # there is a mix of POSIXct and Date in the indiv dfs
-    dplyr::select(! c(lake, lakeid, date)) #holdover column from 2017-2020 data
+    dplyr::select(DateTime = date, time, Timezone, depth, temp, Iowa_ID) #holdover column from 2017-2020 data
 
   # out -------------------
   saveRDS(object = data_clean, file = outfile)
@@ -229,7 +229,7 @@ parse_2000_2009_data <- function(x, skip_rows = 0, keep_cols,
       # return(dat)
     }
   } else {
-    print(paste('File ', basename(x),
+    message(paste('File ', basename(x),
                 ' appears to be empty or has problematic data. Data only has ',
                 dat_rows, ' row(s) of data', sep = ''))
   }
