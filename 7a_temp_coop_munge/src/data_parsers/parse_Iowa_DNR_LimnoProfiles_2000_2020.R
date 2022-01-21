@@ -12,7 +12,7 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
 
   # Generate file groups ---------------------------------
   ## This data set spans 20 yrs and is in a wide variety of formats
-  ## I chose to organize by subfolder. No 2008 data was provided. 2017 a was
+  ## I chose to organize by subfolder. No 2008 data was provided. 2017a was
   ## a data summary.
   files_2000_2003 <- files_from_zip[grepl('Iowa_profiles_2000-2003', files_from_zip)]
   files_2004_2007 <- files_from_zip[grepl('Iowa_profiles_2004-2007', files_from_zip)]
@@ -137,9 +137,6 @@ parse_Iowa_DNR_LimnoProfiles_2000_2020 <- function(inind, outind) {
     dplyr::rename(depth = `depth (m)`,
            temp = `temperature (deg c)`) %>%
     dplyr::select('date', 'time', 'Timezone', 'depth', 'temp', 'lakeid')
-
-
-
 
   # clean data -------------------
   data_clean <- dplyr::bind_rows(dat_2000_2003,
@@ -290,8 +287,8 @@ parse_2017_2020_data <- function(file_path, keep_cols, lakeid_col,
   }
 
   # select key columns, normalize
-  dat <- dat %>% dplyr::select(all_of(keep_cols))
   names(dat) <- tolower(names(dat))
+  dat <- dat %>% dplyr::select(all_of(tolower(keep_cols)))
 
   # validate fields
   if(!any(names(dat) %in% c('lake', 'site'))) {
