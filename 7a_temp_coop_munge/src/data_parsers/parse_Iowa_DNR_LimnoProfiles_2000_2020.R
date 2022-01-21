@@ -322,6 +322,9 @@ parse_2017_2020_data <- function(x, keep_cols, lakeid_col, temp_as_f = F, use_re
 
   } else if(any(sapply(dat$time, function(x) nchar(x) > 9))) {
 
+    # chr fields that include AM/PM are 10 or 11 characters long; therefore,
+    # the parsing needs to be slightly different (e.g., extracting "9:55" out
+    # of "9:55:05 AM" vs "11:25" out of "11:25:35 AM")
     dat$time <- ifelse(nchar(dat$time) == 11,
                        substr(dat$time, 1, 5),
                        substr(dat$time, 1, 4))
@@ -335,7 +338,8 @@ parse_2017_2020_data <- function(x, keep_cols, lakeid_col, temp_as_f = F, use_re
 
   }
 
-  # convert temp if necessary
+  # convert temp if necessary. Temp field moves around so it needs
+  # to be identified first
   if(temp_as_f) {
     idx <- grepl('*temp*', names(dat)) %>% which(. %in% "TRUE")
     dat[ , idx] <- fahrenheit_to_celsius(dat[ , idx])
