@@ -200,5 +200,5 @@ targets:
   2_crosswalk_munge/out/univ_mo_nhdhr_xwalk.rds.ind:
     command: crosswalk_points_in_poly(target_name,
       poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
-      points_ind_file = '1_crosswalk_fetch/out/UniversityofMissouri_2017-2020_Profiles_sf.rds.ind',
+      points_ind_file = '1_crosswalk_fetch/out/UniversityofMissouri_2017_2020_Profiles_sf.rds.ind',
       points_ID_name = I("Missouri_ID"))

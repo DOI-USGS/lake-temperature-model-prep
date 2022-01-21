@@ -138,4 +138,4 @@ targets:
 
   1_crosswalk_fetch/out/UniversityofMissouri_2017_2020_Profiles_sf.rds.ind:
     command: fetch_univ_mo_points(target_name,
-      csv_ind = '1_crosswalk_fetch/in/UniversityofMissouri_2017-2020_Profiles.csv.ind')
+      csv_ind = '1_crosswalk_fetch/in/UniversityofMissouri_2017_2020_Profiles.csv.ind')

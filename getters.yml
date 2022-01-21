@@ -12,8 +12,8 @@ targets:
 
   #### 1_spatial ####
 
-  1_crosswalk_fetch/in/UniversityofMissouri_2017-2020_Profiles.csv:
-    command: gd_get('1_crosswalk_fetch/in/UniversityofMissouri_2017-2020_Profiles.csv.ind')
+  1_crosswalk_fetch/in/UniversityofMissouri_2017_2020_Profiles.csv:
+    command: gd_get('1_crosswalk_fetch/in/UniversityofMissouri_2017_2020_Profiles.csv.ind')
 
   1_crosswalk_fetch/in/Norfork_temperature_locations.csv:
     command: gd_get('1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
