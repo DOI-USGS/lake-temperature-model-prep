@@ -174,23 +174,28 @@ targets_list <- list(
   tar_target(
     out_skipnc_feather, {
       out_dir <- "7_drivers_munge/out_skipnc"
-      purrr::map(glm_ready_gcm_data_feather, function(fn, gcm_names, gcm_dates_df) {
-        gcm_name <- str_extract(fn, paste(gcm_names, collapse="|"))
-        gcm_time_period <- str_extract(fn, paste(gcm_dates_df$projection_period, collapse="|"))
-
-        read_feather(fn) %>%
-          split(.$cell) %>%
-          purrr::map(., function(data) {
-            cell <- unique(data$cell)
-            data_to_save <- data %>% select(-cell)
-            out_file <- sprintf("%s/GCM_%s_%s_%s.feather", out_dir, gcm_name, gcm_time_period, cell)
-            write_feather(data_to_save, out_file)
-            return(out_file)
-          })
-
-      }, gcm_names, gcm_dates_df)
-      return(out_dir)
+      gcm_name <- str_extract(glm_ready_gcm_data_feather, paste(gcm_names, collapse="|"))
+      out_files <- read_feather(glm_ready_gcm_data_feather) %>%
+        # Split into data per cell and per time period
+        mutate(projectperiod = case_when(
+          time <= as.Date("2010-01-01") ~ "1980_1999",
+          time <= as.Date("2070-01-01") ~ "2040_2059",
+          TRUE ~ "2080_2099",
+        )) %>%
+        unite("cell.projperiod", c("cell", "projectperiod"), sep = ".") %>%
+        split(.$cell.projperiod) %>%
+        purrr::map(., function(data) {
+          data <- separate(data, cell.projperiod, into = c("cell", "projection_period"), sep = "\\.")
+          cell <- unique(data$cell)
+          projection_period <- unique(data$projection_period)
+          data_to_save <- data %>% select(-cell, -projection_period)
+          out_file <- sprintf("%s/GCM_%s_%s_%s.feather", out_dir, gcm_name, projection_period, cell)
+          write_feather(data_to_save, out_file)
+          return(out_file)
+        }) %>% unlist()
+      return(out_files)
     },
+    pattern = map(glm_ready_gcm_data_feather),
     format = "file"
   ),
 
