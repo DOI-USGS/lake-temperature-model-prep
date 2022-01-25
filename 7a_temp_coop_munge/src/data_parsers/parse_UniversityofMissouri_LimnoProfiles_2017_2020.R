@@ -156,7 +156,7 @@ read_subset_hw_files <- function(full_path, skip_cols = 0, skip_rows = 2,
     dplyr::mutate(
       depth = as.numeric(.[[(depth_position - skip_cols)]]),
       temp = as.numeric(.[[(temp_position - skip_cols)]]),
-      date = extract_date(full_path),
+      date = extract_umo_date(full_path),
       time = NA, # skipping time for now, in the manual files the time moves around
       lake_id = paste('Missouri_', extract_lake_id(full_path), sep = '')
     ) %>%
@@ -185,7 +185,7 @@ extract_lake_id <- function(full_path) {
 #'
 #' @param file_path chr, full file path
 #'
-extract_date <- function(full_path) {
+extract_umo_date <- function(full_path) {
   date_raw <- substr(basename(full_path), 5, 14)
   lubridate::parse_date_time(date_raw, orders = c('ymd', 'mdy')) # multiple formats appear
 }
