@@ -32,15 +32,6 @@ targets_list <- list(
     ny = 141
   )),
 
-  # Document GCM grid information (for use when building NetCDF)
-  tar_target(grid_info, tibble(
-    grid_map_variable = 'gcm_grid_map',
-    grid_mapping_name = "lambert_conformal_conic",
-    standard_parallel = list(c(36, 52)),
-    longitude_of_central_meridian = -97,
-    latitude_of_projection_origin = 45,
-  )),
-
   # Create larger tiles to use for querying GDP with groups of cells.
   # Constructing tiles to be made of 100 cells in a 10x10 grid.
   # TODO: this can be much larger! JR thinks GDP can handle ~1000 cells
@@ -252,7 +243,6 @@ targets_list <- list(
         nc_file = sprintf("7_drivers_munge/out/7_GCM_%s.nc", gcm_name),
         gcm_raw_files = gcm_data_daily_feather_group_by_gcm$gcm_file,
         vars_info = glm_vars_info,
-        grid_info = grid_info,
         grid_params = grid_params,
         spatial_info = query_cell_centroids_sf_WGS84,
         global_att = sprintf("GCM Notaro %s", gcm_name)
