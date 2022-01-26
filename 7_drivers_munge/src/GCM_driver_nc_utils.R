@@ -47,7 +47,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
   data_attributes <- list('title' = global_att)
   data_attributes <- append(data_attributes, grid_params) # add grid parameters to list of global attributes
   data_coordvar_long_names <- list(instance = "identifier for GCM grid cell", time = "date",
-                              lat = "latitude of GCM grid cell centroid", lon = "longitude of GCM grid cell centroid",
+                              lat = "WGS84 latitude of GCM grid cell centroid", lon = "WGS84 longitude of GCM grid cell centroid",
                               alt = "NULL")
 
   # Pivot data to long format to set up for filtering by variable
