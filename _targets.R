@@ -9,6 +9,7 @@ tar_option_set(packages = c(
   "RNetCDF",
   "scipiper",
   "ggplot2",
+  "scico",
   "geoknife",
   "arrow",
   "retry"
@@ -101,28 +102,30 @@ targets_list <- list(
                dplyr::left_join(cell_tile_xwalk_df, by = "cell_no")
   ),
 
+  # Reproject query_cell_centroids to WGS84
+  tar_target(query_cell_centroids_sf_WGS84,
+             sf::st_transform(query_cell_centroids_sf, crs = 4326)),
+
   # Split query cells by tile_no to map over
-  tar_target(query_tiles, unique(query_cell_centroids_sf$tile_no)),
+  tar_target(query_tiles, unique(query_cell_centroids_sf_WGS84$tile_no)),
   tar_target(query_cells_centroids_list_by_tile,
-             dplyr::filter(query_cell_centroids_sf, tile_no == query_tiles),
+             dplyr::filter(query_cell_centroids_sf_WGS84, tile_no == query_tiles),
              pattern = map(query_tiles),
              iteration = "list"),
 
-  ##### Create an image showing what each query will contain #####
+  ##### Create an image showing the full query, with n_lakes per cell #####
   # TODO: maybe remove this once we are happy with this process
-
-  # Save image of each map query for exploratory purposes
+  # Save image of full map query for exploratory purposes
   tar_target(
     query_map_png,
     map_query(
-      out_file_template = '7_drivers_munge/out/query_map_tile%s.png',
-      lake_centroids = query_lake_centroids_sf,
+      out_file = '7_drivers_munge/out/query_map.png',
+      lake_cell_xwalk = lake_cell_xwalk_df,
+      query_tiles = query_tiles,
+      query_cells = query_cells,
       grid_tiles = grid_tiles_sf,
-      grid_cells = grid_cells_sf,
-      cells_w_lakes = query_cells_centroids_list_by_tile
+      grid_cells = grid_cells_sf
     ),
-    pattern = map(query_cells_centroids_list_by_tile),
-    iteration = "list",
     format='file'
   ),
 
@@ -168,15 +171,23 @@ targets_list <- list(
     error = "continue"
   ),
 
-  ##### Munge GDP output into NetCDF files that will feed into GLM #####
+  # ##### Munge GDP output into NetCDF files that will feed into GLM #####
+  #
+  # # Munge GCM variables into useable GLM variables and correct units
+  # tar_target(
+  #   glm_ready_gcm_data_feather,
+  #   munge_notaro_to_glm(gcm_data_raw_feather),
+  #   pattern = map(gcm_data_raw_feather),
+  #   format = "file"
+  # ),
 
-  # Munge GCM variables into useable GLM variables and correct units
-  tar_target(
-    glm_ready_gcm_data_feather,
-    munge_notaro_to_glm(gcm_data_raw_feather),
-    pattern = map(gcm_data_raw_feather),
-    format = "file"
-  ),
+  # FOR NOW, USE LINDSAY'S GLM_READY FEATHER FILES, BROUGHT IN MANUALLY
+  # mapping over gcm_names, gcm_dates_df, and query_cells_centroids_list_by_tile
+  # to read in Lindsay's created feather files
+  tar_target(glm_ready_gcm_data_feather,
+             sprintf('7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_munged.feather', gcm_names, gcm_dates_df$projection_period, unique(query_cells_centroids_list_by_tile$tile_no)),
+             format = 'file',
+             pattern = cross(gcm_names, gcm_dates_df, query_cells_centroids_list_by_tile)),
 
   # Create feather files that can be used in the GLM pipeline without
   # having to be munged and extracted via NetCDF. Temporary solution
@@ -243,7 +254,7 @@ targets_list <- list(
         vars_info = glm_vars_info,
         grid_info = grid_info,
         grid_params = grid_params,
-        spatial_info = grid_cell_centroids_sf,
+        spatial_info = query_cell_centroids_sf_WGS84,
         global_att = sprintf("GCM Notaro %s", gcm_name)
       )
     },
