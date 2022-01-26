@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/UniversityofMissouri_2017_2020_Profiles_sf.rds.ind
+type: file
+hash: 8e70100e6bda2527d293436cf4e50a24
+time: 2022-01-21 21:47:41 UTC
+depends:
+  1_crosswalk_fetch/in/UniversityofMissouri_2017_2020_Profiles.csv.ind: 51748224c5ba991c2cac0bf0f4416668
+fixed: 413dc8dcbb28d21b9ee99e4465ab89e0
+code:
+  functions:
+    fetch_univ_mo_points: 8de22b45dc0977b222a735f8909180e5
+

@@ -27,11 +27,10 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
       # Reformat columns and extract info we need from Excel file
       dplyr::mutate(DateTime = extract_bullshoals_date(fn),
                     site = extract_bullshoals_site(fn),
-                    # TODO: Don't manually add the nhdhr id
-                    # Only doing now bc we don't have hypso for
-                    # Bull Shoals yet and I found this nhdhr match:
-                    # https://github.com/USGS-R/lake-temperature-model-prep/blob/master/4_params_munge.yml#L60
-                    id = 'nhdhr_12003253',
+                    # `Missouri_ID` manually added after receiving
+                    # xwalk table from Univ of Missouri that included
+                    # Bull Shoals (https://drive.google.com/file/d/11w6-LXCDSDCjipFYPxUgJyf7YB9BtXYR/view?usp=sharing)
+                    Missouri_ID = 'Missouri_100',
                     depth = `Depth (ft)`) %>%
       dplyr::rename(temp = "Temp (°C)") %>%
 
@@ -39,10 +38,10 @@ parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
       dplyr::mutate(depth = as.numeric(ifelse(depth == "Surface", 0, depth))) %>%
 
       # Convert depth from feet to meters
-      dplyr::mutate(depth = depth * 0.3048) %>%
+      dplyr::mutate(depth = convert_ft_to_m(depth)) %>%
 
       # Keep just the columns we need
-      dplyr::select(DateTime, depth, temp, id, site)
+      dplyr::select(DateTime, depth, temp, Missouri_ID, site)
 
   }) %>%  bind_rows() %>%
     dplyr::arrange(site, DateTime, depth)

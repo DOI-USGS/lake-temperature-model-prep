@@ -31,6 +31,7 @@ targets:
       - 2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/univ_mo_nhdhr_xwalk.rds.ind
 
   2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind:
     command: scmake(I('gnisname_nhdhr_xwalk.rds.ind_promise'), '1_crosswalk_fetch_nhd_tasks.yml')
@@ -196,3 +197,8 @@ targets:
       points_ind_file = '1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind',
       points_ID_name = I("Iowa_ID"))
 
+  2_crosswalk_munge/out/univ_mo_nhdhr_xwalk.rds.ind:
+    command: crosswalk_points_in_poly(target_name,
+      poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      points_ind_file = '1_crosswalk_fetch/out/UniversityofMissouri_2017_2020_Profiles_sf.rds.ind',
+      points_ID_name = I("Missouri_ID"))

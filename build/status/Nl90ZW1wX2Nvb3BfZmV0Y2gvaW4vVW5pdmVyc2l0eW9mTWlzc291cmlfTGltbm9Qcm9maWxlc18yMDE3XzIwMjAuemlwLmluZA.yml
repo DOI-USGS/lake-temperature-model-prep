@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/UniversityofMissouri_LimnoProfiles_2017_2020.zip.ind
+type: file
+hash: 9ba5c28bb5dc51b3941c5c6d5c10d933
+time: 2022-01-25 21:33:57 UTC
+depends: {}
+fixed: 723eaa901a92a56ec386c0cc79a6a047
+code:
+  functions: {}
+

@@ -6,7 +6,8 @@ list_coop_files <- function(fileout, dirpath, trigger_file){
 
 crosswalk_coop_dat <- function(outind = target_name, inind,
                                id_crosswalk, wbic_crosswalk, dow_crosswalk,
-                               iowa_crosswalk, navico_crosswalk, norfork_crosswalk) {
+                               iowa_crosswalk, missouri_crosswalk,
+                               navico_crosswalk, norfork_crosswalk) {
 
   outfile <- as_data_file(outind)
 
@@ -31,6 +32,8 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   dow2nhd <- distinct(dow2nhd) # get rid of duplicated obs
 
   iowa2nhd <- sc_retrieve(iowa_crosswalk) %>% readRDS() %>% distinct()
+
+  missouri2nhd <- sc_retrieve(missouri_crosswalk) %>% readRDS() %>% distinct()
 
   navico2nhd <- sc_retrieve(navico_crosswalk) %>% readRDS() %>% distinct()
 
@@ -73,6 +76,10 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   dat_id <- filter(dat, !is.na(id)) %>%
     left_join(id2nhd, by = c('id' = 'micoorps_id'))
 
+  # missouri
+  dat_missouri <- filter(dat, !is.na(Missouri_ID)) %>%
+    left_join(missouri2nhd)
+
   # navico
   dat_navico <- filter(dat, !is.na(Navico_ID)) %>%
     left_join(navico2nhd)
@@ -83,9 +90,10 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
 
   # all together now
   # print out warning about what data you're dropping
-  dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id, dat_iowa, dat_navico, dat_norfork) %>%
-    tidyr::gather(key = state_id_type, value = state_id, DOW, id,
-                  WBIC, Iowa_ID, Navico_ID, Norfork_ID) %>%
+  dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id, dat_iowa, dat_missouri,
+                              dat_navico, dat_norfork) %>%
+    tidyr::pivot_longer(c(DOW, id, WBIC, Iowa_ID, Missouri_ID, Navico_ID, Norfork_ID),
+                        names_to = "state_id_type", values_to = "state_id") %>%
     filter(!is.na(state_id))
 
   # find which coop files have missing crosswalks
