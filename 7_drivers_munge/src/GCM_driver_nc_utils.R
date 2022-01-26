@@ -31,24 +31,24 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_info, grid_p
   gcm_cells <- unique(gcm_data$cell)
   gcm_cells_dim_name = "gcm_cell_id"
 
-  # Get projected coordinates of cell centroids
+  # Get WGS84 coordinates of cell centroids
   cell_coords <- spatial_info %>%
-    mutate(proj_x_coord = sf::st_coordinates(.)[,1], proj_y_coord = sf::st_coordinates(.)[,2]) %>%
+    mutate(lon = sf::st_coordinates(.)[,1], lat = sf::st_coordinates(.)[,2]) %>%
     rename(cell = cell_no) %>%
     sf::st_set_geometry(NULL) %>%
     arrange(cell) %>%
     filter(cell %in% gcm_cells)
 
-  # Get vectors of projected y and x coordinates
-  cell_proj_y_coords <- cell_coords %>% pull(proj_y_coord)
-  cell_proj_x_coords <- cell_coords %>% pull(proj_x_coord)
+  # Get vectors of cell centroid coordinates
+  cell_centroid_lats <- cell_coords %>% pull(lat)
+  cell_centroid_lons <- cell_coords %>% pull(lon)
 
   # Set up attributes for NetCDF that are independent of variables
   data_time_units <- "days since 1970-01-01 00:00:00"
   data_attributes <- list('title' = global_att)
   data_attributes <- append(data_attributes, grid_params) # add grid parameters to list of global attributes
   data_coordvar_long_names <- list(instance = "identifier for GCM grid cell", time = "date",
-                              lat = "y coordinate of GCM grid cell centroid", lon = "x coordinate of GCM grid cell centroid",
+                              lat = "Latitude of GCM grid cell centroid", lon = "Longitude of GCM grid cell centroid",
                               alt = "NULL")
 
   # Pivot data to long format to set up for filtering by variable
@@ -81,8 +81,8 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_info, grid_p
     # https://github.com/USGS-R/ncdfgeom/blob/master/R/write_timeseries_dsg.R
     ncdfgeom::write_timeseries_dsg(nc_file,
                          instance_names = gcm_cells,
-                         lats = cell_proj_y_coords,
-                         lons = cell_proj_x_coords,
+                         lats = cell_centroid_lats,
+                         lons = cell_centroid_lons,
                          alts = NA,
                          times = gcm_dates,
                          data = var_data,
@@ -98,40 +98,40 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_info, grid_p
                          overwrite = overwrite)
   }
 
-  # Reopen NetCDF file in order to add grid mapping
-  # and redefine coordinate variables as auxiliary coordinate variables
-  # since the coordinate data are projected cartesian coordinates
-  nc <- RNetCDF::open.nc(nc_file, write=TRUE)
-
-  # Add grid_mapping variable as a new scalar NetCDF variable
-  RNetCDF::var.def.nc(nc, grid_info$grid_map_variable, "NC_CHAR", NA)
-  RNetCDF::att.put.nc(nc, grid_info$grid_map_variable, "grid_mapping_name", "NC_CHAR", grid_info$grid_mapping_name)
-  RNetCDF::att.put.nc(nc, grid_info$grid_map_variable, "standard_parallel", "NC_DOUBLE", unlist(grid_info$standard_parallel))
-  RNetCDF::att.put.nc(nc, grid_info$grid_map_variable, "longitude_of_central_meridian", "NC_DOUBLE", grid_info$longitude_of_central_meridian)
-  RNetCDF::att.put.nc(nc, grid_info$grid_map_variable, "latitude_of_projection_origin", "NC_DOUBLE", grid_info$latitude_of_projection_origin)
-
-  # Add grid mapping attribute to all data variables
-  all_vars <- vars_info$var_name
-  purrr::map(all_vars, function(var) {
-    RNetCDF::att.put.nc(nc, var, "grid_mapping", "NC_CHAR", grid_info$grid_map_variable)
-  })
-
-  # Rename lat lon coordinate variables to reflect that they contain
-  # auxiliary coordinates, and update attributes to meet NetCDF CF conventions
-  # for projected coordinates
-  projected_coord_vars <- tibble(
-    old_name = c('lon', 'lat'),
-    new_name = c('jx', 'iy'),
-    long_name = c('x-coordinate in Cartesian system', 'y-coordinate in Cartesian system'),
-    standard_name = c('projection_x_coordinate', 'projection_y_coordinate')
-  )
-  purrr::pmap(projected_coord_vars, function(old_name, new_name, long_name, standard_name) {
-    RNetCDF::var.rename.nc(nc, old_name, new_name)
-    RNetCDF::att.put.nc(nc, new_name, "units", "NC_CHAR", 'm')
-    RNetCDF::att.put.nc(nc, new_name, "long_name", "NC_CHAR", long_name)
-    RNetCDF::att.put.nc(nc, new_name, "standard_name", "NC_CHAR", standard_name)
-    RNetCDF::att.put.nc(nc, new_name, "grid_mapping", "NC_CHAR", grid_info$grid_map_variable)
-  })
+  # # Reopen NetCDF file in order to add grid mapping
+  # # and redefine coordinate variables as auxiliary coordinate variables
+  # # since the coordinate data are projected cartesian coordinates
+  # nc <- RNetCDF::open.nc(nc_file, write=TRUE)
+  #
+  # # Add grid_mapping variable as a new scalar NetCDF variable
+  # RNetCDF::var.def.nc(nc, grid_info$grid_map_variable, "NC_CHAR", NA)
+  # RNetCDF::att.put.nc(nc, grid_info$grid_map_variable, "grid_mapping_name", "NC_CHAR", grid_info$grid_mapping_name)
+  # RNetCDF::att.put.nc(nc, grid_info$grid_map_variable, "standard_parallel", "NC_DOUBLE", unlist(grid_info$standard_parallel))
+  # RNetCDF::att.put.nc(nc, grid_info$grid_map_variable, "longitude_of_central_meridian", "NC_DOUBLE", grid_info$longitude_of_central_meridian)
+  # RNetCDF::att.put.nc(nc, grid_info$grid_map_variable, "latitude_of_projection_origin", "NC_DOUBLE", grid_info$latitude_of_projection_origin)
+  #
+  # # Add grid mapping attribute to all data variables
+  # all_vars <- vars_info$var_name
+  # purrr::map(all_vars, function(var) {
+  #   RNetCDF::att.put.nc(nc, var, "grid_mapping", "NC_CHAR", grid_info$grid_map_variable)
+  # })
+  #
+  # # Rename lat lon coordinate variables to reflect that they contain
+  # # auxiliary coordinates, and update attributes to meet NetCDF CF conventions
+  # # for projected coordinates
+  # projected_coord_vars <- tibble(
+  #   old_name = c('lon', 'lat'),
+  #   new_name = c('jx', 'iy'),
+  #   long_name = c('x-coordinate in Cartesian system', 'y-coordinate in Cartesian system'),
+  #   standard_name = c('projection_x_coordinate', 'projection_y_coordinate')
+  # )
+  # purrr::pmap(projected_coord_vars, function(old_name, new_name, long_name, standard_name) {
+  #   RNetCDF::var.rename.nc(nc, old_name, new_name)
+  #   RNetCDF::att.put.nc(nc, new_name, "units", "NC_CHAR", 'm')
+  #   RNetCDF::att.put.nc(nc, new_name, "long_name", "NC_CHAR", long_name)
+  #   RNetCDF::att.put.nc(nc, new_name, "standard_name", "NC_CHAR", standard_name)
+  #   RNetCDF::att.put.nc(nc, new_name, "grid_mapping", "NC_CHAR", grid_info$grid_map_variable)
+  # })
 
   # # Define separate projected coordinate variables
   # # (use if preserving lon/lat variables and adding auxiliary coordinates separately)
@@ -155,7 +155,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_info, grid_p
   #   RNetCDF::var.put.nc(nc, name, cell_coords[[cell_coords_column]])
   # })
 
-  RNetCDF::close.nc(nc)
+  # RNetCDF::close.nc(nc)
 
   return(nc_file)
 }
