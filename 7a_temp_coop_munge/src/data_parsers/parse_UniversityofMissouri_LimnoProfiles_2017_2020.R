@@ -113,7 +113,8 @@ parse_UniversityofMissouri_LimnoProfiles_2017_2020 <- function(inind, outind) {
 #' @param keep_cols chr, vector of column names to keep
 #'
 read_subset_consistent_data <- function(full_path, keep_cols) {
-  dat <- suppressMessages(readr::read_csv(full_path, name_repair = 'universal') )
+  dat <- suppressMessages(readr::read_csv(full_path, name_repair = 'universal',
+                                          locale = locale(encoding = "latin1")))
 
   # convert field names to lowercase because field names are consistent but
   # use of capitalization is not
@@ -122,7 +123,7 @@ read_subset_consistent_data <- function(full_path, keep_cols) {
 
   # extract lake id from file name because
   # use of `Site.Name` field is inconsistent
-  dat$lake_id <- paste('Missouri_', extract_lake_id(full_path), sep = '')
+  dat$lake_id <- paste('Missouri_', extract_umo_lake_id(full_path), sep = '')
 
   return(dat)
 }
@@ -142,7 +143,8 @@ read_subset_hw_files <- function(full_path, skip_cols = 0, skip_rows = 2,
   rstart <- skip_rows + 1
   cstart <- skip_cols + 1
 
-  dat <- suppressMessages(read_csv(full_path, col_names = F)) %>%
+  dat <- suppressMessages(read_csv(full_path, col_names = F,
+                                   locale = locale(encoding = "latin1"))) %>%
     remove_empty_columns()
 
   col_nms <- as.character(dat[rstart, ]) %>%
@@ -158,7 +160,7 @@ read_subset_hw_files <- function(full_path, skip_cols = 0, skip_rows = 2,
       temp = as.numeric(.[[(temp_position - skip_cols)]]),
       date = extract_umo_date(full_path),
       time = NA, # skipping time for now, in the manual files the time moves around
-      lake_id = paste('Missouri_', extract_lake_id(full_path), sep = '')
+      lake_id = paste('Missouri_', extract_umo_lake_id(full_path), sep = '')
     ) %>%
     dplyr::select(depth, temp, date, time, lake_id) # name of temp and depth vary
 
@@ -174,7 +176,7 @@ read_subset_hw_files <- function(full_path, skip_cols = 0, skip_rows = 2,
 #'
 #' @param file_path chr, full file path
 #'
-extract_lake_id <- function(full_path) {
+extract_umo_lake_id <- function(full_path) {
   as.numeric(substr(basename(full_path), 1, 3))
 }
 
