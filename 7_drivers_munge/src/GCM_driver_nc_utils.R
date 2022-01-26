@@ -4,11 +4,11 @@
 #' @description For each of the GCMs, create a single NetCDF file containing all the
 #' variables and all the grid cells.
 #' @param nc_file netcdf outfile name
-#' @param gcm_raw_files vector of feather file paths, one for each tile with data for the current GCM.
+#' @param gcm_raw_files vector of feather file paths, one for each tile with data, for the current GCM.
 #' @param vars_info variables and descriptions to store in NetCDF
 #' @param grid_params grid cell parameters to add to NetCDF as global attributes
-#' @param spatial_info cell_nos, x indices, y indices, and projected coordinates of grid cell centroids
-#' @param global_att global attribute description for the observations (e.g. notaro_ACCESS_1980_1999)
+#' @param spatial_info cell_nos, x indices, y indices, and WGS84 coordinates of grid cell centroids
+#' @param global_att global attribute description for the observations (e.g., notaro_ACCESS_1980_1999)
 #' @param overwrite T/F if the nc file should be overwritten if it exists already
 generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spatial_info,
                             global_att, overwrite = TRUE) {
@@ -30,7 +30,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
   gcm_cells <- unique(gcm_data$cell)
   gcm_cells_dim_name = "gcm_cell_id"
 
-  # Get WGS84 coordinates of cell centroids
+  # Get WGS84 latitude and longitude of cell centroids
   cell_coords <- spatial_info %>%
     mutate(lon = sf::st_coordinates(.)[,1], lat = sf::st_coordinates(.)[,2]) %>%
     rename(cell = cell_no) %>%
@@ -38,7 +38,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
     arrange(cell) %>%
     filter(cell %in% gcm_cells)
 
-  # Get vectors of cell centroid coordinates
+  # Get vectors of cell centroid latitudes and longitudes
   cell_centroid_lats <- cell_coords %>% pull(lat)
   cell_centroid_lons <- cell_coords %>% pull(lon)
 
@@ -47,7 +47,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
   data_attributes <- list('title' = global_att)
   data_attributes <- append(data_attributes, grid_params) # add grid parameters to list of global attributes
   data_coordvar_long_names <- list(instance = "identifier for GCM grid cell", time = "date",
-                              lat = "Latitude of GCM grid cell centroid", lon = "Longitude of GCM grid cell centroid",
+                              lat = "latitude of GCM grid cell centroid", lon = "longitude of GCM grid cell centroid",
                               alt = "NULL")
 
   # Pivot data to long format to set up for filtering by variable
@@ -72,7 +72,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
     var_data_metadata <- list(name = variable_metadata$var_name, long_name = variable_metadata$longname)
 
     # Check if nc file already exists, and therefore should be added to,
-    # or if needs to be created
+    # or if it needs to be created
     var_add_to_existing <- ifelse(file.exists(nc_file), TRUE, FALSE)
 
     # write this variable to the netcdf file:
