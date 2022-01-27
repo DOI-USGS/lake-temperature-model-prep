@@ -230,7 +230,7 @@ targets_list <- list(
                             "Average daily surface downward longwave flux in air",
                             "Average daily windspeed derived from anemometric zonal and anenometric meridional wind components"),
                units = c("m/day", "m/day", "degrees Celcius", "percent", "W/m2", "W/m2", "m/s"),
-               precision = "float"
+               precision = "double"
              )),
 
   # Create single NetCDF files for each of the GCMs
@@ -240,7 +240,7 @@ targets_list <- list(
       gcm_name <- unique(gcm_data_daily_feather_group_by_gcm$gcm_name)
 
       generate_gcm_nc(
-        nc_file = sprintf("7_drivers_munge/out/7_GCM_%s.nc", gcm_name),
+        nc_file = sprintf("7_drivers_munge/out/GCM_%s.nc", gcm_name),
         gcm_raw_files = gcm_data_daily_feather_group_by_gcm$gcm_file,
         vars_info = glm_vars_info,
         grid_params = grid_params,
