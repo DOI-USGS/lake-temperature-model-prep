@@ -154,6 +154,9 @@ map_query <- function(out_file, lake_cell_xwalk, query_tiles, query_cells, grid_
     group_by(cell_no) %>%
     summarize(nlakes = n())
 
+  grid_tiles <- grid_tiles %>%
+    filter(tile_no %in% query_tiles)
+
   grid_cells <- grid_cells %>%
     filter(cell_no %in% query_cells) %>%
     left_join(lakes_per_cell)
@@ -161,7 +164,7 @@ map_query <- function(out_file, lake_cell_xwalk, query_tiles, query_cells, grid_
   query_plot <- ggplot() +
     geom_sf(data = grid_cells, aes(fill = nlakes)) +
     scico::scale_fill_scico(palette = "batlow", direction = -1) +
-    geom_sf(data = grid_tiles_sf, fill = NA, size = 2)
+    geom_sf(data = grid_tiles, fill = NA, size = 2)
 
   # save file
   ggsave(out_file, query_plot, width=10, height=8, dpi=300)
