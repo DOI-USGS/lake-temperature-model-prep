@@ -230,7 +230,7 @@ targets_list <- list(
                             "Average daily surface downward longwave flux in air",
                             "Average daily windspeed derived from anemometric zonal and anenometric meridional wind components"),
                units = c("m/day", "m/day", "degrees Celcius", "percent", "W/m2", "W/m2", "m/s"),
-               precision = "double"
+               precision = "float"
              )),
 
   # Create single NetCDF files for each of the GCMs
