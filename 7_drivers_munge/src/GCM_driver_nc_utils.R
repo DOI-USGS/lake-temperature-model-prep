@@ -46,9 +46,9 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
   data_time_units <- "days since 1970-01-01 00:00:00"
   data_attributes <- list('title' = global_att)
   data_attributes <- append(data_attributes, grid_params) # add grid parameters to list of global attributes
-  data_coordvar_long_names <- list(instance = "identifier for GCM grid cell", time = "date",
-                              lat = "WGS84 latitude of GCM grid cell centroid",
-                              lon = "WGS84 longitude of GCM grid cell centroid")
+  data_coordvar_long_names <- list(instance = "identifier for reconstructed Notaro downscaled GCM grid cell", time = "date",
+                              lat = "WGS84 latitude of downscaled grid cell centroid",
+                              lon = "WGS84 longitude of downscaled grid cell centroid")
 
   # Pivot data to long format to set up for filtering by variable
   gcm_data_long <- gcm_data %>%
