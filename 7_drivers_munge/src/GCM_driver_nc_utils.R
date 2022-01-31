@@ -13,9 +13,10 @@
 generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spatial_info,
                             global_att, overwrite = TRUE) {
 
-  # Delete nc outfile if it exists already
-  if (file.exists(nc_file)) {
-    unlink(nc_file)
+  # Create temporary nc file, and delete if exists already
+  temp_nc_file <- str_replace(nc_file, pattern = '.nc', '_uncompressed.nc')
+  if (file.exists(temp_nc_file)) {
+    unlink(temp_nc_file)
   }
 
   # Read in all data for the current (tar_group) GCM
@@ -68,17 +69,17 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
 
     # Pull attributes for selected variable
     var_data_unit <- rep(variable_metadata$units, length(gcm_cells))
-    var_data_prec <- variable_metadata$precision
+    var_data_prec <- variable_metadata$data_precision
     var_data_metadata <- list(name = variable_metadata$var_name, long_name = variable_metadata$longname)
 
     # Check if nc file already exists, and therefore should be added to,
     # or if it needs to be created
-    var_add_to_existing <- ifelse(file.exists(nc_file), TRUE, FALSE)
+    var_add_to_existing <- ifelse(file.exists(temp_nc_file), TRUE, FALSE)
 
     # write this variable to the netcdf file:
     # ncdfgeom::write_timeseries_dsg() function documentation:
     # https://github.com/USGS-R/ncdfgeom/blob/master/R/write_timeseries_dsg.R
-    ncdfgeom::write_timeseries_dsg(nc_file,
+    ncdfgeom::write_timeseries_dsg(temp_nc_file,
                          instance_names = gcm_cells,
                          lats = cell_centroid_lats,
                          lons = cell_centroid_lons,
@@ -95,6 +96,27 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
                          add_to_existing = var_add_to_existing,
                          overwrite = overwrite)
   }
+
+  ### Compress the temporary netCDF file and save to the final output file
+  # Delete nc outfile if it exists already
+  if (file.exists(nc_file)) {
+    unlink(nc_file)
+  }
+
+  # better to run these ncdf commands from the directory of the files:
+  project_dir <- setwd(dirname(nc_file))
+
+  # Set up precision arguments for each variable using vars_info tibble
+  # --ppc key1=val1#key2=val2
+  precision_args <- paste(paste(vars_info$var_name, vars_info$compression_precision, sep = '='), collapse = '#')
+  # compress and quantize the file
+  system(sprintf("ncks -h --fl_fmt=netcdf4 --cnk_plc=g3d --cnk_dmn time,10 --ppc %s %s %s",
+                 precision_args, basename(temp_nc_file), basename(nc_file)))
+  # switch back to the project directory
+  setwd(project_dir)
+
+  # delete the temporary (uncompressed) file
+  unlink(temp_nc_file)
 
   return(nc_file)
 }
