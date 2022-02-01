@@ -9,14 +9,20 @@
 #' @param grid_params grid cell parameters to add to NetCDF as global attributes
 #' @param spatial_info cell_nos, x indices, y indices, and WGS84 coordinates of grid cell centroids
 #' @param global_att global attribute description for the observations (e.g., notaro_ACCESS_1980_1999)
-#' @param overwrite T/F if the nc file should be overwritten if it exists already
+#' @param compression T/F if the nc file should be compressed after creation
 generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spatial_info,
-                            global_att, overwrite = TRUE) {
+                            global_att, compression) {
+  # Delete nc outfile if it exists already
+  if (file.exists(nc_file)) {
+    unlink(nc_file)
+  }
 
-  # Create temporary nc file, and delete if exists already
-  temp_nc_file <- str_replace(nc_file, pattern = '.nc', '_uncompressed.nc')
-  if (file.exists(temp_nc_file)) {
-    unlink(temp_nc_file)
+  # If compressing netCDFs, create temporary nc file, and delete if exists already
+  # The uncompressed netCDF will be saved to this temporary file rather than the outfile
+  if (compression == TRUE) {
+    compressed_outfile <- nc_file
+    nc_file <- str_replace(nc_file, pattern = '.nc', '_uncompressed.nc')
+    if (file.exists(nc_file)) unlink(nc_file)
   }
 
   # Read in all data for the current (tar_group) GCM
@@ -74,12 +80,12 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
 
     # Check if nc file already exists, and therefore should be added to,
     # or if it needs to be created
-    var_add_to_existing <- ifelse(file.exists(temp_nc_file), TRUE, FALSE)
+    var_add_to_existing <- ifelse(file.exists(nc_file), TRUE, FALSE)
 
     # write this variable to the netcdf file:
     # ncdfgeom::write_timeseries_dsg() function documentation:
     # https://github.com/USGS-R/ncdfgeom/blob/master/R/write_timeseries_dsg.R
-    ncdfgeom::write_timeseries_dsg(temp_nc_file,
+    ncdfgeom::write_timeseries_dsg(nc_file,
                          instance_names = gcm_cells,
                          lats = cell_centroid_lats,
                          lons = cell_centroid_lons,
@@ -94,29 +100,44 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
                          attributes = data_attributes,
                          coordvar_long_names = data_coordvar_long_names,
                          add_to_existing = var_add_to_existing,
-                         overwrite = overwrite)
+                         overwrite = TRUE)
   }
 
-  ### Compress the temporary netCDF file and save to the final output file
-  # Delete nc outfile if it exists already
-  if (file.exists(nc_file)) {
-    unlink(nc_file)
+  # If compressing netCDFs, compress the temporary netCDF file and save
+  # to the final output file
+  if (compression == TRUE) {
+      # Note that the nc_file filename used above represents the temporary,
+      # uncompressed nc file
+      temp_nc_file <- nc_file
+      # Redefine nc_file to be the original nc_file filename parameter,
+      # stored above as `compressed_outfile`
+      nc_file <- compressed_outfile
+
+      # Run these ncdf commands from the directory of the files:
+      project_dir <- setwd(dirname(nc_file))
+
+      # Set up precision arguments for each variable using vars_info tibble
+      # --ppc key1=val1#key2=val2
+      precision_args <- paste(paste(vars_info$var_name, vars_info$compression_precision, sep = '='), collapse = '#')
+
+      # Compress and quantize the file
+      # This command requires that NCO be installed and able to be
+      # called by R via system commands
+      # see http://nco.sourceforge.net/
+      system(sprintf("ncks -h --fl_fmt=netcdf4 --cnk_plc=g3d --cnk_dmn time,10 --ppc %s %s %s",
+                     precision_args, basename(temp_nc_file), basename(nc_file)))
+      # Switch back to the project directory
+      setwd(project_dir)
+
+      # Delete the temporary (uncompressed) file if the final compressed
+      # file has been created. If it hasn't, throw an error.
+      # Using this approach in place of tryCatch, since if NCO is the issue,
+      # R will throw a system error message, *not* a console error
+      if (file.exists(nc_file)) {
+        unlink(temp_nc_file)
+      } else {
+        stop(sprintf('The %s netCDF file could not be compressed',temp_nc_file))
+      }
   }
-
-  # better to run these ncdf commands from the directory of the files:
-  project_dir <- setwd(dirname(nc_file))
-
-  # Set up precision arguments for each variable using vars_info tibble
-  # --ppc key1=val1#key2=val2
-  precision_args <- paste(paste(vars_info$var_name, vars_info$compression_precision, sep = '='), collapse = '#')
-  # compress and quantize the file
-  system(sprintf("ncks -h --fl_fmt=netcdf4 --cnk_plc=g3d --cnk_dmn time,10 --ppc %s %s %s",
-                 precision_args, basename(temp_nc_file), basename(nc_file)))
-  # switch back to the project directory
-  setwd(project_dir)
-
-  # delete the temporary (uncompressed) file
-  unlink(temp_nc_file)
-
   return(nc_file)
 }
