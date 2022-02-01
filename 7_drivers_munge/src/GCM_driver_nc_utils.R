@@ -136,7 +136,9 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
       if (file.exists(nc_file)) {
         unlink(temp_nc_file)
       } else {
-        stop(sprintf('The %s netCDF file could not be compressed',temp_nc_file))
+        stop(paste(sprintf('The %s netCDF file could not be compressed',temp_nc_file),
+                     'Make sure you have NCO netCDF operators installed on your system',
+                     sep='\n'))
       }
   }
   return(nc_file)
