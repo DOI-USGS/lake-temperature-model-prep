@@ -12,6 +12,14 @@
 #' @param compression T/F if the nc file should be compressed after creation
 generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spatial_info,
                             global_att, compression) {
+  # NOTE: adding a stop() for now while compression code and documentation still
+  # needs to be refined further, but retaining draft code below
+  if (compression == TRUE) {
+    stop(paste('Compression is not fully supported at this time',
+               'Please re-run with the compression parameter set to FALSE',
+               sep='\n'))
+  }
+
   # Delete nc outfile if it exists already
   if (file.exists(nc_file)) {
     unlink(nc_file)
