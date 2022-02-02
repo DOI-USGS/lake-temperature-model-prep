@@ -243,6 +243,7 @@ targets_list <- list(
       )
     },
     pattern = map(gcm_data_daily_feather_group_by_gcm),
+    format = 'file',
     error = 'continue'
   ),
 
