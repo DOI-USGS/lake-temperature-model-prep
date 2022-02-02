@@ -5,7 +5,7 @@ tar_option_set(packages = c(
   "tidyverse",
   "sf",
   "ncdf4",
-  "ncdfgeom",
+  "ncdfgeom", # You need >= v1.1.2
   "RNetCDF",
   "scipiper",
   "ggplot2",
