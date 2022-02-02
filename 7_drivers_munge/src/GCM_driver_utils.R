@@ -149,35 +149,27 @@ get_lake_cell_xwalk <- function(lake_centroids, grid_cells) {
 # TODO: purely diagnostic while we develop the pipeline. Likely delete when done. If we decide to keep,
 # this function to should be 1) moved to 8_viz, and 2) made so that it only rebuilds if new cells will
 # must be plot.
-map_query <- function(out_file_template, lake_centroids, grid_tiles, grid_cells, cells_w_lakes) {
+map_query <- function(out_file, lake_cell_xwalk, query_tiles, query_cells, grid_tiles, grid_cells) {
+  lakes_per_cell <- lake_cell_xwalk %>%
+    group_by(cell_no) %>%
+    summarize(nlakes = n())
 
-  # get tile id (pull from first row - will be identical
-  # for all rows, since branching over tiles)
-  tile_id <- cells_w_lakes$tile_no[1]
+  grid_tiles <- grid_tiles %>%
+    filter(tile_no %in% query_tiles)
 
-  # get tile polygon for selected tile
-  selected_tile <- grid_tiles %>% filter(tile_no == tile_id)
+  grid_cells <- grid_cells %>%
+    filter(cell_no %in% query_cells) %>%
+    left_join(lakes_per_cell)
 
-  # TODO: delete this WI-specific view
-  wi_sf <- st_as_sf(maps::map('state', 'wisconsin', plot=FALSE, fill=TRUE)) %>%
-    sf::st_transform(crs = sf::st_crs(grid_cells))
-
-  # build plot
   query_plot <- ggplot() +
-    geom_sf(data=wi_sf, fill=NA, color='grey70') +
-    geom_sf(data=grid_cells, color='grey50', fill=NA, size=0.5) +
-    geom_sf(data=grid_tiles, color='darkgoldenrod2', fill=NA) +
-    geom_sf(data=selected_tile, color='firebrick4', fill=NA) +
-    geom_sf(data=cells_w_lakes, color='firebrick2', fill=NA) +
-    geom_sf(data=lake_centroids, color='dodgerblue2', size=0.5) +
-    coord_sf() + theme_void()
+    geom_sf(data = grid_cells, aes(fill = nlakes)) +
+    scico::scale_fill_scico(palette = "batlow", direction = -1) +
+    geom_sf(data = grid_tiles, fill = NA, size = 2)
 
   # save file
-  out_file <- sprintf(out_file_template, tile_id)
   ggsave(out_file, query_plot, width=10, height=8, dpi=300)
 
   return(out_file)
-
 }
 
 #' @title Convert an sf object into a geoknife::simplegeom, so that
@@ -223,11 +215,8 @@ download_gcm_data <- function(out_file_template, query_geom,
                               gcm_name, gcm_projection_period, query_vars,
                               query_dates, query_knife = NULL) {
 
-  # Reproject query cell centroids to WGS84
-  query_geom_WGS84 <- sf::st_transform(query_geom, crs = 4326)
-
   # convert grid cell centroids into geoknife-friendly format
-  query_simplegeom <- sf_pts_to_simplegeom(query_geom_WGS84)
+  query_simplegeom <- sf_pts_to_simplegeom(query_geom)
 
   # Build query_url
   query_url <- sprintf(

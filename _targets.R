@@ -5,8 +5,11 @@ tar_option_set(packages = c(
   "tidyverse",
   "sf",
   "ncdf4",
+  "ncdfgeom", # You need >= v1.1.2
+  "RNetCDF",
   "scipiper",
   "ggplot2",
+  "scico",
   "geoknife",
   "arrow",
   "retry"
@@ -90,28 +93,30 @@ targets_list <- list(
                dplyr::left_join(cell_tile_xwalk_df, by = "cell_no")
   ),
 
+  # Reproject query_cell_centroids to WGS84
+  tar_target(query_cell_centroids_sf_WGS84,
+             sf::st_transform(query_cell_centroids_sf, crs = 4326)),
+
   # Split query cells by tile_no to map over
-  tar_target(query_tiles, unique(query_cell_centroids_sf$tile_no)),
+  tar_target(query_tiles, unique(query_cell_centroids_sf_WGS84$tile_no)),
   tar_target(query_cells_centroids_list_by_tile,
-             dplyr::filter(query_cell_centroids_sf, tile_no == query_tiles),
+             dplyr::filter(query_cell_centroids_sf_WGS84, tile_no == query_tiles),
              pattern = map(query_tiles),
              iteration = "list"),
 
-  ##### Create an image showing what each query will contain #####
+  ##### Create an image showing the full query, with n_lakes per cell #####
   # TODO: maybe remove this once we are happy with this process
-
-  # Save image of each map query for exploratory purposes
+  # Save image of full map query for exploratory purposes
   tar_target(
     query_map_png,
     map_query(
-      out_file_template = '7_drivers_munge/out/query_map_tile%s.png',
-      lake_centroids = query_lake_centroids_sf,
+      out_file = '7_drivers_munge/out/query_map.png',
+      lake_cell_xwalk = lake_cell_xwalk_df,
+      query_tiles = query_tiles,
+      query_cells = query_cells,
       grid_tiles = grid_tiles_sf,
-      grid_cells = grid_cells_sf,
-      cells_w_lakes = query_cells_centroids_list_by_tile
+      grid_cells = grid_cells_sf
     ),
-    pattern = map(query_cells_centroids_list_by_tile),
-    iteration = "list",
     format='file'
   ),
 
@@ -222,16 +227,9 @@ targets_list <- list(
                             "Average daily surface downward longwave flux in air",
                             "Average daily windspeed derived from anemometric zonal and anenometric meridional wind components"),
                units = c("m/day", "m/day", "degrees Celcius", "percent", "W/m2", "W/m2", "m/s"),
-               precision = "float"
+               data_precision = "float",
+               compression_precision = c('.3','.3','.2','.1','.1','.1','.3' )
              )),
-
-  # Create a single vector of all the time period's days to use as the NetCDF time dim
-  tar_target(
-    gcm_dates_all,
-    purrr::pmap(gcm_dates_df, function(projection_period, start_datetime, end_datetime) {
-      seq(as.Date(start_datetime), as.Date(end_datetime), by = 1)
-    }) %>% do.call("c", args = .)
-  ),
 
   # Create single NetCDF files for each of the GCMs
   tar_target(
@@ -240,15 +238,18 @@ targets_list <- list(
       gcm_name <- unique(gcm_data_daily_feather_group_by_gcm$gcm_name)
 
       generate_gcm_nc(
-        nc_file = sprintf("7_drivers_munge/out/7_GCM_%s.nc", gcm_name),
+        nc_file = sprintf("7_drivers_munge/out/GCM_%s.nc", gcm_name),
         gcm_raw_files = gcm_data_daily_feather_group_by_gcm$gcm_file,
-        dim_time_input = gcm_dates_all,
-        dim_cell_input = grid_cells_sf$cell_no,
         vars_info = glm_vars_info,
-        global_att = sprintf("GCM Notaro %s", gcm_name)
+        grid_params = grid_params,
+        spatial_info = query_cell_centroids_sf_WGS84,
+        global_att = sprintf("GCM Notaro %s", gcm_name),
+        compression = FALSE
       )
     },
-    pattern = map(gcm_data_daily_feather_group_by_gcm)
+    pattern = map(gcm_data_daily_feather_group_by_gcm),
+    format = 'file',
+    error = 'continue'
   ),
 
 
