@@ -66,8 +66,12 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
                               lon = "WGS84 longitude of downscaled grid cell centroid")
 
   # Pivot data to long format to set up for filtering by variable
+  # Replace all NA values with NaN as RNetCDF (used to write the data to
+  # netCDF within the `write_timeseries_dsg()` function) seems to expect
+  # NA values to be coded as NaN
   gcm_data_long <- gcm_data %>%
     pivot_longer(cols = -c(time, cell), names_to = "variable", values_to = "value") %>%
+    mutate(value = ifelse(is.na(value), NaN, value)) %>%
     arrange(cell)
 
   # Loop over data variables to populate NetCDF using ncdfgeom::write_timeseries_dsg()
