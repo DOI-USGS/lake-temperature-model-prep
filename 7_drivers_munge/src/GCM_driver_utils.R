@@ -10,7 +10,7 @@ reconstruct_gcm_grid <- function(grid_params) {
                              nx = grid_params$nx,
                              ny = grid_params$ny,
                              xoffset = grid_params$xmin - grid_params$cellsize/2,
-                             yoffset = grid_params$ymin + grid_params$cellsize/2,
+                             yoffset = grid_params$ymin - grid_params$cellsize/2,
                              crs = grid_params$crs) %>%
     rename(cell_no = id)
 
@@ -44,7 +44,7 @@ construct_grid_tiles <- function(grid_params, tile_dim) {
                               # Tile bottomleft should start at bottomleft cell
                               # corner, but xmin/ymin is the cell centroid
                               xoffset = grid_params$xmin - grid_params$cellsize/2,
-                              yoffset = grid_params$ymin + grid_params$cellsize/2,
+                              yoffset = grid_params$ymin - grid_params$cellsize/2,
                               crs = grid_params$crs) %>%
     rename(tile_no = id)
 
