@@ -105,8 +105,7 @@ targets_list <- list(
              iteration = "list"),
 
   ##### Create an image showing the full query, with n_lakes per cell #####
-  # TODO: maybe remove this once we are happy with this process
-  # Save image of full map query for exploratory purposes
+
   tar_target(
     query_map_png,
     map_query(
