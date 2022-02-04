@@ -28,8 +28,8 @@ reconstruct_gcm_grid <- function(grid_params) {
 #' @param tile_dim single numeric value representing how many grid cells to
 #' group into a single tile. NOTE - sf_make_grid() can only make square grid
 #' polygons. The GCM grid is 217 cells wide by 141 high. With a `tile_dim` of
-#' 10 (tiles = 10 grid cells x 10 grid cells), tiles won't cover full height
-#' of the GCM grid and there will be 7 columns left out on the right and 1 left
+#' 15 (tiles = 15 grid cells x 15 grid cells), tiles won't cover full height
+#' of the GCM grid and there will be 7 columns left out on the right and 5 left
 #' out on the top. Since all of the cells that are missing are fully outside CONUS,
 #' we are OK with dropping for now. If we wanted to include, we would need to
 #' construct two separate `sf` grids and merge.
