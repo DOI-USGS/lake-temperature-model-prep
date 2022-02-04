@@ -38,7 +38,7 @@ targets_list <- list(
   # at a time. Since marching through timesteps on GDP is slower than
   # scaling out spatially, it would make sense to do queries with as big
   # of a spatial resolution as GDP will handle.
-  tar_target(grid_tiles_sf, construct_grid_tiles(grid_params, tile_dim=10)),
+  tar_target(grid_tiles_sf, construct_grid_tiles(grid_params, tile_dim=15)),
 
   # Reconstruct GCM grid using grid parameters from GDP defined above
   tar_target(grid_cells_sf, reconstruct_gcm_grid(grid_params)),
