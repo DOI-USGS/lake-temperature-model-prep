@@ -55,15 +55,17 @@ construct_grid_tiles <- function(grid_params, tile_dim) {
 #' @param cellsize numeric value representing the dimensions of the square grid cell in meters.
 #' @param nx number of cells to place in the x direction
 #' @param ny number of cells to place in the y direction
-#' @param xmin x dimension for the bottomleft corner of the grid
-#' @param ymin y dimension for the bottomleft corner of the grid
+#' @param xmin x dimension for the centroid of the bottomleft cell of the grid
+#' @param ymin y dimension for the centroid of the bottomleft cell of the grid
 #' @param crs character string representing the projection of the grid
 construct_grid <- function(cellsize, nx, ny, xmin, ymin, crs) {
 
   # Build grid
   grid_sfc <- sf::st_make_grid(cellsize = cellsize,
                                n = c(nx, ny),
-                               offset = c(xmin, ymin),
+                               # Use the bottomleft corner of the bottomleft
+                               # cell and not its centroid.
+                               offset = c(xmin-cellsize/2, ymin-cellsize/2),
                                crs = crs)
 
   # set up attributes for cell number, x and y grid values
