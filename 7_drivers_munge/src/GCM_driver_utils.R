@@ -9,8 +9,8 @@ reconstruct_gcm_grid <- function(grid_params) {
   gcm_grid <- construct_grid(cellsize = grid_params$cellsize,
                              nx = grid_params$nx,
                              ny = grid_params$ny,
-                             xmin = grid_params$xmin,
-                             ymin = grid_params$ymin,
+                             xoffset = grid_params$xmin - grid_params$cellsize/2,
+                             yoffset = grid_params$ymin + grid_params$cellsize/2,
                              crs = grid_params$crs) %>%
     rename(cell_no = id)
 
@@ -27,11 +27,12 @@ reconstruct_gcm_grid <- function(grid_params) {
 #' in the documentation for `construct_grid()` below.
 #' @param tile_dim single numeric value representing how many grid cells to
 #' group into a single tile. NOTE - sf_make_grid() can only make square grid
-#' polygons. The GCM grid is 110 cells wide by 85 high. With a `tile_dim` of
+#' polygons. The GCM grid is 217 cells wide by 141 high. With a `tile_dim` of
 #' 10 (tiles = 10 grid cells x 10 grid cells), tiles won't cover full height
-#' of the GCM grid and there will be 5 rows left out at the top. Since the top
-#' 5 rows are fully outside CONUS, we are OK with dropping for now. If we wanted
-#' to include, we would need to construct two separate `sf` grids and merge.
+#' of the GCM grid and there will be 7 columns left out on the right and 1 left
+#' out on the top. Since all of the cells that are missing are fully outside CONUS,
+#' we are OK with dropping for now. If we wanted to include, we would need to
+#' construct two separate `sf` grids and merge.
 construct_grid_tiles <- function(grid_params, tile_dim) {
   # determine the number of columns and rows of tiles
   xcolumns <- floor(grid_params$nx/tile_dim)
@@ -40,8 +41,10 @@ construct_grid_tiles <- function(grid_params, tile_dim) {
   gcm_tiles <- construct_grid(cellsize = grid_params$cellsize*tile_dim,
                               nx = xcolumns,
                               ny = yrows,
-                              xmin = grid_params$xmin,
-                              ymin = grid_params$ymin,
+                              # Tile bottomleft should start at bottomleft cell
+                              # corner, but xmin/ymin is the cell centroid
+                              xoffset = grid_params$xmin - grid_params$cellsize/2,
+                              yoffset = grid_params$ymin + grid_params$cellsize/2,
                               crs = grid_params$crs) %>%
     rename(tile_no = id)
 
@@ -55,17 +58,17 @@ construct_grid_tiles <- function(grid_params, tile_dim) {
 #' @param cellsize numeric value representing the dimensions of the square grid cell in meters.
 #' @param nx number of cells to place in the x direction
 #' @param ny number of cells to place in the y direction
-#' @param xmin x dimension for the centroid of the bottomleft cell of the grid
-#' @param ymin y dimension for the centroid of the bottomleft cell of the grid
+#' @param xoffset x dimension for the bottomleft corner of the grid
+#' @param yoffset y dimension for the bottomleft corner of the grid
 #' @param crs character string representing the projection of the grid
-construct_grid <- function(cellsize, nx, ny, xmin, ymin, crs) {
+construct_grid <- function(cellsize, nx, ny, xoffset, yoffset, crs) {
 
   # Build grid
   grid_sfc <- sf::st_make_grid(cellsize = cellsize,
                                n = c(nx, ny),
                                # Use the bottomleft corner of the bottomleft
                                # cell and not its centroid.
-                               offset = c(xmin-cellsize/2, ymin-cellsize/2),
+                               offset = c(xoffset, yoffset),
                                crs = crs)
 
   # set up attributes for cell number, x and y grid values
