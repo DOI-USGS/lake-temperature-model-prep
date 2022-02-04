@@ -26,8 +26,8 @@ targets_list <- list(
   tar_target(grid_params, tibble(
     crs = "+proj=lcc +lat_0=45 + lon_0=-97 +lat_1=36 +lat_2=52 +x_0=0 +y_0=0 +ellps=WGS84 +units=m",
     cellsize = 25000,
-    xmin = -2700000,
-    ymin = -1750000,
+    xmin = -2700000, # Centroid of bottom left cell
+    ymin = -1750000, # Centroid of bottom left cell
     nx = 217,
     ny = 141
   )),
@@ -105,8 +105,7 @@ targets_list <- list(
              iteration = "list"),
 
   ##### Create an image showing the full query, with n_lakes per cell #####
-  # TODO: maybe remove this once we are happy with this process
-  # Save image of full map query for exploratory purposes
+
   tar_target(
     query_map_png,
     map_query(
