@@ -451,7 +451,7 @@ convert_notaro_dates <- function(data_in) {
     mutate(date_initial = as.Date(sprintf("%s-01-01", year_i)) + `time(day of year)`) %>%
     # If the date in the column is a leap day (Feb 29), the dates need to be adjusted by 1 day
     # meaning the 59th day should be Mar 1 not Feb 29.
-    mutate(leap_adjustment = if_else(format(as.Date(DateTime) + `time(day of year)`, "%m-%d") == "02-29", 1, 0)) %>%
+    mutate(leap_adjustment = if_else(format(date_initial, "%m-%d") == "02-29", 1, 0)) %>%
     # Use cumsum to make sure the leap_adjustment is used for every subsequent day of the year following a leap day
     mutate(total_days_to_add = cumsum(leap_adjustment)) %>%
     ungroup() %>% # Reset groups since they are no longer needed
