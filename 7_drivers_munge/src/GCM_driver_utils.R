@@ -316,10 +316,7 @@ munge_notaro_to_glm <- function(in_file) {
   daily_data <- raw_data %>%
 
     # Create a column with the actual date
-    # `DateTime` has a POSIXct value for the first day of every year
-    # `time(day of year)` is a numeric value from 0-364 (365 for leap years)
-    mutate(date = as.Date(DateTime) + `time(day of year)`) %>%
-    select(-DateTime, -`time(day of year)`) %>%
+    convert_notaro_dates() %>%
 
     # Pivot to long format first to get cells as a column.
     pivot_longer(cols = -c(date, variable, statistic, units),
@@ -400,4 +397,67 @@ validate_notaro_units_assumptions <- function(data_in) {
                             paste(units_check_out$variable[failed_i], collapse = ", "))
     stop(stop_message)
   }
+}
+
+#' @title Create correct dates for downscaled Notaro GCM data
+#' @description Called within `munge_notaro_to_glm()`to correctly use the
+#' `DateTime` and `time(day of year)` columns to create a date. The reason this
+#' is more complex than simple addition of this two fields is because 1) the
+#' downscaled GCM data assumes there are no leap days, and 2) the dates returned
+#' by GDP in `DateTime` do not always reflect the appropriate start day for the
+#' current year of data, e.g. the `DateTime` values for 1985 data are `1984-12-31 23:15:03`.
+#' @param data_in a data.frame with a least the columns `DateTime` (a POSIXct
+#' object with the first day of each year of data), `time(day of year)` (a numeric
+#' column with the day of year, ranging from 0:364), and `variable` (the downscaled
+#' GCM column containing data variables, e.g. `prcp_debias`).
+#' @value a data.frame with the columns `date`, `variable`, and any other column from
+#' `data_in` that is not `DateTime` or `time(day of year)`.
+convert_notaro_dates <- function(data_in) {
+  data_in %>%
+    # select(DateTime, `time(day of year)`, variable) %>%
+
+    ### Group data into the different big time chunks by finding and identifying ###
+
+    # This groups data at the points where 2000 is right before 2040, and 2040 is right before 2060
+    mutate(diff_days = abs(as.numeric(DateTime - lag(DateTime))/86400)) %>%
+    # Use a difference in days greater than one year to determine if a row is the
+    # start of a new time period
+    mutate(new_time_period = is.na(diff_days) | diff_days > 366) %>%
+    # Each new time period ticks the counter up by 1
+    mutate(new_time_period_i = cumsum(new_time_period)) %>%
+
+    ### For each time period + variable group, identify the earliest year in the period and use that to create a column of years ###
+
+    # Not able to just to `format(DateTime, "%Y")` to get the year because not all have a `DateTime` in the
+    # correct year, e.g. 1985 records have a DateTime of `1984-12-31 23:15:03`.
+
+    # First treat rows for the same variable and time period as a group
+    group_by(variable, new_time_period_i) %>%
+    # Determine the earliest year in the time period
+    mutate(earliest_year = as.numeric(format(min(DateTime), "%Y"))) %>% # mutate(year_1 = as.numeric(format(min(DateTime), "%Y"))) %>%
+    # Create groups of the years (`time(day of year)` will cycle through 0:364 for each
+    # year, so tick a counter up for every 0 in the column)
+    mutate(year_n = cumsum(`time(day of year)` == 0) - 1) %>%
+    mutate(year_i = earliest_year + year_n) %>%
+    ungroup() %>%
+
+    ### For each year + variable group, correctly convert to the DateTime field to a date ###
+
+    # The GCMs assume there are no leap years, but R automatically assumes leap years, so we need
+    # to implement a work around for that.
+
+    group_by(variable, new_time_period_i, year_i) %>%
+    # Start by creating a date and allow leap days to be added
+    mutate(date_initial = as.Date(sprintf("%s-01-01", year_i)) + `time(day of year)`) %>%
+    # If the date in the column is a leap day (Feb 29), the dates need to be adjusted by 1 day
+    # meaning the 59th day should be Mar 1 not Feb 29.
+    mutate(leap_adjustment = if_else(format(as.Date(DateTime) + `time(day of year)`, "%m-%d") == "02-29", 1, 0)) %>%
+    # Use cumsum to make sure the leap_adjustment is used for every subsequent day of the year following a leap day
+    mutate(total_days_to_add = cumsum(leap_adjustment)) %>%
+    ungroup() %>% # Reset groups since they are no longer needed
+    # Using the initial date created, adjust the days to shift anything in a leap year that follows Feb 29
+    mutate(date_corrected = date_initial + total_days_to_add) %>%
+
+    # Keep only the variable and corrected date columns
+    select(date = date_corrected, matches("[0-9]+"), variable, statistic, units)
 }
