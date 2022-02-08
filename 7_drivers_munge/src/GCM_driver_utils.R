@@ -457,6 +457,7 @@ convert_notaro_dates <- function(data_in) {
     # Using the initial date created, adjust the days to shift anything in a leap year that follows Feb 29
     mutate(date_corrected = date_initial + total_days_to_add) %>%
 
-    # Keep only the variable and corrected date columns
+    # Keep the variable, corrected date, statistic, and units columns, as well as, any column
+    # whose name only contains numbers (since those should represent all the grid cell's data)
     select(date = date_corrected, matches("[0-9]+"), variable, statistic, units)
 }
