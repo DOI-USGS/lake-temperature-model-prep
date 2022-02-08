@@ -414,7 +414,6 @@ validate_notaro_units_assumptions <- function(data_in) {
 #' `data_in` that is not `DateTime` or `time(day of year)`.
 convert_notaro_dates <- function(data_in) {
   data_in %>%
-    # select(DateTime, `time(day of year)`, variable) %>%
 
     ### Group data into the different big time chunks by finding and identifying ###
 
@@ -434,7 +433,7 @@ convert_notaro_dates <- function(data_in) {
     # First treat rows for the same variable and time period as a group
     group_by(variable, new_time_period_i) %>%
     # Determine the earliest year in the time period
-    mutate(earliest_year = as.numeric(format(min(DateTime), "%Y"))) %>% # mutate(year_1 = as.numeric(format(min(DateTime), "%Y"))) %>%
+    mutate(earliest_year = as.numeric(format(min(DateTime), "%Y"))) %>%
     # Create groups of the years (`time(day of year)` will cycle through 0:364 for each
     # year, so tick a counter up for every 0 in the column)
     mutate(year_n = cumsum(`time(day of year)` == 0) - 1) %>%
