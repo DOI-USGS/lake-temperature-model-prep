@@ -33,7 +33,7 @@ targets_list <- list(
   )),
 
   # Create larger tiles to use for querying GDP with groups of cells.
-  # Constructing tiles to be made of 100 cells in a 10x10 grid.
+  # Constructing tiles to be made of 225 cells in a 15x15 grid.
   # TODO: this can be much larger! JR thinks GDP can handle ~1000 cells
   # at a time. Since marching through timesteps on GDP is slower than
   # scaling out spatially, it would make sense to do queries with as big
