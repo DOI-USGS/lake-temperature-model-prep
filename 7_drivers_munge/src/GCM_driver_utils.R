@@ -148,7 +148,8 @@ get_lake_cell_tile_xwalk <- function(lake_centroids, grid_cells, cell_tile_xwalk
   lake_cells_tiles_join <- lake_centroids %>%
     st_join(grid_cells, left=FALSE) %>%
     st_drop_geometry() %>%
-    left_join(cell_tile_xwalk, by='cell_no')
+    left_join(cell_tile_xwalk, by='cell_no') %>%
+    select(site_id, state, cell_no, tile_no)
 
   return(lake_cells_tiles_join)
 }
@@ -157,16 +158,16 @@ get_lake_cell_tile_xwalk <- function(lake_centroids, grid_cells, cell_tile_xwalk
 #' @description Map the grid cells w/ lakes (symbolized by n_lakes per cell) and grid tiles
 #' included in the GDP query
 #' @param out_file name of output png file
-#' @param lake_cell_tile_xwalk mapping of which lakes are in which cells
-#' @param query_tiles vector of tiles that contain cells that contain lakes
+#' @param lake_cell_tile_xwalk mapping of which lakes are in which cells and tiles
+#' @param query_tiles vector of tiles that contain `query_cells`
 #' @param query_cells vector of cells that contain lakes
-#' @param grid_tilesan `sf` object with polygons representing the
+#' @param grid_tiles an`sf` object with polygons representing the
 #' groups of grid cells. Must contain a `tile_no` column which has
 #' the id of each of the tile polygons.
 #' @param grid_cells an `sf` object with square polygons representing the
 #' grid cells. Must contain a `cell_no` column which has
 #' the id of each of the cell polygons.
-#' @return a png of the mapped grid cells, symbolized by n_lkaes per cell, and the grid tiles
+#' @return a png of the mapped grid cells, symbolized by n_lakes per cell, and the grid tiles
 # TODO: This function to should be 1) moved to 8_viz, and 2) made so that it only rebuilds if
 # new cells will be plotted.
 map_query <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_cells, grid_tiles, grid_cells) {

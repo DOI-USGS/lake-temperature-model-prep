@@ -71,9 +71,7 @@ targets_list <- list(
              get_lake_cell_tile_xwalk(query_lake_centroids_sf, grid_cells_sf, cell_tile_xwalk_df)),
   tar_target(lake_cell_tile_xwalk_csv, {
     out_file <- "7_drivers_munge/out/lake_cell_tile_xwalk.csv"
-    lake_cell_tile_xwalk_df %>%
-      select(site_id, state, cell_no, tile_no) %>%
-      write_csv(out_file)
+    write_csv(lake_cell_tile_xwalk_df, out_file)
     return(out_file)
   }, format = 'file'),
 
