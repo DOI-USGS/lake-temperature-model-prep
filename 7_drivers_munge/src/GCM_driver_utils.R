@@ -132,30 +132,45 @@ get_query_cells <- function(grid_cells, lake_centroids) {
   return(cells_w_lakes)
 }
 
-#' @title Match lakes to the grid cells.
+#' @title Match lakes to the grid cells and tiles.
 #' @description Using lake centroids, this spatially
 #' intersects the lakes to the grid cells and returns a
 #' non-spatial data.frame with `cell_no` and any of the existing
-#' columns from `lake_centroids`.
+#' columns from `lake_centroids`. It also joins the cell_tile
+#' xwalk to add the tile number for each lake
 #' @param lake_centroids an `sf` object of points representing
 #' the lake centroids.
 #' @param grid_cells an `sf` object with square polygons representing the
 #' grid cells. Must contain a `cell_no` column which has
 #' the id of each of the cell polygons.
-get_lake_cell_xwalk <- function(lake_centroids, grid_cells) {
-  lake_cells_join <- lake_centroids %>%
+#' @param cell_tile_xwalk mapping of which cells are in which tiles
+get_lake_cell_tile_xwalk <- function(lake_centroids, grid_cells, cell_tile_xwalk) {
+  lake_cells_tiles_join <- lake_centroids %>%
     st_join(grid_cells, left=FALSE) %>%
-    st_drop_geometry()
+    st_drop_geometry() %>%
+    left_join(cell_tile_xwalk, by='cell_no')
 
-  return(lake_cells_join)
+  return(lake_cells_tiles_join)
 }
 
-# Map the query - grid cells, grid tiles, selected tile, cells w lakes in selected tile, lake centroids
-# TODO: purely diagnostic while we develop the pipeline. Likely delete when done. If we decide to keep,
-# this function to should be 1) moved to 8_viz, and 2) made so that it only rebuilds if new cells will
-# must be plot.
-map_query <- function(out_file, lake_cell_xwalk, query_tiles, query_cells, grid_tiles, grid_cells) {
-  lakes_per_cell <- lake_cell_xwalk %>%
+#' @title Map the query tiles and cells
+#' @description Map the grid cells w/ lakes (symbolized by n_lakes per cell) and grid tiles
+#' included in the GDP query
+#' @param out_file name of output png file
+#' @param lake_cell_tile_xwalk mapping of which lakes are in which cells
+#' @param query_tiles vector of tiles that contain cells that contain lakes
+#' @param query_cells vector of cells that contain lakes
+#' @param grid_tilesan `sf` object with polygons representing the
+#' groups of grid cells. Must contain a `tile_no` column which has
+#' the id of each of the tile polygons.
+#' @param grid_cells an `sf` object with square polygons representing the
+#' grid cells. Must contain a `cell_no` column which has
+#' the id of each of the cell polygons.
+#' @return a png of the mapped grid cells, symbolized by n_lkaes per cell, and the grid tiles
+# TODO: This function to should be 1) moved to 8_viz, and 2) made so that it only rebuilds if
+# new cells will be plotted.
+map_query <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_cells, grid_tiles, grid_cells) {
+  lakes_per_cell <- lake_cell_tile_xwalk %>%
     group_by(cell_no) %>%
     summarize(nlakes = n())
 

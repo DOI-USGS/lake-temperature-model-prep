@@ -64,13 +64,16 @@ targets_list <- list(
   # Get mapping of which cells are in which tiles (w/ no spatial info)
   tar_target(cell_tile_xwalk_df, get_cell_tile_xwalk(grid_cell_centroids_sf, grid_tiles_sf)),
 
-  # Get mapping of which lakes are in which cells (w/ no spatial info). Not currently
-  # being used, but this info saved as a file could be useful in the modeling part so
-  # that we know what data to pull for each lake).
-  tar_target(lake_cell_xwalk_df, get_lake_cell_xwalk(query_lake_centroids_sf, grid_cells_sf)),
-  tar_target(lake_cell_xwalk_csv, {
-    out_file <- "7_drivers_munge/out/lake_cell_xwalk.csv"
-    write_csv(lake_cell_xwalk_df, out_file)
+  # Get mapping of which lakes are in which cells and tiles (w/ no spatial info). Not currently
+  # being used here, except for plotting, but is being used in `lake-temperature-process-models`
+  # so that we know what meteorological data to pull for each lake.
+  tar_target(lake_cell_tile_xwalk_df,
+             get_lake_cell_tile_xwalk(query_lake_centroids_sf, grid_cells_sf, cell_tile_xwalk_df)),
+  tar_target(lake_cell_tile_xwalk_csv, {
+    out_file <- "7_drivers_munge/out/lake_cell_tile_xwalk.csv"
+    lake_cell_tile_xwalk_df %>%
+      select(site_id, state, cell_no, tile_no) %>%
+      write_csv(out_file)
     return(out_file)
   }, format = 'file'),
 
@@ -110,7 +113,7 @@ targets_list <- list(
     query_map_png,
     map_query(
       out_file = '7_drivers_munge/out/query_map.png',
-      lake_cell_xwalk = lake_cell_xwalk_df,
+      lake_cell_tile_xwalk = lake_cell_tile_xwalk_df,
       query_tiles = query_tiles,
       query_cells = query_cells,
       grid_tiles = grid_tiles_sf,
