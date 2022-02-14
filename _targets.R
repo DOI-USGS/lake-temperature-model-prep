@@ -109,7 +109,7 @@ targets_list <- list(
 
   tar_target(
     tile_cell_map_png,
-    map_query(
+    map_tiles_cells(
       out_file = '7_drivers_munge/out/tile_cell_map.png',
       lake_cell_tile_xwalk = lake_cell_tile_xwalk_df,
       query_tiles = query_tiles,
