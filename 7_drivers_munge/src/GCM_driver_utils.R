@@ -170,7 +170,7 @@ get_lake_cell_tile_xwalk <- function(lake_centroids, grid_cells, cell_tile_xwalk
 #' @return a png of the mapped grid cells, symbolized by n_lakes per cell, and the grid tiles
 # TODO: This function to should be 1) moved to 8_viz, and 2) made so that it only rebuilds if
 # new cells will be plotted.
-map_query <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_cells, grid_tiles, grid_cells) {
+map_tiles_cells <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_cells, grid_tiles, grid_cells) {
   lakes_per_cell <- lake_cell_tile_xwalk %>%
     group_by(cell_no) %>%
     summarize(nlakes = n())
@@ -178,17 +178,24 @@ map_query <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_cells, 
   grid_tiles <- grid_tiles %>%
     filter(tile_no %in% query_tiles)
 
+  tile_labels <- grid_tiles %>%
+    mutate(bbox=split(.,tile_no) %>% purrr::map(sf::st_bbox)) %>%
+    unnest_wider(bbox)
+
   grid_cells <- grid_cells %>%
     filter(cell_no %in% query_cells) %>%
     left_join(lakes_per_cell)
 
-  query_plot <- ggplot() +
+  tile_cell_plot <- ggplot() +
     geom_sf(data = grid_cells, aes(fill = nlakes)) +
     scico::scale_fill_scico(palette = "batlow", direction = -1) +
-    geom_sf(data = grid_tiles, fill = NA, size = 2)
+    geom_sf(data = grid_tiles, fill = NA, size = 2) +
+    geom_text(data = tile_labels, aes(label=tile_no,x=xmin, y=ymax), size=8, nudge_x = 15000, nudge_y = -30000, hjust = 0) +
+    theme(axis.title.y=element_blank(),
+        axis.title.x=element_blank())
 
   # save file
-  ggsave(out_file, query_plot, width=10, height=8, dpi=300)
+  ggsave(out_file, tile_cell_plot, width=10, height=8, dpi=300)
 
   return(out_file)
 }
