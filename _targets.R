@@ -108,9 +108,9 @@ targets_list <- list(
   ##### Create an image showing the full query, with n_lakes per cell #####
 
   tar_target(
-    query_map_png,
+    tile_cell_map_png,
     map_query(
-      out_file = '7_drivers_munge/out/query_map.png',
+      out_file = '7_drivers_munge/out/tile_cell_map.png',
       lake_cell_tile_xwalk = lake_cell_tile_xwalk_df,
       query_tiles = query_tiles,
       query_cells = query_cells,
