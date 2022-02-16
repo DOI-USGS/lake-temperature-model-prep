@@ -256,7 +256,8 @@ targets_list <- list(
   ##### Get list of final output files to link back to scipiper pipeline #####
   tar_target(
     gcm_files_out,
-    c(gcm_nc, lake_cell_xwalk_csv)
+    c(gcm_nc, lake_cell_tile_xwalk_csv, tile_cell_map_png),
+    format = 'file'
   )
 )
 
