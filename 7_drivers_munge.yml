@@ -4,10 +4,13 @@ packages:
   - scipiper
   - dplyr
   - stringr
+  - targets
 
 sources:
   - 6_drivers/src/nldas_feather_utils.R
   - 7_drivers_munge/src/GLM_driver_utils.R
+  - 7_drivers_munge/src/GCM_targets_wrapper.R
+  - 7_drivers_munge/src/GCM_driver_utils.R
 
 targets:
   7_drivers_munge:
@@ -46,3 +49,9 @@ targets:
   7_drivers_munge/out/7_all_local_drivers.rds.ind:
     command: index_local_drivers(target_name,
       depends = "7_drivers_munge/out/7_drivers_munge_tasks.ind")
+
+  7_drivers_munge/out/7_GCM_driver_files.ind:
+    command: build_GCM_pipeline(
+      target_name,
+      "2_crosswalk_munge/out/centroid_lakes_sf.rds.ind",
+      "2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind")

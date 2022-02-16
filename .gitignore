@@ -1,3 +1,5 @@
+# Targets files
+_targets
 # History files
 .Rhistory
 .Rapp.history
@@ -37,6 +39,7 @@ rsconnect/
 3_params_fetch/in/*.csv
 3_params_fetch/out/*.csv
 6_drivers/log/feather/*.feather.ind
+7_drivers_munge/out/*.png
 7_drivers_munge/out/*.csv
 7_drivers_munge/out/*.csv.ind
 6_drivers/log/feather/cellgroup*.yml
@@ -78,4 +81,6 @@ build/status/N2FfdGVtcF9jb29wX211bmdlL3RtcC9*
 # ignore source metdata csv
 7b_temp_merge/in/source_metadata.csv
 7b_temp_merge/out/source_metadata_for_release.csv
-
+# Ignore GCM pipeline intermediate files
+7_drivers_munge/tmp/*
+!7_drivers_munge/tmp/.empty
