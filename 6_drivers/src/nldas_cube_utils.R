@@ -153,7 +153,7 @@ create_cube_task_plan <- function(sub_files, max_steps, skip_on_exists){
   cube_task_plan <- create_task_plan(basename(sub_files), list(cube_task_step), add_complete = FALSE)
 }
 create_cube_task_makefile <- function(makefile, cube_task_plan){
-  packages <- c('dplyr','ncdf4','progress')
+  packages <- c('dplyr','ncdf4','progress','doMC')
   include <- "6_drivers_fetch.yml"
   sources <- '6_drivers/src/nccopy_utils.R'
 
