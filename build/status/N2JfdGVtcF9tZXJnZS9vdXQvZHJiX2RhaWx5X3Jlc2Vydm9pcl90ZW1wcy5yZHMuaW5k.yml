@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 7b_temp_merge/out/drb_daily_reservoir_temps.rds.ind
+type: file
+hash: e47c8f2082a7fa500a97d404bbc6581e
+time: 2022-02-17 17:01:11 UTC
+depends:
+  7a_nwis_munge/out/drb_reservoirs_temp_munged.rds.ind: 21a26073f9be295dac38dae027415aff
+  7a_nwis_munge/out/NYC_DEP_reservoir_temperature_data.rds.ind: 979466c33dad94437f87680180d73a7c
+fixed: 5d2d38007a165b8836954705dbf2a316
+code:
+  functions:
+    reduce_reservoir_data: 8bf16bce5fc468127d928c8b623e7b7a
+
