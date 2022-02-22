@@ -61,19 +61,13 @@ targets_list <- list(
 
   ##### Create crosswalks between cells, tiles, and lakes #####
 
-  # Get mapping of which cells are in which tiles (w/ no spatial info)
+  # Get mapping of which cells are in which tiles (as a non-spatial data.frame)
   tar_target(cell_tile_xwalk_df, get_cell_tile_xwalk(grid_cell_centroids_sf, grid_tiles_sf)),
 
-  # Get mapping of which lakes are in which cells and tiles (w/ no spatial info). Not currently
-  # being used here, except for plotting, but is being used in `lake-temperature-process-models`
-  # so that we know what meteorological data to pull for each lake.
-  tar_target(lake_cell_tile_xwalk_df,
-             get_lake_cell_tile_xwalk(query_lake_centroids_sf, grid_cells_sf, cell_tile_xwalk_df)),
-  tar_target(lake_cell_tile_xwalk_csv, {
-    out_file <- "7_drivers_munge/out/lake_cell_tile_xwalk.csv"
-    write_csv(lake_cell_tile_xwalk_df, out_file)
-    return(out_file)
-  }, format = 'file'),
+  # Get mapping of which lakes are in which cells and tiles, based on a spatial join
+  # (as a non-spatial data.frame). Not currently being used here, except for mapping the query.
+  tar_target(lake_cell_tile_xwalk_spatial_df,
+             get_lake_cell_tile_spatial_xwalk(query_lake_centroids_sf, grid_cells_sf, cell_tile_xwalk_df)),
 
   ##### Prepare grid cell centroids for querying GDP #####
   # Don't need to do everything, only need to do cells where we have lakes. Group query
@@ -108,10 +102,10 @@ targets_list <- list(
   ##### Create an image showing the full query, with n_lakes per cell #####
 
   tar_target(
-    tile_cell_map_png,
-    map_tiles_cells(
-      out_file = '7_drivers_munge/out/tile_cell_map.png',
-      lake_cell_tile_xwalk = lake_cell_tile_xwalk_df,
+    query_tile_cell_map_png,
+    map_query_tiles_cells(
+      out_file = '7_drivers_munge/out/query_tile_cell_map.png',
+      lake_cell_tile_xwalk = lake_cell_tile_xwalk_spatial_df,
       query_tiles = query_tiles,
       query_cells = query_cells,
       grid_tiles = grid_tiles_sf,
@@ -143,34 +137,90 @@ targets_list <- list(
     "windspeed_debias" # Wind speed (m/s)
     )),
 
-  # Download data from GDP for each tile, GCM name, and GCM projection period combination.
-  # If the cells in a tile don't change, then the tile should not need to rebuild.
-  tar_target(
-    gcm_data_raw_feather,
-    download_gcm_data(
-      out_file_template = "7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_raw.feather",
-      query_geom = query_cells_centroids_list_by_tile,
-      gcm_name = gcm_names,
-      gcm_projection_period = gcm_dates_df$projection_period,
-      query_vars = gcm_query_vars,
-      query_dates = c(gcm_dates_df$start_datetime, gcm_dates_df$end_datetime)
-    ),
-    # TODO: might need to split across variables, too. Once we scale up, our queries
-    # might be too large and chunking by variable could help.
-    pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df),
-    format = "file",
-    error = "continue"
-  ),
+  # # Download data from GDP for each tile, GCM name, and GCM projection period combination.
+  # # If the cells in a tile don't change, then the tile should not need to rebuild.
+  # tar_target(
+  #   gcm_data_raw_feather,
+  #   download_gcm_data(
+  #     out_file_template = "7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_raw.feather",
+  #     query_geom = query_cells_centroids_list_by_tile,
+  #     gcm_name = gcm_names,
+  #     gcm_projection_period = gcm_dates_df$projection_period,
+  #     query_vars = gcm_query_vars,
+  #     query_dates = c(gcm_dates_df$start_datetime, gcm_dates_df$end_datetime)
+  #   ),
+  #   # TODO: might need to split across variables, too. Once we scale up, our queries
+  #   # might be too large and chunking by variable could help.
+  #   pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df),
+  #   format = "file",
+  #   error = "continue"
+  # ),
+
+  # FOR NOW, USE LINDSAY'S GLM_DATA_RAW FEATHER FILES, BROUGHT IN MANUALLY
+  # mapping over gcm_names, gcm_dates_df, and query_cells_centroids_list_by_tile
+  # to read in Lindsay's created feather files
+  tar_target(gcm_data_raw_feather,
+             sprintf('7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_raw.feather', gcm_names, gcm_dates_df$projection_period, unique(query_cells_centroids_list_by_tile$tile_no)),
+             format = 'file',
+             pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df)),
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
 
   # Munge GCM variables into useable GLM variables and correct units
+  # For each tile-gcm combo this function returns a list with 2 elements:
+  # 1) file_out - the name of the munged output file, which contains data
+  # only for queried cells in that tile that returned data for all variables, and
+  # 2) cell_info - a tibble with a row for each queried cell in that tile, indicating
+  # whether or not that cell is missing data for *any* variable for that gcm
+  tar_target(
+    glm_ready_gcm_data_list,
+    munge_notaro_to_glm(gcm_data_raw_feather, gcm_names, unique(query_cells_centroids_list_by_tile$tile_no)),
+    pattern = map(gcm_data_raw_feather, cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df))
+  ),
+
+  # Combine the `file_out` elements of the gcm_ready_gcm_data_list branches
+  # into a single vector of file targets
   tar_target(
     glm_ready_gcm_data_feather,
-    munge_notaro_to_glm(gcm_data_raw_feather),
-    pattern = map(gcm_data_raw_feather),
+    glm_ready_gcm_data_list$file_out,
+    pattern = map(glm_ready_gcm_data_list),
     format = "file"
   ),
+
+  # Combine the `cell_info` elements of the gcm_ready_gcm_data_list branches
+  # into a single tibble of cell information, with a row per cell-gcm combo
+  tar_target(
+    glm_ready_gcm_data_cell_info,
+    glm_ready_gcm_data_list$cell_info,
+    pattern = map(glm_ready_gcm_data_list),
+  ),
+
+  # Pivot the cell_info tibble wider so that we have a single row per cell
+  # and can track for how many gcms each cell is or is not missing data
+  tar_target(
+    glm_ready_gcm_data_cell_status,
+    glm_ready_gcm_data_cell_info %>%
+      pivot_wider(names_from='gcm', values_from='missing_data', names_glue="{gcm}_missing_data") %>%
+      mutate(n_gcm_missing_data = rowSums(across(c(-cell_no,-tile_no)))),
+  ),
+
+  # Re-do mapping of which lakes are in which cells and tiles, using only the query
+  # cells that returned data and did not have missing data for any variables for any GCMs.
+  # Here, each lake is matched to the cell with the centroid that is closest to the
+  # lake centroid. By using only those cells that returned data, we can ensure that lakes
+  # that fell within cells that were missing data are re-assigned to the closest
+  # cell that returned data. This xwalk is being used in `lake-temperature-process-models`
+  # to determine what meteorological data to pull for each lake.
+  tar_target(lake_cell_tile_xwalk_data_df,
+             get_lake_cell_tile_data_xwalk(query_lake_centroids_sf, query_cell_centroids_sf, glm_ready_gcm_data_cell_status)
+             ),
+
+  # Save the revised lake-cell-tile mapping for use in `lake-temperature-process-models`
+  tar_target(lake_cell_tile_xwalk_csv, {
+    out_file <- "7_drivers_munge/out/lake_cell_tile_xwalk.csv"
+    write_csv(lake_cell_tile_xwalk_data_df, out_file)
+    return(out_file)
+  }, format = 'file'),
 
   # Create feather files that can be used in the GLM pipeline without
   # having to be munged and extracted via NetCDF. Temporary solution
@@ -187,14 +237,14 @@ targets_list <- list(
           time <= as.Date("2070-01-01") ~ "2040_2059",
           TRUE ~ "2080_2099",
         )) %>%
-        unite("cell.projperiod", c("cell", "projectperiod"), sep = ".") %>%
-        split(.$cell.projperiod) %>%
+        unite("cell_no.projperiod", c("cell_no", "projectperiod"), sep = ".") %>%
+        split(.$cell_no.projperiod) %>%
         purrr::map(., function(data) {
-          data <- separate(data, cell.projperiod, into = c("cell", "projection_period"), sep = "\\.")
-          cell <- unique(data$cell)
+          data <- separate(data, cell_no.projperiod, into = c("cell_no", "projection_period"), sep = "\\.")
+          cell_no <- unique(data$cell_no)
           projection_period <- unique(data$projection_period)
-          data_to_save <- data %>% select(-cell, -projection_period)
-          out_file <- sprintf("%s/GCM_%s_%s_%s.feather", out_dir, gcm_name, projection_period, cell)
+          data_to_save <- data %>% select(-cell_no, -projection_period)
+          out_file <- sprintf("%s/GCM_%s_%s_%s.feather", out_dir, gcm_name, projection_period, cell_no)
           write_feather(data_to_save, out_file)
           return(out_file)
         }) %>% unlist()
@@ -256,7 +306,7 @@ targets_list <- list(
   ##### Get list of final output files to link back to scipiper pipeline #####
   tar_target(
     gcm_files_out,
-    c(gcm_nc, lake_cell_tile_xwalk_csv, tile_cell_map_png),
+    c(gcm_nc, lake_cell_tile_xwalk_csv, query_tile_cell_map_png),
     format = 'file'
   )
 )
