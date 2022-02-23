@@ -400,7 +400,7 @@ munge_notaro_to_glm <- function(in_file, gcm_name, tile_no) {
   raw_data_excl_na_cells <- select(raw_data, -all_of(na_cell_colnames))
 
   # Munge the raw data for all cells that returned data
-  daily_data <- raw_data_excl_na_cells %>%
+  munged_data <- raw_data_excl_na_cells %>%
 
     # Create a column with the actual date
     convert_notaro_dates() %>%
@@ -450,19 +450,19 @@ munge_notaro_to_glm <- function(in_file, gcm_name, tile_no) {
            Snow
     )
 
-  # Save the daily data
+  # Save the munged data
   out_file <- gsub("_raw.feather", "_munged.feather", in_file)
-  arrow::write_feather(daily_data, out_file)
+  arrow::write_feather(munged_data, out_file)
 
   # Create an output tibble documenting which cells are and are not
   # missing data, noting the gcm name and tile_no
   cell_info <- bind_rows(
-    tibble(cell_no = unique(daily_data$cell_no), missing_data = FALSE),
+    tibble(cell_no = unique(munged_data$cell_no), missing_data = FALSE),
     tibble(cell_no = as.numeric(na_cell_colnames), missing_data = TRUE)) %>%
     mutate(gcm = gcm_name, tile_no = tile_no, .before=1) %>%
     arrange(cell_no)
 
-  return(list(file_out = out_file, cell_info=cell_info))
+  return(list(list(file_out = out_file, cell_info=cell_info)))
 }
 
 #' @title Check that units for variables downloaded match our assumptions.

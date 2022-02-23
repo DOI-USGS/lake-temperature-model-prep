@@ -162,6 +162,11 @@ targets_list <- list(
   # only for queried cells in that tile that returned data for all variables, and
   # 2) cell_info - a tibble with a row for each queried cell in that tile, indicating
   # whether or not that cell is missing data for *any* variable for that gcm
+  # Note: we are munging and saving the data & identifying missing cells in a single
+  # target (rather than having a munging target and then a target to write the munged
+  # data and another to identify cells with missing data) to avoid the I/O overhead of
+  # returning the munged data as a dataframe, as targets would be writing a file
+  # beneath the surface to store that object target.
   tar_target(
     glm_ready_gcm_data_list,
     munge_notaro_to_glm(gcm_data_raw_feather, gcm_names, unique(query_cells_centroids_list_by_tile$tile_no)),
@@ -172,8 +177,9 @@ targets_list <- list(
   # into a single vector of file targets
   tar_target(
     glm_ready_gcm_data_feather,
-    glm_ready_gcm_data_list$file_out,
-    pattern = map(glm_ready_gcm_data_list),
+    glm_ready_gcm_data_list %>%
+      purrr::modify_depth(1, "file_out") %>%
+      unlist(),
     format = "file"
   ),
 
@@ -181,8 +187,9 @@ targets_list <- list(
   # into a single tibble of cell information, with a row per cell-gcm combo
   tar_target(
     glm_ready_gcm_data_cell_info,
-    glm_ready_gcm_data_list$cell_info,
-    pattern = map(glm_ready_gcm_data_list),
+    glm_ready_gcm_data_list %>%
+      purrr::modify_depth(1, "cell_info") %>%
+      bind_rows()
   ),
 
   # Pivot the cell_info tibble wider so that we have a single row per cell
