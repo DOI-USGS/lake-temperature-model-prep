@@ -194,36 +194,34 @@ get_lake_cell_tile_data_xwalk <- function(lake_centroids, query_cell_centroids, 
   return(lake_cells_with_data_tiles_join)
 }
 
-#' @title Map the query tiles and cells
+#' @title Map the tiles and cells
 #' @description Map the grid cells w/ lakes (symbolized by n_lakes per cell) and grid tiles
-#' included in the GDP query
+#' from the provided lake_cell_tile_xwalk
 #' @param out_file name of output png file
 #' @param lake_cell_tile_xwalk mapping of which lakes are in which cells and tiles
-#' @param query_tiles vector of tiles that contain `query_cells`
-#' @param query_cells vector of cells that contain lakes
 #' @param grid_tiles an`sf` object with polygons representing the
 #' groups of grid cells. Must contain a `tile_no` column which has
 #' the id of each of the tile polygons.
 #' @param grid_cells an `sf` object with square polygons representing the
 #' grid cells. Must contain a `cell_no` column which has
 #' the id of each of the cell polygons.
-#' @return a png of the queried grid cells, symbolized by n_lakes per cell, and the grid tiles
+#' @return a png of the xwalk grid cells, symbolized by n_lakes per cell, and the grid tiles
 # TODO: This function to should be 1) moved to 8_viz, and 2) made so that it only rebuilds if
 # new cells will be plotted.
-map_query_tiles_cells <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_cells, grid_tiles, grid_cells) {
+map_tiles_cells <- function(out_file, lake_cell_tile_xwalk, grid_tiles, grid_cells) {
   lakes_per_cell <- lake_cell_tile_xwalk %>%
     group_by(cell_no) %>%
     summarize(nlakes = n())
 
   grid_tiles <- grid_tiles %>%
-    filter(tile_no %in% query_tiles)
+    filter(tile_no %in% lake_cell_tile_xwalk$tile_no)
 
   tile_labels <- grid_tiles %>%
     mutate(bbox=split(.,tile_no) %>% purrr::map(sf::st_bbox)) %>%
     unnest_wider(bbox)
 
   grid_cells <- grid_cells %>%
-    filter(cell_no %in% query_cells) %>%
+    filter(cell_no %in% lake_cell_tile_xwalk$cell_no) %>%
     left_join(lakes_per_cell)
 
   tile_cell_plot <- ggplot() +
