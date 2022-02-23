@@ -135,32 +135,24 @@ targets_list <- list(
     "windspeed_debias" # Wind speed (m/s)
     )),
 
-  # # Download data from GDP for each tile, GCM name, and GCM projection period combination.
-  # # If the cells in a tile don't change, then the tile should not need to rebuild.
-  # tar_target(
-  #   gcm_data_raw_feather,
-  #   download_gcm_data(
-  #     out_file_template = "7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_raw.feather",
-  #     query_geom = query_cells_centroids_list_by_tile,
-  #     gcm_name = gcm_names,
-  #     gcm_projection_period = gcm_dates_df$projection_period,
-  #     query_vars = gcm_query_vars,
-  #     query_dates = c(gcm_dates_df$start_datetime, gcm_dates_df$end_datetime)
-  #   ),
-  #   # TODO: might need to split across variables, too. Once we scale up, our queries
-  #   # might be too large and chunking by variable could help.
-  #   pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df),
-  #   format = "file",
-  #   error = "continue"
-  # ),
-
-  # FOR NOW, USE LINDSAY'S GLM_DATA_RAW FEATHER FILES, BROUGHT IN MANUALLY
-  # mapping over gcm_names, gcm_dates_df, and query_cells_centroids_list_by_tile
-  # to read in Lindsay's created feather files
-  tar_target(gcm_data_raw_feather,
-             sprintf('7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_raw.feather', gcm_names, gcm_dates_df$projection_period, unique(query_cells_centroids_list_by_tile$tile_no)),
-             format = 'file',
-             pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df)),
+  # Download data from GDP for each tile, GCM name, and GCM projection period combination.
+  # If the cells in a tile don't change, then the tile should not need to rebuild.
+  tar_target(
+    gcm_data_raw_feather,
+    download_gcm_data(
+      out_file_template = "7_drivers_munge/tmp/7_GCM_%s_%s_tile%s_raw.feather",
+      query_geom = query_cells_centroids_list_by_tile,
+      gcm_name = gcm_names,
+      gcm_projection_period = gcm_dates_df$projection_period,
+      query_vars = gcm_query_vars,
+      query_dates = c(gcm_dates_df$start_datetime, gcm_dates_df$end_datetime)
+    ),
+    # TODO: might need to split across variables, too. Once we scale up, our queries
+    # might be too large and chunking by variable could help.
+    pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df),
+    format = "file",
+    error = "continue"
+  ),
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
 
