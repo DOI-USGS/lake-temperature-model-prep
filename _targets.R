@@ -106,6 +106,8 @@ targets_list <- list(
     map_tiles_cells(
       out_file = '7_drivers_munge/out/query_tile_cell_map.png',
       lake_cell_tile_xwalk = lake_cell_tile_spatial_xwalk_df,
+      query_tiles = query_tiles,
+      query_cells = query_cells,
       grid_tiles = grid_tiles_sf,
       grid_cells = grid_cells_sf
     ),
@@ -207,18 +209,6 @@ targets_list <- list(
     return(out_file)
   }, format = 'file'),
 
-  # Map the new lake-cell-tile xwalk
-  tar_target(
-    tile_cell_map_png,
-    map_tiles_cells(
-      out_file = '7_drivers_munge/out/tile_cell_map.png',
-      lake_cell_tile_xwalk = lake_cell_tile_xwalk_df,
-      grid_tiles = grid_tiles_sf,
-      grid_cells = grid_cells_sf
-    ),
-    format='file'
-  ),
-
   # Create feather files that can be used in the GLM pipeline without
   # having to be munged and extracted via NetCDF. Temporary solution
   # while we work out some NetCDF challenges.
@@ -305,7 +295,7 @@ targets_list <- list(
   ##### Get list of final output files to link back to scipiper pipeline #####
   tar_target(
     gcm_files_out,
-    c(gcm_nc, lake_cell_tile_xwalk_csv, tile_cell_map_png),
+    c(gcm_nc, lake_cell_tile_xwalk_csv, query_tile_cell_map_png),
     format = 'file'
   )
 )
