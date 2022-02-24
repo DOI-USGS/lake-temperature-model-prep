@@ -345,22 +345,6 @@ download_gcm_data <- function(out_file_template, query_geom,
   return(out_file)
 }
 
-#' @title Pull out individual file information from a dynamically mapped target
-#' @description Use a dynamically mapped target to extract information about
-#' the individual branch files to build a table that can group files and then
-#' trigger rebuilds when individual files within a group change.
-#' @param dynamic_branch_names character vector of the names of each branch created
-#' from running `names()` using the target dynamically branched target as input.
-#' @return a tibble with three columns (`name` = target name of the branch, `path`
-#' = character string of the file created by that branch, and `data` = hash code
-#' indicating the current state of the file) and a row for each branch.
-build_branch_file_hash_table <- function(dynamic_branch_names) {
-  # Get metadata for all the branches of the dynamic target
-  tar_meta(all_of(dynamic_branch_names), c("path", "data")) %>%
-    # There is just one path per branch, so remove the `list` format from this column
-    unnest(path)
-}
-
 #' @title Convert Notaro GCM data to GLM-ready data
 #' @description The final GCM driver data needs certain column names and units
 #' to be used for GLM. This function converts GCM variables into appropriate
