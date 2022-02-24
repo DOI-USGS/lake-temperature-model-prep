@@ -66,7 +66,7 @@ targets_list <- list(
 
   # Get mapping of which lakes are in which cells and tiles, based on a spatial join
   # (as a non-spatial data.frame). Not currently being used here, except for mapping the query.
-  tar_target(lake_cell_tile_xwalk_spatial_df,
+  tar_target(lake_cell_tile_spatial_xwalk_df,
              get_lake_cell_tile_spatial_xwalk(query_lake_centroids_sf, grid_cells_sf, cell_tile_xwalk_df)),
 
   ##### Prepare grid cell centroids for querying GDP #####
@@ -105,7 +105,7 @@ targets_list <- list(
     query_tile_cell_map_png,
     map_tiles_cells(
       out_file = '7_drivers_munge/out/query_tile_cell_map.png',
-      lake_cell_tile_xwalk = lake_cell_tile_xwalk_spatial_df,
+      lake_cell_tile_xwalk = lake_cell_tile_spatial_xwalk_df,
       grid_tiles = grid_tiles_sf,
       grid_cells = grid_cells_sf
     ),
@@ -177,9 +177,7 @@ targets_list <- list(
   # into a single vector of file targets
   tar_target(
     glm_ready_gcm_data_feather,
-    glm_ready_gcm_data_list %>%
-      purrr::modify_depth(1, "file_out") %>%
-      unlist(),
+    unlist(glm_ready_gcm_data_list[grepl("file_out", names(glm_ready_gcm_data_list))]),
     format = "file"
   ),
 
@@ -187,18 +185,7 @@ targets_list <- list(
   # into a single tibble of cell information, with a row per cell-gcm combo
   tar_target(
     glm_ready_gcm_data_cell_info,
-    glm_ready_gcm_data_list %>%
-      purrr::modify_depth(1, "cell_info") %>%
-      bind_rows()
-  ),
-
-  # Pivot the cell_info tibble wider so that we have a single row per cell
-  # and can track for how many gcms each cell is or is not missing data
-  tar_target(
-    glm_ready_gcm_data_cell_status,
-    glm_ready_gcm_data_cell_info %>%
-      pivot_wider(names_from='gcm', values_from='missing_data', names_glue="{gcm}_missing_data") %>%
-      mutate(n_gcm_missing_data = rowSums(across(c(-cell_no,-tile_no)))),
+    bind_rows(glm_ready_gcm_data_list[grepl("cell_info", names(glm_ready_gcm_data_list))])
   ),
 
   # Re-do mapping of which lakes are in which cells and tiles, using only the query
@@ -208,14 +195,15 @@ targets_list <- list(
   # that fell within cells that were missing data are re-assigned to the closest
   # cell that returned data. This xwalk is being used in `lake-temperature-process-models`
   # to determine what meteorological data to pull for each lake.
-  tar_target(lake_cell_tile_xwalk_data_df,
-             get_lake_cell_tile_data_xwalk(query_lake_centroids_sf, query_cell_centroids_sf, glm_ready_gcm_data_cell_status)
+  tar_target(lake_cell_tile_xwalk_df,
+             adjust_lake_cell_tile_xwalk(lake_cell_tile_spatial_xwalk_df, query_lake_centroids_sf,
+                                         query_cell_centroids_sf, glm_ready_gcm_data_cell_info)
              ),
 
   # Save the revised lake-cell-tile mapping for use in `lake-temperature-process-models`
   tar_target(lake_cell_tile_xwalk_csv, {
     out_file <- "7_drivers_munge/out/lake_cell_tile_xwalk.csv"
-    write_csv(lake_cell_tile_xwalk_data_df, out_file)
+    write_csv(lake_cell_tile_xwalk_df, out_file)
     return(out_file)
   }, format = 'file'),
 
@@ -224,7 +212,7 @@ targets_list <- list(
     tile_cell_map_png,
     map_tiles_cells(
       out_file = '7_drivers_munge/out/tile_cell_map.png',
-      lake_cell_tile_xwalk = lake_cell_tile_xwalk_data_df,
+      lake_cell_tile_xwalk = lake_cell_tile_xwalk_df,
       grid_tiles = grid_tiles_sf,
       grid_cells = grid_cells_sf
     ),

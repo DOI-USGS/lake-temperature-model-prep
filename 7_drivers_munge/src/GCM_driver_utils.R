@@ -146,35 +146,42 @@ get_query_cells <- function(grid_cells, lake_centroids) {
 #' @return An output table with the fields `site_id`, `state`, `cell_no` and
 #' `tile_no`
 get_lake_cell_tile_spatial_xwalk <- function(lake_centroids, grid_cells, cell_tile_xwalk) {
-  lake_cells_tiles_join <- lake_centroids %>%
+  lake_cells_tiles_xwalk <- lake_centroids %>%
     st_join(grid_cells, left=FALSE) %>%
     st_drop_geometry() %>%
     left_join(cell_tile_xwalk, by='cell_no') %>%
     select(site_id, state, cell_no, tile_no)
 
-  return(lake_cells_tiles_join)
+  return(lake_cells_tiles_xwalk)
 }
 
-#' @title Match lakes to the queried cells that returned data.
+#' @title Adjust the lake-cell-tile xwalk by matching lakes to the queried cells
+#' that returned data.
 #' @description Using lake centroids, this spatially matches lakes to query
 #' cells that returned data, based on which cell centroid is closest to each
 #' lake centroid. The output of this function will only differ from the output
 #' of `get_lake_cell_tile_spatial_xwalk()` for those lakes that fell within
 #' cells that did not return data
+#' @param spatial_xwalk mapping of which lakes are in which cells and tiles,
+#' based on a spatial join
 #' @param lake_centroids an `sf` object of points representing the lake
 #' centroids.
 #' @param query_cell_centroids  an `sf` object of points representing the
 #' grid cell centroids for queried cells. Must contain a `cell_no` column
 #' which has the id of each of the cell centroids
-#' @param cell_status a table with one row per query cell, with columns for
-#' `tile_no` and each gcm (`{gcm}_missing_data`), indicating whether or not the cell
-#' is missing data for any variable for that gcm. The table also includes a
-#' final column `n_gcm_missing_data` with the total count of gcms that are missing
-#' data for that cell. This table is used here to filter the grid cell
-#' centroids to only those that returned data
+#' @param cell_info a table with one row per query cell-gcm combo, with columns for
+#' `gcm`, `tile_no`, `cell_no` and a column for `missing_data` indicating whether
+#' or not the cell is missing data for any variable for that gcm. This table is
+#' used here to filter the grid cell centroids to only those that returned data
 #' @return An output table with the fields `site_id`, `state`, `cell_no` and
 #' `tile_no`
-get_lake_cell_tile_data_xwalk <- function(lake_centroids, query_cell_centroids, cell_status) {
+adjust_lake_cell_tile_xwalk <- function(spatial_xwalk, lake_centroids, query_cell_centroids, cell_info) {
+  # Pivot the cell_info tibble wider so that we have a single row per cell
+  # and can track for how many gcms each cell is or is not missing data
+  cell_status <- cell_info %>%
+    pivot_wider(names_from='gcm', values_from='missing_data', names_glue="{gcm}_missing_data") %>%
+    mutate(n_gcm_missing_data = rowSums(across(c(-cell_no,-tile_no))))
+
   # determine which cells returned data for all 6 GCMs
   cells_with_data <- cell_status %>%
     filter(n_gcm_missing_data == 0) %>%
@@ -186,12 +193,18 @@ get_lake_cell_tile_data_xwalk <- function(lake_centroids, query_cell_centroids, 
 
   # match each lake to a cell that returned data based on
   # which cell centroid is closest to each lake centroid
-  lake_cells_with_data_tiles_join <- lake_centroids %>%
+  lake_cells_with_data_tiles_xwalk <- lake_centroids %>%
     st_join(cell_centroids_with_data, join=st_nearest_feature, left=TRUE) %>%
     st_drop_geometry() %>%
     select(site_id, state, cell_no, tile_no)
 
-  return(lake_cells_with_data_tiles_join)
+  # join this adjusted xwalk to the spatial xwalk
+  adjusted_xwalk <- spatial_xwalk %>%
+    left_join(lake_cells_with_data_tiles_xwalk,
+              by=c('site_id', 'state'),
+              suffix=c('_spatial','_data'))
+
+  return(adjusted_xwalk)
 }
 
 #' @title Map the tiles and cells
@@ -462,7 +475,8 @@ munge_notaro_to_glm <- function(in_file, gcm_name, tile_no) {
     mutate(gcm = gcm_name, tile_no = tile_no, .before=1) %>%
     arrange(cell_no)
 
-  return(list(list(file_out = out_file, cell_info=cell_info)))
+  # return the out_file name and the cell_info tibble in a list
+  return(list(file_out = out_file, cell_info=cell_info))
 }
 
 #' @title Check that units for variables downloaded match our assumptions.
