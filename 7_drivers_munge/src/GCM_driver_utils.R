@@ -357,8 +357,8 @@ download_gcm_data <- function(out_file_template, query_geom,
 #' @param in_file filepath to a feather file containing the hourly geoknife
 #' data, named with the the gcm, dates, and tile number as
 #' '7_drivers_munge/tmp/7_GCM_{gcm_name}_{projection_period}_tile{tile_no}_raw.feather'
-#' @param gcm_name name of one of the six GCMs, for which data is being read
-#' @param tile_no id of the tile polygon used to group the cells for the data query
+#' @param gcm_names names of the six GCMs
+#' @param query_tiles vector of tile ids used in query to GDP
 #' @value a table saved as a feather file with the following columns:
 #' `time`: class Date denoting a single day
 #' `cell_no`: a numeric value indicating which cell in the grid that the data
@@ -380,7 +380,10 @@ download_gcm_data <- function(out_file_template, query_geom,
 #' being munged, `tile_no` the tile for which data are being munged, `cell_no` for the cell
 #' number, and `missing_data` - a T/F logical indicating whether or not the cell is
 #' missing data for *any* variable for the gcm for which data are being munged.
-munge_notaro_to_glm <- function(in_file, gcm_name, tile_no) {
+munge_notaro_to_glm <- function(in_file, gcm_names, query_tiles) {
+  # Pull gcm name and tile_no
+  gcm_name <- str_extract(in_file, paste(gcm_names, collapse="|"))
+  tile_no <- str_extract(in_file, paste(query_tiles, collapse="|"))
 
   raw_data <- arrow::read_feather(in_file)
 
