@@ -347,18 +347,98 @@ download_gcm_data <- function(out_file_template, query_geom,
   return(out_file)
 }
 
-#' @title Convert Notaro GCM data to GLM-ready data
-#' @description The final GCM driver data needs certain column names and units
-#' to be used for GLM. This function converts GCM variables into appropriate
-#' units and saves a file with the exact same name as the in file, except that
-#' the "_raw" part of the `in_file` filepath is replaced with "_munged". Cells
-#' that did not return data (contain NaN values) for *any* variable are
-#' excluded from the munged data.
+#' @title Munge the output from the GDP query, save it and return information
+#' about which queried cells are missing data. This function maps over
+#' `gcm_data_raw_feather`, so data for a single GCM and a single tile is munged
+#' within this function. Each tile contains up to 225 GCM cells.
+#' @description This function loads in the raw data returned by GDP, calls
+#' `munge_notaro_to_glm()` to munge that data, identifies which cells are
+#' missing data for *any* GLM variable by calling `identify_cells_missing_data()`,
+#' filters the munged data to only those cells that are not missing data, and saves
+#' that data to a file with the exact same name as the in file, except that the
+#' "_raw" part of the `in_file` filepath is replaced with "_munged".
 #' @param in_file filepath to a feather file containing the hourly geoknife
 #' data, named with the the gcm, dates, and tile number as
 #' '7_drivers_munge/tmp/7_GCM_{gcm_name}_{projection_period}_tile{tile_no}_raw.feather'
 #' @param gcm_names names of the six GCMs
 #' @param query_tiles vector of tile ids used in query to GDP
+#' @return a list with two elements: 1) `file_out` - the name of the output
+#' feather file, and 2) `cell_info` - a tibble with a row for each cell in the
+#' tile for which data are being munged, with the columns `gcm` - the gcm for which data is
+#' being munged, `tile_no` the tile for which data are being munged, `cell_no` for the cell
+#' number, and `missing_data` - a T/F logical indicating whether or not the cell is
+#' missing data for *any* variable for the gcm for which data are being munged.
+munge_gdp_output <- function(in_file, gcm_names, query_tiles) {
+  # Pull gcm name and tile_no
+  gcm_name <- str_extract(in_file, paste(gcm_names, collapse="|"))
+  tile_no <- str_extract(in_file, paste(query_tiles, collapse="|"))
+
+  # read in raw data returned from GDP
+  raw_data <- arrow::read_feather(in_file)
+
+  # munge the raw data
+  munged_data <- munge_notaro_to_glm(raw_data)
+
+  # generate a tibble with a row for every cell in the current tile
+  # indicating which cells, if any, are missing data for *any* GLM variable
+  # for the current GCM
+  cell_info <- identify_cells_missing_data(munged_data, gcm_name, tile_no)
+
+  # exclude cells that contain NaN from the munged data
+  nan_cells <- filter(cell_info, missing_data==TRUE) %>% pull(cell_no)
+  munged_data_excl_nan_cells <- filter(munged_data, !(cell_no %in% nan_cells))
+
+  # save the filtered munged data
+  out_file <- gsub("_raw.feather", "_munged.feather", in_file)
+  arrow::write_feather(munged_data_excl_nan_cells, out_file)
+
+  # return the out_file name and the cell_info tibble in a list
+  return(list(file_out = out_file, cell_info=cell_info))
+}
+
+#' @title Identify GCM cells that are missing data
+#' @description Figure out which cells, if any, among the munged data for a
+#' given gcm and tile are missing data for *any* GLM variable.
+#' @param munged_data a tibble of munged GCM data with appropriate units for
+#' use with GLM
+#' @param gcm_name the name of one of the 6 gcms, for which raw geoknife data
+#' were munged
+#' @param tile_no the id of the tile for which raw geoknife data were munged
+#' @return `cell_info` - a tibble with a row for each cell in the tile for
+#' which data are being munged, with the columns `gcm` - the gcm for which
+#' data were munged, `tile_no` the tile for which data were munged, `cell_no`
+#' for the cell number, and `missing_data` - a T/F logical indicating whether
+#' or not the cell is missing data for *any* variable for the gcm for which
+#' data were munged.
+identify_cells_missing_data <- function(munged_data, gcm_name, tile_no) {
+  # Figure out if any cells have NaNs for any variables.
+  # The munged_data is in long format, with a column for cell_no.
+  # Use 'any_vars' as the second argument to `filter_at()` to catch cells where
+  # any variables are missing for a cell [CURRENT APPROACH], or 'all_vars' as
+  # the second argument to catch cells where all variables are missing for a cell
+  munged_nans <- munged_data %>%
+    group_by(cell_no) %>%
+    summarize(across(-time, list(n_nan=~sum(is.nan(.))))) %>%
+    filter_at(vars(-cell_no), any_vars(. != 0))
+
+  # Create an output tibble documenting which cells are and are not
+  # missing data, noting the gcm name and tile_no
+  cell_info <- tibble(
+    cell_no = unique(munged_data$cell_no)) %>%
+    mutate(missing_data = case_when(
+      cell_no %in% munged_nans$cell_no ~ TRUE,
+      TRUE ~ FALSE)) %>%
+    mutate(gcm = gcm_name, tile_no = tile_no, .before=1) %>%
+    arrange(cell_no)
+
+  return(cell_info)
+}
+
+#' @title Convert Notaro GCM data to GLM-ready data
+#' @description The final GCM driver data needs certain column names and units
+#' to be used for GLM. This function converts GCM variables into appropriate
+#' units.
+#' @param raw_data the raw the hourly geoknife data
 #' @value a table saved as a feather file with the following columns:
 #' `time`: class Date denoting a single day
 #' `cell_no`: a numeric value indicating which cell in the grid that the data
@@ -374,35 +454,14 @@ download_gcm_data <- function(out_file_template, query_geom,
 #' `Snow`: the rate of snowfall (m/day); a numeric value derived from the `Rain`
 #' column and assumes the snow depth is 10 times the water equivalent (`Rain`) when the
 #' temperature (`AirTemp`) is below freezing.
-#' @return a list with two elements: 1) `file_out` - the name of the output
-#' feather file, and 2) `cell_info` - a tibble with a row for each cell in the
-#' tile for which data are being munged, with the columns `gcm` - the gcm for which data is
-#' being munged, `tile_no` the tile for which data are being munged, `cell_no` for the cell
-#' number, and `missing_data` - a T/F logical indicating whether or not the cell is
-#' missing data for *any* variable for the gcm for which data are being munged.
-munge_notaro_to_glm <- function(in_file, gcm_names, query_tiles) {
-  # Pull gcm name and tile_no
-  gcm_name <- str_extract(in_file, paste(gcm_names, collapse="|"))
-  tile_no <- str_extract(in_file, paste(query_tiles, collapse="|"))
-
-  raw_data <- arrow::read_feather(in_file)
+#' @return a tibble of the munged data
+munge_notaro_to_glm <- function(raw_data) {
 
   # This line will fail if the units don't match our assumptions
   validate_notaro_units_assumptions(raw_data)
 
-  # Figure out if any columns contain NaNs. raw_data is in wide format, with
-  # columns named by cell_no, so can pull cells that contain NaNs from column
-  # names. Use 'any' as the third argument to `apply()` to catch cells where
-  # any variables are missing for a cell [CURRENT APPROACH], or 'all' as the
-  # third argument to catch cells where all variables are missing for a cell
-  col_is_na <- apply(is.na(raw_data), 2, any)
-  na_cell_colnames <- colnames(raw_data)[col_is_na]
-
-  # Remove columns for cells that contain NaNs.
-  raw_data_excl_na_cells <- select(raw_data, -all_of(na_cell_colnames))
-
-  # Munge the raw data for all cells that returned data
-  munged_data <- raw_data_excl_na_cells %>%
+  # Munge the raw data
+  munged_data <- raw_data %>%
 
     # Create a column with the actual date
     convert_notaro_dates() %>%
@@ -452,20 +511,7 @@ munge_notaro_to_glm <- function(in_file, gcm_names, query_tiles) {
            Snow
     )
 
-  # Save the munged data
-  out_file <- gsub("_raw.feather", "_munged.feather", in_file)
-  arrow::write_feather(munged_data, out_file)
-
-  # Create an output tibble documenting which cells are and are not
-  # missing data, noting the gcm name and tile_no
-  cell_info <- bind_rows(
-    tibble(cell_no = unique(munged_data$cell_no), missing_data = FALSE),
-    tibble(cell_no = as.numeric(na_cell_colnames), missing_data = TRUE)) %>%
-    mutate(gcm = gcm_name, tile_no = tile_no, .before=1) %>%
-    arrange(cell_no)
-
-  # return the out_file name and the cell_info tibble in a list
-  return(list(file_out = out_file, cell_info=cell_info))
+  return(munged_data)
 }
 
 #' @title Check that units for variables downloaded match our assumptions.

@@ -171,7 +171,7 @@ targets_list <- list(
   # beneath the surface to store that object target.
   tar_target(
     glm_ready_gcm_data_list,
-    munge_notaro_to_glm(gcm_data_raw_feather, gcm_names, query_tiles),
+    munge_gdp_output(gcm_data_raw_feather, gcm_names, query_tiles),
     pattern = map(gcm_data_raw_feather)
   ),
 
