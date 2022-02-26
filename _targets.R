@@ -192,11 +192,13 @@ targets_list <- list(
 
   # Re-do mapping of which lakes are in which cells and tiles, using only the query
   # cells that returned data and did not have missing data for any variables for any GCMs.
-  # Here, each lake is matched to the cell with the centroid that is closest to the
-  # lake centroid. By using only those cells that returned data, we can ensure that lakes
-  # that fell within cells that were missing data are re-assigned to the closest
-  # cell that returned data. This xwalk is being used in `lake-temperature-process-models`
-  # to determine what meteorological data to pull for each lake.
+  # Here, the pool of cells to which lakes can be matched are those cells that returned data,
+  # to ensure that lakes that fell within cells that were missing data are re-assigned to
+  # a cell that returned data. Lakes are preferentially matched to cells within the same
+  # grid row and within `x_buffer` columns from the cell that the lake falls within.
+  # If no cells that returned data meet that criteria, the lake is matched to the closest
+  # cell that did return data, regardless of row. This xwalk is being used in
+  # `lake-temperature-process-models` to determine what meteorological data to pull for each lake.
   tar_target(lake_cell_tile_xwalk_df,
              adjust_lake_cell_tile_xwalk(lake_cell_tile_spatial_xwalk_df, query_lake_centroids_sf,
                                          query_cell_centroids_sf, glm_ready_gcm_data_cell_info, x_buffer=3)
