@@ -199,7 +199,7 @@ targets_list <- list(
   # to determine what meteorological data to pull for each lake.
   tar_target(lake_cell_tile_xwalk_df,
              adjust_lake_cell_tile_xwalk(lake_cell_tile_spatial_xwalk_df, query_lake_centroids_sf,
-                                         query_cell_centroids_sf, glm_ready_gcm_data_cell_info)
+                                         query_cell_centroids_sf, glm_ready_gcm_data_cell_info, x_buffer=3)
              ),
 
   # Save the revised lake-cell-tile mapping for use in `lake-temperature-process-models`

@@ -157,11 +157,17 @@ get_lake_cell_tile_spatial_xwalk <- function(lake_centroids, grid_cells, cell_ti
 
 #' @title Adjust the lake-cell-tile xwalk by matching lakes to the queried cells
 #' that returned data.
-#' @description Using lake centroids, this spatially matches lakes to query
-#' cells that returned data, based on which cell centroid is closest to each
-#' lake centroid. The output of this function will only differ from the output
-#' of `get_lake_cell_tile_spatial_xwalk()` for those lakes that fell within
-#' cells that did not return data
+#' @description Using lake centroids, this spatially matches lakes to query cells
+#' that returned data. The preference is to  match lakes that fall within cells that
+#' are missing data to another cell with the same y value (within the same row).
+#' However, we do not want to match lakes to cells that are too far in the x direction
+#' from the cell to which the lake was originally  matched. The variable `x_buffer`
+#' sets the maximum allowable x-distance. If no non-nan cells are in the same row
+#' as the cell that is missing data, or if there are no cells in that same row
+#' that are within the specified x-distance, the lake will be matched to the cell
+#' with the centroid closest to the lake centroid, regardless of y value. The output
+#' of this function will only differ from the output of `get_lake_cell_tile_spatial_xwalk()`
+#' for those lakes that fell within cells that did not return data.
 #' @param spatial_xwalk mapping of which lakes are in which cells and tiles,
 #' based on a spatial join
 #' @param lake_centroids an `sf` object of points representing the lake
@@ -173,9 +179,14 @@ get_lake_cell_tile_spatial_xwalk <- function(lake_centroids, grid_cells, cell_ti
 #' `gcm`, `tile_no`, `cell_no` and a column for `missing_data` indicating whether
 #' or not the cell is missing data for any variable for that gcm. This table is
 #' used here to filter the grid cell centroids to only those that returned data
-#' @return An output table with the fields `site_id`, `state`, `cell_no` and
-#' `tile_no`
-adjust_lake_cell_tile_xwalk <- function(spatial_xwalk, lake_centroids, query_cell_centroids, cell_info) {
+#' @param x_buffer the maximum x distance (in columns) that any non-nan cells within
+#' the same row as the originally matched cell can be in order to be in the pool of
+#' cells to be matched to a given lake.
+#' @return An output table with the fields `site_id`, `state`, `cell_no_spatial`,
+#' `tile_no_spatial`, `cell_no_data` and `tile_no_data`. The '_spatial' suffix
+#' denotes the original spatial matching to all grid cells, while the '_data' suffix
+#' denotes the adjusted matching to non-nan grid cells.
+adjust_lake_cell_tile_xwalk <- function(spatial_xwalk, lake_centroids, query_cell_centroids, cell_info, x_buffer) {
   # Pivot the cell_info tibble wider so that we have a single row per cell
   # and can track for how many gcms each cell is or is not missing data
   cell_status <- cell_info %>%
@@ -191,18 +202,25 @@ adjust_lake_cell_tile_xwalk <- function(spatial_xwalk, lake_centroids, query_cel
   cell_centroids_with_data <- query_cell_centroids %>%
     filter(cell_no %in% cells_with_data)
 
-  # match each lake to a cell that returned data based on
-  # which cell centroid is closest to each lake centroid
-  lake_cells_with_data_tiles_xwalk <- lake_centroids %>%
-    st_join(cell_centroids_with_data, join=st_nearest_feature, left=TRUE) %>%
-    st_drop_geometry() %>%
-    select(site_id, state, cell_no, tile_no)
-
-  # join this adjusted xwalk to the spatial xwalk
-  adjusted_xwalk <- spatial_xwalk %>%
-    left_join(lake_cells_with_data_tiles_xwalk,
-              by=c('site_id', 'state'),
-              suffix=c('_spatial','_data'))
+  # match each lake to a cell that returned data, preferably to a cell 1) within the same row as, and
+  # 2) within `x_buffer` x distance (number of columns) of, the cell within which the lake falls spatially
+  # If no non-nan cells meet that criteria, match instead to the closest non-nan cell, regardless of row
+  adjusted_xwalk <- lake_centroids %>%
+    left_join(spatial_xwalk, by=c('site_id', 'state')) %>% # add cell_no, tile_no for each lake
+    left_join(query_cell_centroids %>% st_drop_geometry(), by=c('cell_no','tile_no')) %>% # add x, y coords of cell_no for each lake
+    rename(x_spatial=x, y_spatial=y, cell_no_spatial=cell_no, tile_no_spatial=tile_no) %>%
+    group_by(y_spatial, x_spatial) %>%
+    group_modify(~ {
+      # subset the non-nan cells to those with the same y value (in the same row) as the cell with missing data
+      # and those within the specified x_buffer distance (+- x_buffer columns) from the cell with missing data
+      cells_in_row_and_within_x_buffer <- cell_centroids_with_data %>% filter(y==.y$y_spatial & abs(x-.y$x_spatial) <= x_buffer)
+      # if no non-nan cells meet that criteria, join instead to the nearest non-nan cell regardless of y value
+      cells_to_match <- if (nrow(cells_in_row_and_within_x_buffer) > 0) cells_in_row_and_within_x_buffer else cell_centroids_with_data
+      .x %>% st_join(cells_to_match,
+                     join=st_nearest_feature, left=TRUE)
+    }) %>%
+    ungroup() %>%
+    select(site_id, state, cell_no_spatial, tile_no_spatial, cell_no_data=cell_no, tile_no_data=tile_no)
 
   return(adjusted_xwalk)
 }
