@@ -158,22 +158,22 @@ get_lake_cell_tile_spatial_xwalk <- function(lake_centroids, grid_cells, cell_ti
 #' @title Adjust the lake-cell-tile xwalk by matching lakes to the queried cells
 #' that returned data.
 #' @description Using lake centroids, this spatially matches lakes to query cells
-#' that returned data. The preference is to  match lakes to non-nan cells with the
-#' same y value (within the same row) as the cell that the lake falls within (which
+#' that returned data. If the cell that the lake falls within is not missing data,
+#' the lake will be matched to the cell that it falls within. If the cell that the
+#' lake falls within is missing data, the lake will be matched to a cell that did
+#' return data. The preference is to match such lakes to non-nan cells with the
+#' same y value (within the same row) as the cell that the lake falls within (as
 #' is captured in the `spatial_xwalk` returned by `get_lake_cell_tile_spatial_xwalk`).
-#' If the cell that the lake falls within is not missing data, the lake will be
-#' matched to the cell that it falls within. If the cell that the lake falls within
-#' is missing data, the lake will be matched to a cell that did return data,
-#' preferably one within the same grid row. However, we do not want to match lakes to
-#' cells that are too far in the x direction (too many columns away) from the cell that
-#' the lake falls within. The variable `x_buffer` sets the maximum allowable x-distance
-#' (number of columns) between the cell the lake is in and any potential non-nan cells
-#' that could be matched to the lake. If no non-nan cells are in the same row as the
-#' cell that is missing data, or if there are no non-nan cells in that same row that
-#' are within the specified x-distance, the lake will be matched to the non-nan cell
-#' with the centroid closest to the lake centroid, regardless of y value. The output of
-#' this function will only differ from the output of `get_lake_cell_tile_spatial_xwalk()`
-#' for those lakes that fell within cells that did not return data.
+#' However, we do not want to match lakes to cells that are too far in the x direction
+#' (too many columns away) from the cell that the lake falls within. The variable
+#' `x_buffer` sets the maximum allowable x-distance (number of columns) between the
+#' cell the lake is in and any potential non-nan cells that could be matched to the
+#' lake. If no non-nan cells are in the same row as the cell that is missing data,
+#' or if there are no non-nan cells in that same row that are within the specified
+#' x-distance, the lake will be matched to the non-nan cell with the centroid closest
+#' to the lake centroid, regardless of y value. The output of this function will only
+#' differ from the output of `get_lake_cell_tile_spatial_xwalk()` for those lakes that
+#' fell within cells that did not return data.
 #' @param spatial_xwalk mapping of which lakes are in which cells and tiles,
 #' based on a spatial join
 #' @param lake_centroids an `sf` object of points representing the lake
