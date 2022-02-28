@@ -234,7 +234,7 @@ fetch_navico_points <- function(out_ind, csv_ind) {
   # convert data to sf object and save as rds
   # rename waterbody id to site id, so that rds can later be passed to `crosswalk_points_in_poly`
   # which expects input dataframe to have 'site_id' column
-  navico_points_sf <- st_as_sf(navico_data, coords = c('y','CenterLat'), crs=4326) %>%
+  navico_points_sf <- st_as_sf(navico_data, coords = c('CenterLong','CenterLat'), crs=4326) %>%
     mutate(site_id = sprintf("Navico_%s", MapWaterbody_ID), .keep="unused", .before=1) %>%
     saveRDS(file = outfile)
 
