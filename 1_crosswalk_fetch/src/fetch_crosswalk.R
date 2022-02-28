@@ -208,6 +208,23 @@ fetch_micorps_sites <- function(ind_file) {
 
 }
 
+fetch_mo_usace_points <- function(out_ind, xlsx_ind) {
+  outfile <- as_data_file(out_ind)
+
+  mo_usace_data <- scipiper::sc_retrieve(xlsx_ind) %>%
+    readxl::read_xlsx(col_types = c('numeric', 'numeric', 'text',
+                                    'numeric', 'numeric'), na = 'NULL')
+
+  # convert data to sf object and save as rds
+  # rename missouri id to site id, so that rds can later be passed to `crosswalk_points_in_poly`
+  # which expects input dataframe to have 'site_id' column
+  mo_usace_points_sf <- st_as_sf(mo_usace_data, coords = c('x','y'), crs = 4326) %>%
+    mutate(site_id = sprintf("mo_usace_%s", Station), .keep = "unused", .before = 1) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+}
+
 fetch_navico_points <- function(out_ind, csv_ind) {
   outfile <- as_data_file(out_ind)
 
@@ -217,7 +234,7 @@ fetch_navico_points <- function(out_ind, csv_ind) {
   # convert data to sf object and save as rds
   # rename waterbody id to site id, so that rds can later be passed to `crosswalk_points_in_poly`
   # which expects input dataframe to have 'site_id' column
-  navico_points_sf <- st_as_sf(navico_data, coords = c('CenterLong','CenterLat'), crs=4326) %>%
+  navico_points_sf <- st_as_sf(navico_data, coords = c('y','CenterLat'), crs=4326) %>%
     mutate(site_id = sprintf("Navico_%s", MapWaterbody_ID), .keep="unused", .before=1) %>%
     saveRDS(file = outfile)
 

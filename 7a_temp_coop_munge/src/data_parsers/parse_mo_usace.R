@@ -75,7 +75,7 @@ parse_Missouri_USACE_2009_2021 <- function(inind, outind) {
 
   # naming convention clean-up for merging and crosswalking
   names(data_clean)[2] <- 'DateTime'
-  data_clean$missouri_id <- data_clean$site
+  data_clean$mo_usace_id <- paste('mo_usace_', data_clean$site, sep = '')
 
   # Save outputs ------------------------------------
   saveRDS(object = data_clean, file = outfile)
