@@ -5,8 +5,9 @@ list_coop_files <- function(fileout, dirpath, trigger_file){
 
 
 crosswalk_coop_dat <- function(outind = target_name, inind,
-                               id_crosswalk, wbic_crosswalk, dow_crosswalk,
-                               iowa_crosswalk, missouri_crosswalk,
+                               id_crosswalk, wbic_crosswalk,
+                               dow_crosswalk, iowa_crosswalk,
+                               missouri_crosswalk, mo_usace_crosswalk,
                                navico_crosswalk, norfork_crosswalk) {
 
   outfile <- as_data_file(outind)
@@ -34,6 +35,8 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   iowa2nhd <- sc_retrieve(iowa_crosswalk) %>% readRDS() %>% distinct()
 
   missouri2nhd <- sc_retrieve(missouri_crosswalk) %>% readRDS() %>% distinct()
+
+  mousace2nhd <- sc_retrieve(mo_usace_crosswalk) %>% readRDS() %>% distinct()
 
   navico2nhd <- sc_retrieve(navico_crosswalk) %>% readRDS() %>% distinct()
 
@@ -76,9 +79,13 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   dat_id <- filter(dat, !is.na(id)) %>%
     left_join(id2nhd, by = c('id' = 'micoorps_id'))
 
-  # missouri
+  # univ missouri
   dat_missouri <- filter(dat, !is.na(Missouri_ID)) %>%
     left_join(missouri2nhd)
+
+  # missouri usace
+  dat_mousace <- filter(dat, !is.na(mo_usace_id)) %>%
+    left_join(mousace2nhd)
 
   # navico
   dat_navico <- filter(dat, !is.na(Navico_ID)) %>%
@@ -90,9 +97,11 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
 
   # all together now
   # print out warning about what data you're dropping
-  dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id, dat_iowa, dat_missouri,
+  dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id, dat_iowa,
+                              dat_missouri, dat_mousace,
                               dat_navico, dat_norfork) %>%
-    tidyr::pivot_longer(c(DOW, id, WBIC, Iowa_ID, Missouri_ID, Navico_ID, Norfork_ID),
+    tidyr::pivot_longer(c(DOW, id, WBIC, Iowa_ID,
+                          Missouri_ID, mo_usace_id, Navico_ID, Norfork_ID),
                         names_to = "state_id_type", values_to = "state_id") %>%
     filter(!is.na(state_id))
 

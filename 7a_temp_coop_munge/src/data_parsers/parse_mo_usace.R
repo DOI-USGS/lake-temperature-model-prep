@@ -17,8 +17,6 @@ parse_Missouri_USACE_2009_2021 <- function(inind, outind) {
   # Unzip the file with all MO USACE data, then cleanup unzipped files
   # which aren't needed externally before leaving the function
   unzip_dir <- tempdir()
-  # infile <- list.files(infile, full.names = T) %>% .[!(grepl("*xlsx", .))]
-
   files_from_zip <- unzip(infile, exdir = unzip_dir)
   on.exit(unlink(unzip_dir, recursive = TRUE))
 
@@ -58,8 +56,6 @@ parse_Missouri_USACE_2009_2021 <- function(inind, outind) {
     purrr::map_dfr(~ parse_mo_usace_2010(., keep_cols = keep_cols_most_yrs,
                    subset_sheets = c('PT', 'RA'), subset_skip = 1,
                    remove_sheets = remove_sheets))
-    # purrr::map_dfr(~ parse_mo_usace_2010(., keep_cols = keep_cols_most_yrs),
-    #                subset_sheets = c('PT', 'RA'), subset_skip = 1)
 
   # Parse 2018 ---------------------------------
   dat_2018 <- files_2018 %>%
@@ -74,12 +70,12 @@ parse_Missouri_USACE_2009_2021 <- function(inind, outind) {
     dat_2018
   )
 
-  # Light cleaning to match the sampling location table
+  # Light cleaning to match the sampling location xwalk table
   data_clean$site <- gsub(" ", "", data_clean$site)
   data_clean$site <- gsub("-", "", data_clean$site)
   data_clean$site <- toupper(data_clean$site)
 
-  # naming convention clean-up for merging and crosswalking
+  # naming convention clean-up for merging and xwalking
   names(data_clean)[2] <- 'DateTime'
   data_clean$mo_usace_id <- paste('mo_usace_', data_clean$site, sep = '')
 
