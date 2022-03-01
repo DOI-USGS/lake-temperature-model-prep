@@ -157,6 +157,9 @@ targets:
   2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind')
 
+  2_crosswalk_munge/out/mo_usace_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/mo_usace_nhdhr_xwalk.rds.ind')
+
   2_crosswalk_munge/out/navico_lakes_sf.rds:
     command: gd_get('2_crosswalk_munge/out/navico_lakes_sf.rds.ind')
 
