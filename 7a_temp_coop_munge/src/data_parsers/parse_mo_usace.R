@@ -17,7 +17,7 @@ parse_Missouri_USACE_2009_2021 <- function(inind, outind) {
   # Unzip the file with all MO USACE data, then cleanup unzipped files
   # which aren't needed externally before leaving the function
   unzip_dir <- tempdir()
-  infile <- list.files(infile, full.names = T) %>% .[!(grepl("*xlsx", .))]
+  # infile <- list.files(infile, full.names = T) %>% .[!(grepl("*xlsx", .))]
 
   files_from_zip <- unzip(infile, exdir = unzip_dir)
   on.exit(unlink(unzip_dir, recursive = TRUE))
@@ -45,23 +45,29 @@ parse_Missouri_USACE_2009_2021 <- function(inind, outind) {
 
   # Parse most data ----------------------------
   dat_most_yrs <- files_most_yrs %>%
-    purrr::map_dfr(~ parse_mo_usace(., keep_cols = keep_cols_most_yrs))
+    purrr::map_dfr(~ parse_mo_usace(., keep_cols = keep_cols_most_yrs,
+                                    remove_sheets = remove_sheets))
 
   # Parse 2009 ---------------------------------
   dat_2009 <- files_2009 %>%
-    purrr::map_dfr(~ parse_mo_usace(., keep_cols = keep_cols_2009))
+    purrr::map_dfr(~ parse_mo_usace(., keep_cols = keep_cols_2009,
+                                    remove_sheets = remove_sheets))
 
   # Parse 2010 ---------------------------------
   dat_2010 <- files_2010 %>%
-    purrr::map_dfr(~ parse_mo_usace_2010(., keep_cols = keep_cols_most_yrs),
-                   subset_sheets = c('PT', 'RA'), subset_skip = 1)
+    purrr::map_dfr(~ parse_mo_usace_2010(., keep_cols = keep_cols_most_yrs,
+                   subset_sheets = c('PT', 'RA'), subset_skip = 1,
+                   remove_sheets = remove_sheets))
+    # purrr::map_dfr(~ parse_mo_usace_2010(., keep_cols = keep_cols_most_yrs),
+    #                subset_sheets = c('PT', 'RA'), subset_skip = 1)
 
   # Parse 2018 ---------------------------------
   dat_2018 <- files_2018 %>%
-    purrr::map_dfr(~ parse_mo_usace_2018(., keep_cols = c(1, 2, 4, 5)))
+    purrr::map_dfr(~ parse_mo_usace_2018(., keep_cols = c(1, 2, 4, 5),
+                                         remove_sheets = remove_sheets))
 
   # Aggregate into output ---------------------------
-  data_all <- dplyr::bind_rows(
+  data_clean <- dplyr::bind_rows(
     dat_most_yrs,
     dat_2009,
     dat_2010,
@@ -91,7 +97,7 @@ parse_Missouri_USACE_2009_2021 <- function(inind, outind) {
 #' @param subset_sheets chr vector, a subset of sheets that may need to skip a few rows to read properly
 #' @param subset_skip num, the number of rows that need to be skipped in order to read the files listed in `subset_sheets`
 #'
-parse_mo_usace <- function(filepath, keep_cols) {
+parse_mo_usace <- function(filepath, keep_cols, remove_sheets) {
 
   # list all sheets in the df and read each one
   dat <- read_usace_sheets(filepath) %>%
@@ -124,7 +130,8 @@ parse_mo_usace <- function(filepath, keep_cols) {
 
 }
 
-parse_mo_usace_2018 <- function(filepath, keep_cols = c(1, 2, 4, 5)) {
+parse_mo_usace_2018 <- function(filepath,
+                                keep_cols = c(1, 2, 4, 5), remove_sheets) {
 
   # list all sheets in the df and read each one
   dat <- read_usace_sheets(filepath) %>%
@@ -161,7 +168,8 @@ parse_mo_usace_2018 <- function(filepath, keep_cols = c(1, 2, 4, 5)) {
 }
 
 parse_mo_usace_2010 <- function(filepath, keep_cols,
-                                subset_sheets = c('PT', 'RA'), subset_skip = 1) {
+                                subset_sheets = c('PT', 'RA'),
+                                subset_skip = 1, remove_sheets) {
 
   # list all sheets in the df and read each one
   dat <- read_usace_sheets(filepath, subset_sheets, subset_skip) %>%
