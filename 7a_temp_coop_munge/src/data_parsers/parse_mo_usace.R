@@ -26,7 +26,8 @@ parse_Missouri_USACE_2009_2021 <- function(inind, outind) {
   keep_cols_2009 <- c('Site', 'Date', 'Dep', 'Temp', '...9')
   keep_cols_2018 <- c('Site', 'Date', 'Dep', 'Temp', '...4', '...5')
 
-  ## Define which years can be parsed together
+  ## Define which years can be parsed together - this will be used for
+  ## a `grep` call when grouping files
   most_yrs <- paste(c(2011:2017, 2019:2021), collapse = '|')
 
   ## Define sheets that should be removed if encountered
@@ -229,12 +230,11 @@ read_usace_sheets <- function(filepath, subset_sheets = NULL, subset_skip = NULL
     dat <- dat[!(names(dat) %in% subset_sheets)]
 
     # read in the sheets that have to skip `subset_skip` rows before reading
-    dat_subset <- filepath %>%
-      readxl::excel_sheets() %>% # get all sheet names for `read_xlsx`
-      .[. %in% subset_sheets] %>% # select for the weirdos
-      purrr::set_names() %>% # name the data.frames in the list - skip?
+    dat_subset <- subset_sheets %>%
+      purrr::set_names() %>%
       purrr::map(readxl::read_xlsx, path = filepath, skip = subset_skip, col_names = T)
 
+    # join the pieces back together
     dat <- c(dat, dat_subset)
   }
 
