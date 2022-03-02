@@ -77,8 +77,16 @@ parse_Missouri_USACE_2009_2021 <- function(inind, outind) {
   data_clean$site <- toupper(data_clean$site)
 
   # naming convention clean-up for merging and xwalking
-  names(data_clean)[2] <- 'DateTime'
-  data_clean$mo_usace_id <- paste('mo_usace_', data_clean$site, sep = '')
+  data_clean <- data_clean %>%
+    # normalize site names to match xwalk table in `2_crosswalk_munge/out`
+    dplyr::mutate(site = gsub(" ", "", site)) %>%
+    dplyr::mutate(site = gsub("-", "", site)) %>%
+    dplyr::mutate(site = toupper(site)) %>%
+    # normalize column names to match standard naming conventions
+    dplyr::rename(DateTime = date) %>%
+    # preserve `site` column because there are multiple sites per lake, but
+    # add a new column for matching with xwalk table in `2_crosswalk_munge/out`
+    dplyr::mutate(mo_usace_id = paste('mo_usace_', site, sep = ''))
 
   # Save outputs ------------------------------------
   saveRDS(object = data_clean, file = outfile)
