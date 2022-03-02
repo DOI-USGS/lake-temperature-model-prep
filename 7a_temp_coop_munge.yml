@@ -63,5 +63,6 @@ targets:
       dow_crosswalk = '2_crosswalk_munge/out/mndow_nhdhr_xwalk.rds.ind',
       iowa_crosswalk = '2_crosswalk_munge/out/Iowa_nhdhr_xwalk.rds.ind',
       missouri_crosswalk = '2_crosswalk_munge/out/univ_mo_nhdhr_xwalk.rds.ind',
+      mo_usace_crosswalk = '2_crosswalk_munge/out/mo_usace_nhdhr_xwalk.rds.ind',
       navico_crosswalk = '2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind',
       norfork_crosswalk = '2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind')

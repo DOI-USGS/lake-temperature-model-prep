@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Missouri_USACE_2009_2021.zip.ind
+type: file
+hash: c8e9dcc84a1e712bc92ac8f6dbe82396
+time: 2022-02-28 20:53:42 UTC
+depends: {}
+fixed: 33b32acc0f84d3cac28fc57b0790b8a8
+code:
+  functions: {}
+

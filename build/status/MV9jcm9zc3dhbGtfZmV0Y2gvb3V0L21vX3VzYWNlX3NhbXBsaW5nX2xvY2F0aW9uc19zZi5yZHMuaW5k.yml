@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/mo_usace_sampling_locations_sf.rds.ind
+type: file
+hash: 8f9401a1cb7ac4ba1ae5c17bc31f3bc5
+time: 2022-02-28 22:14:24 UTC
+depends:
+  1_crosswalk_fetch/in/Missouri_USACE_samplingLocations.xlsx.ind: d40cee1109ef71e95b772e42d68d7b5d
+fixed: 8040a069c06578e6458cb8ff385cb2c0
+code:
+  functions:
+    fetch_mo_usace_points: c6dd89680f66c2ce6d85292bc10ffda0
+
