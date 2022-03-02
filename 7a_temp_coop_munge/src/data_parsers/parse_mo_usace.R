@@ -351,7 +351,7 @@ run_name_checks <- function(df, site_pattern) {
   # check for "site" column names using a partial match
   if(is.na(pmatch('site', chk_names))) {
     #looks for the name of the data.frame which is typically a two letter abbreviation (e.g. "RA")
-    site_col_idx <- find_col_idx(df, site_pattern)
+    site_col_idx <- find_site_col_idx(df, site_pattern)
     names(df)[site_col_idx] <- 'site'
   } else {
     names(df)[pmatch('sit', names(df))] <- 'site'
@@ -382,15 +382,15 @@ run_name_checks <- function(df, site_pattern) {
   return(df)
 }
 
-#' Identify column index
+#' Identify site column index in a data.frame
 #'
-#' Given a pattern, identify the column position of a column within a
+#' Given a pattern, identify the  position of the site column within a
 #' data.frame.
 #'
 #' @param df a data.frame
-#' @param pattern chr, pattern to match. Does not support partial matching.
+#' @param pattern chr, pattern to match. Supports partial matching.
 #'
-find_col_idx <- function(df, pattern) {
+find_site_col_idx <- function(df, pattern) {
   which(apply(df, 2, function(x) any(grepl(pattern, x))))
 }
 
