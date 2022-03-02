@@ -8,10 +8,10 @@
 #' @param vars_info variables and descriptions to store in NetCDF
 #' @param grid_params grid cell parameters to add to NetCDF as global attributes
 #' @param spatial_info cell_nos, x indices, y indices, and WGS84 coordinates of grid cell centroids
-#' @param global_att global attribute description for the observations (e.g., notaro_ACCESS_1980_1999)
+#' @param dataset_title a descriptive title for the dataset (e.g., notaro_ACCESS_1980_1999)
 #' @param compression T/F if the nc file should be compressed after creation
 generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spatial_info,
-                            global_att, compression) {
+                            dataset_title, compression) {
   # NOTE: adding a stop() for now while compression code and documentation still
   # needs to be refined further, but retaining draft code below
   if (compression == TRUE) {
@@ -59,8 +59,10 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
 
   # Set up attributes for NetCDF that are independent of variables
   data_time_units <- "days since 1970-01-01 00:00:00"
-  data_attributes <- list('title' = global_att)
-  data_attributes <- append(data_attributes, grid_params) # add grid parameters to list of global attributes
+  data_title <- list('title' = dataset_title)
+  # add prefix to names of grid parameters to indicate that they refer to the source raster
+  names(grid_params) <- paste0('source_raster_', names(grid_params))
+  data_attributes <- append(data_title, grid_params) # add grid parameters to list of global attributes
   data_coordvar_long_names <- list(instance = "identifier for reconstructed Notaro downscaled GCM grid cell", time = "date",
                               lat = "WGS84 latitude of downscaled grid cell centroid",
                               lon = "WGS84 longitude of downscaled grid cell centroid")
