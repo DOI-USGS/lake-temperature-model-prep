@@ -243,7 +243,7 @@ targets_list <- list(
         vars_info = glm_vars_info,
         grid_params = grid_params,
         spatial_info = query_cell_centroids_sf_WGS84,
-        dataset_title = sprintf("GCM Notaro %s", gcm_name),
+        gcm_name = gcm_name,
         compression = FALSE
       )
     },
