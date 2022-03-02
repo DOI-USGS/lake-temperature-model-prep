@@ -27,6 +27,7 @@ targets:
       - 1_crosswalk_fetch/out/wqp_lake_temperature_sites_sf.rds.ind
       - 1_crosswalk_fetch/out/wqp_lake_secchi_sites_sf.rds.ind
       - 1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind
+      - 1_crosswalk_fetch/out/mo_usace_sampling_locations_sf.rds.ind
       - 1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind
       - 1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind
       - 1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind
@@ -123,6 +124,10 @@ targets:
   1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind:
     command: slice_iadnr_contour(target_name,
       contour_ind = '1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind')
+
+  1_crosswalk_fetch/out/mo_usace_sampling_locations_sf.rds.ind:
+    command: fetch_mo_usace_points(target_name,
+      xlsx_ind = '1_crosswalk_fetch/in/Missouri_USACE_samplingLocations.xlsx.ind')
 
   1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind:
     command: fetch_navico_points(target_name,

@@ -15,6 +15,9 @@ targets:
   1_crosswalk_fetch/in/UniversityofMissouri_2017_2020_Profiles.csv:
     command: gd_get('1_crosswalk_fetch/in/UniversityofMissouri_2017_2020_Profiles.csv.ind')
 
+  1_crosswalk_fetch/in/Missouri_USACE_samplingLocations.xlsx:
+    command: gd_get('1_crosswalk_fetch/in/Missouri_USACE_samplingLocations.xlsx.ind')
+
   1_crosswalk_fetch/in/Norfork_temperature_locations.csv:
     command: gd_get('1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
 
@@ -153,6 +156,9 @@ targets:
 
   2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind')
+
+  2_crosswalk_munge/out/mo_usace_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/mo_usace_nhdhr_xwalk.rds.ind')
 
   2_crosswalk_munge/out/navico_lakes_sf.rds:
     command: gd_get('2_crosswalk_munge/out/navico_lakes_sf.rds.ind')
