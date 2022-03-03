@@ -178,13 +178,9 @@ targets_list <- list(
   # Combine the `file_out` elements of the gcm_ready_gcm_data_list branches
   # into a single vector of file targets
   tar_target(
-    glm_ready_gcm_data_paths,
-    unlist(glm_ready_gcm_data_list[grepl("file_out", names(glm_ready_gcm_data_list))])
-  ),
-  tar_target(
     glm_ready_gcm_data_feather,
-    glm_ready_gcm_data_paths,
-    pattern = map(glm_ready_gcm_data_paths),
+    glm_ready_gcm_data_list$file_out,
+    pattern = map(glm_ready_gcm_data_list),
     format = "file"
   ),
 
