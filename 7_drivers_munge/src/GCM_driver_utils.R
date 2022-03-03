@@ -132,29 +132,116 @@ get_query_cells <- function(grid_cells, lake_centroids) {
   return(cells_w_lakes)
 }
 
-#' @title Match lakes to the grid cells and tiles.
-#' @description Using lake centroids, this spatially
-#' intersects the lakes to the grid cells and returns a
-#' non-spatial data.frame with `cell_no` and any of the existing
-#' columns from `lake_centroids`. It also joins the cell_tile
-#' xwalk to add the tile number for each lake
-#' @param lake_centroids an `sf` object of points representing
-#' the lake centroids.
+#' @title Spatially match lakes to the grid cells and tiles.
+#' @description Using lake centroids, this spatially intersects the lakes to
+#' the grid cells and returns a non-spatial data.frame with `site_id`,
+#' `state`, `cell_no` and `tile_no`, as the function also joins the
+#' cell_tile xwalk in order to add the tile number for each lake.
+#' @param lake_centroids an `sf` object of points representing the lake
+#' centroids.
 #' @param grid_cells an `sf` object with square polygons representing the
 #' grid cells. Must contain a `cell_no` column which has
 #' the id of each of the cell polygons.
 #' @param cell_tile_xwalk mapping of which cells are in which tiles
-get_lake_cell_tile_xwalk <- function(lake_centroids, grid_cells, cell_tile_xwalk) {
-  lake_cells_tiles_join <- lake_centroids %>%
+#' @return An output table with the fields `site_id`, `state`, `cell_no` and
+#' `tile_no`
+get_lake_cell_tile_spatial_xwalk <- function(lake_centroids, grid_cells, cell_tile_xwalk) {
+  lake_cells_tiles_xwalk <- lake_centroids %>%
     st_join(grid_cells, left=FALSE) %>%
     st_drop_geometry() %>%
     left_join(cell_tile_xwalk, by='cell_no') %>%
     select(site_id, state, cell_no, tile_no)
 
-  return(lake_cells_tiles_join)
+  return(lake_cells_tiles_xwalk)
 }
 
-#' @title Map the query tiles and cells
+#' @title Adjust the lake-cell-tile xwalk by matching lakes to the queried cells
+#' that returned data.
+#' @description Using lake centroids, this spatially matches lakes to query cells
+#' that returned data. If the cell that the lake falls within is not missing data,
+#' the lake will be matched to the cell that it falls within. If the cell that the
+#' lake falls within is missing data, the lake will be matched to a cell that did
+#' return data. The preference is to match such lakes to non-nan cells with the
+#' same y value (within the same row) as the cell that the lake falls within (as
+#' is captured in the `spatial_xwalk` returned by `get_lake_cell_tile_spatial_xwalk`).
+#' However, we do not want to match lakes to cells that are too far in the x direction
+#' (too many columns away) from the cell that the lake falls within. The variable
+#' `x_buffer` sets the maximum allowable x-distance (number of columns) between the
+#' cell the lake is in and any potential non-nan cells that could be matched to the
+#' lake. If no non-nan cells are in the same row as the cell that is missing data,
+#' or if there are no non-nan cells in that same row that are within the specified
+#' x-distance, the lake will be matched to the non-nan cell with the centroid closest
+#' to the lake centroid, regardless of y value. The output of this function will only
+#' differ from the output of `get_lake_cell_tile_spatial_xwalk()` for those lakes that
+#' fell within cells that did not return data.
+#' @param spatial_xwalk mapping of which lakes are in which cells and tiles,
+#' based on a spatial join
+#' @param lake_centroids an `sf` object of points representing the lake
+#' centroids.
+#' @param query_cell_centroids  an `sf` object of points representing the
+#' grid cell centroids for queried cells. Must contain a `cell_no` column
+#' which has the id of each of the cell centroids
+#' @param cell_info a table with one row per query cell-gcm combo, with columns for
+#' `gcm`, `tile_no`, `cell_no` and a column for `missing_data` indicating whether
+#' or not the cell is missing data for any variable for that gcm. This table is
+#' used here to filter the grid cell centroids to only those that returned data
+#' @param x_buffer the maximum x distance (in columns) that any non-nan cells within
+#' the same row as the originally matched cell can be in order to be in the pool of
+#' cells to be matched to a given lake.
+#' @return An output table with the fields `site_id`, `state`, `spatial_cell_no`,
+#' `spatial_tile_no`, `data_cell_no` and `data_tile_no`. The 'spatial_' prefix
+#' denotes the original spatial matching to all grid cells, while the 'data_' prefix
+#' denotes the adjusted matching to non-nan grid cells.
+adjust_lake_cell_tile_xwalk <- function(spatial_xwalk, lake_centroids, query_cell_centroids, cell_info, x_buffer) {
+  # Pivot the cell_info tibble wider so that we have a single row per cell
+  # and can track for how many gcms each cell is or is not missing data
+  cell_status <- cell_info %>%
+    pivot_wider(names_from='gcm', values_from='missing_data', names_glue="{gcm}_missing_data") %>%
+    mutate(n_gcm_missing_data = rowSums(across(c(-cell_no,-tile_no))))
+
+  # determine which cells returned data for all 6 GCMs
+  cells_with_data <- cell_status %>%
+    filter(n_gcm_missing_data == 0) %>%
+    pull(cell_no)
+
+  # filter the cell centroids to only those cells with data
+  cell_centroids_with_data <- query_cell_centroids %>%
+    filter(cell_no %in% cells_with_data)
+
+  # match each lake to a cell that returned data. If the cell that the lake falls within
+  # is not missing data, the lake will be matched to the cell that it falls within. If the
+  # cell that the lake falls within is missing data, the lake will be matched to a cell
+  # that returned data, preferably to a cell 1) within the same row as, and 2) within
+  # `x_buffer` x distance (number of columns) from the cell that the falls within. If no
+  # non-nan cells meet that criteria, the lake will be matched instead to the closest
+  # non-nan cell, regardless of row
+  adjusted_xwalk <- lake_centroids %>%
+    left_join(spatial_xwalk, by=c('site_id', 'state')) %>% # add cell_no, tile_no for each lake
+    left_join(query_cell_centroids %>% st_drop_geometry(), by=c('cell_no','tile_no')) %>% # add x, y coords of cell_no for each lake
+    rename(spatial_x=x, spatial_y=y, spatial_cell_no=cell_no, spatial_tile_no=tile_no) %>%
+    # Group by the y and x coordinates of the cell that the lake falls within...
+    group_by(spatial_y, spatial_x) %>%
+    # then use group_modify() to match the subset of lakes within that cell to non-nan cells.
+    # Within the group_modify() call `.x` is the subset of the data for the group, while
+    # `.y` is a tibble with one row and columns for each grouping variable (here, those
+    # are`spatial_y` and `spatial_x`)
+    group_modify(~ {
+      # first, subset the non-nan cells to those with the same y value (in the same row) as the cell with missing data
+      # and those within the specified x_buffer distance (+/- x_buffer columns) from the cell with missing data
+      cells_in_row_and_within_x_buffer <- cell_centroids_with_data %>% filter(y==.y$spatial_y & abs(x-.y$spatial_x) <= x_buffer)
+      # if there are non-nan cells that meet that criteria, match each of the lakes to the closest of that subset of cells
+      # if no non-nan cells meet that criteria, instead match each lake to the nearest non-nan cell regardless of y value
+      cells_to_match <- if (nrow(cells_in_row_and_within_x_buffer) > 0) cells_in_row_and_within_x_buffer else cell_centroids_with_data
+      .x %>% st_join(cells_to_match,
+                     join=st_nearest_feature, left=TRUE)
+    }) %>%
+    ungroup() %>%
+    select(site_id, state, spatial_cell_no, spatial_tile_no, data_cell_no=cell_no, data_tile_no=tile_no)
+
+  return(adjusted_xwalk)
+}
+
+#' @title Map the tiles and cells
 #' @description Map the grid cells w/ lakes (symbolized by n_lakes per cell) and grid tiles
 #' included in the GDP query
 #' @param out_file name of output png file
@@ -167,7 +254,7 @@ get_lake_cell_tile_xwalk <- function(lake_centroids, grid_cells, cell_tile_xwalk
 #' @param grid_cells an `sf` object with square polygons representing the
 #' grid cells. Must contain a `cell_no` column which has
 #' the id of each of the cell polygons.
-#' @return a png of the mapped grid cells, symbolized by n_lakes per cell, and the grid tiles
+#' @return a png of the xwalk grid cells, symbolized by n_lakes per cell, and the grid tiles
 # TODO: This function to should be 1) moved to 8_viz, and 2) made so that it only rebuilds if
 # new cells will be plotted.
 map_tiles_cells <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_cells, grid_tiles, grid_cells) {
@@ -294,30 +381,103 @@ download_gcm_data <- function(out_file_template, query_geom,
   return(out_file)
 }
 
-#' @title Pull out individual file information from a dynamically mapped target
-#' @description Use a dynamically mapped target to extract information about
-#' the individual branch files to build a table that can group files and then
-#' trigger rebuilds when individual files within a group change.
-#' @param dynamic_branch_names character vector of the names of each branch created
-#' from running `names()` using the target dynamically branched target as input.
-#' @return a tibble with three columns (`name` = target name of the branch, `path`
-#' = character string of the file created by that branch, and `data` = hash code
-#' indicating the current state of the file) and a row for each branch.
-build_branch_file_hash_table <- function(dynamic_branch_names) {
-  # Get metadata for all the branches of the dynamic target
-  tar_meta(all_of(dynamic_branch_names), c("path", "data")) %>%
-    # There is just one path per branch, so remove the `list` format from this column
-    unnest(path)
+#' @title Munge the output from the GDP query, save it and return information
+#' about which queried cells are missing data. This function maps over
+#' `gcm_data_raw_feather`, so data for a single GCM and a single tile is munged
+#' within this function. Each tile contains up to 225 GCM cells.
+#' @description This function loads in the raw data returned by GDP, calls
+#' `munge_notaro_to_glm()` to munge that data, identifies which cells are
+#' missing data for *any* GLM variable by calling `identify_cells_missing_data()`,
+#' filters the munged data to only those cells that are not missing data, and saves
+#' that data to a file with the exact same name as the in file, except that the
+#' "_raw" part of the `in_file` filepath is replaced with "_munged".
+#' @param in_file filepath to a feather file containing the hourly geoknife
+#' data, named with the the gcm, dates, and tile number as
+#' '7_drivers_munge/tmp/7_GCM_{gcm_name}_{projection_period}_tile{tile_no}_raw.feather'
+#' @param gcm_names names of the six GCMs
+#' @param query_tiles vector of tile ids used in query to GDP
+#' @return a list with two elements: 1) `file_out` - the name of the output
+#' feather file, and 2) `cell_info` - a tibble with a row for each cell in the
+#' tile for which data are being munged, with the columns `gcm` - the gcm for which data is
+#' being munged, `tile_no` the tile for which data are being munged, `cell_no` for the cell
+#' number, and `missing_data` - a T/F logical indicating whether or not the cell is
+#' missing data for *any* variable for the gcm for which data are being munged.
+munge_gdp_output <- function(in_file, gcm_names, query_tiles) {
+  # Pull gcm name and tile_no
+  gcm_name <- str_extract(in_file, paste(gcm_names, collapse="|"))
+  tile_no <- str_extract(in_file, paste(query_tiles, collapse="|"))
+
+  # read in raw data returned from GDP
+  raw_data <- arrow::read_feather(in_file)
+
+  # munge the raw data
+  munged_data <- munge_notaro_to_glm(raw_data)
+
+  # generate a tibble with a row for every cell in the current tile
+  # indicating which cells, if any, are missing data for *any* GLM variable
+  # for the current GCM
+  cell_info <- identify_cells_missing_data(munged_data, gcm_name, tile_no)
+
+  # exclude cells that contain NaN from the munged data
+  nan_cells <- filter(cell_info, missing_data==TRUE) %>% pull(cell_no)
+  munged_data_excl_nan_cells <- filter(munged_data, !(cell_no %in% nan_cells))
+
+  # save the filtered munged data
+  out_file <- gsub("_raw.feather", "_munged.feather", in_file)
+  arrow::write_feather(munged_data_excl_nan_cells, out_file)
+
+  # return the out_file name and the cell_info tibble in a list
+  return(list(file_out = out_file, cell_info=cell_info))
+}
+
+#' @title Identify GCM cells that are missing data
+#' @description Figure out which cells, if any, among the munged data for a
+#' given gcm and tile are missing data for *any* GLM variable.
+#' @param munged_data a tibble of munged GCM data with appropriate units for
+#' use with GLM
+#' @param gcm_name the name of one of the 6 gcms, for which raw geoknife data
+#' were munged
+#' @param tile_no the id of the tile for which raw geoknife data were munged
+#' @return `cell_info` - a tibble with a row for each cell in the tile for
+#' which data are being munged, with the columns `gcm` - the gcm for which
+#' data were munged, `tile_no` the tile for which data were munged, `cell_no`
+#' for the cell number, and `missing_data` - a T/F logical indicating whether
+#' or not the cell is missing data for *any* variable for the gcm for which
+#' data were munged.
+identify_cells_missing_data <- function(munged_data, gcm_name, tile_no) {
+  # Figure out if any cells have NaNs for any variables.
+  # The munged_data is in long format, with a column for cell_no.
+  # Use 'any_vars' as the second argument to `filter_at()` to catch cells where
+  # any variables are missing for a cell [CURRENT APPROACH], or 'all_vars' as
+  # the second argument to catch cells where all variables are missing for a cell
+  munged_nans <- munged_data %>%
+    group_by(cell_no) %>%
+    summarize(across(-time, list(n_nan=~sum(is.nan(.))))) %>%
+    filter_at(vars(-cell_no), any_vars(. != 0))
+
+  # Create an output tibble documenting which cells are and are not
+  # missing data, noting the gcm name and tile_no
+  cell_info <- tibble(
+    cell_no = unique(munged_data$cell_no)) %>%
+    mutate(missing_data = case_when(
+      cell_no %in% munged_nans$cell_no ~ TRUE,
+      TRUE ~ FALSE)) %>%
+    mutate(gcm = gcm_name, tile_no = tile_no, .before=1) %>%
+    arrange(cell_no)
+
+  return(cell_info)
 }
 
 #' @title Convert Notaro GCM data to GLM-ready data
 #' @description The final GCM driver data needs certain column names and units
 #' to be used for GLM. This function converts GCM variables into appropriate
-#' units and saves a file with the exact same name as the in file, except that
-#' the "_raw" part of the `in_file` filepath is replaced with "_munged".
+#' units.
+#' @param raw_data the raw the hourly geoknife data
 #' @value a table saved as a feather file with the following columns:
 #' `time`: class Date denoting a single day
-#' `cell`: a numeric value indicating which cell in the grid that the data belongs to
+#' `cell_no`: a numeric value indicating which cell in the grid that the data
+#' belongs to (note: the data table only includes queried cells that returned
+#' data for all queried variables)
 #' `Shortwave`: shortwave radiation (W/m2); a numeric value copied from the Notaro `rsds_debias` variable
 #' `Longwave`: longwave radiation (W/m2); a numeric value copied from the Notaro `rsdl_debias` variable
 #' `AirTemp`: air temperature (C); a numeric value copied from the Notaro `tas_debias` variable
@@ -328,27 +488,26 @@ build_branch_file_hash_table <- function(dynamic_branch_names) {
 #' `Snow`: the rate of snowfall (m/day); a numeric value derived from the `Rain`
 #' column and assumes the snow depth is 10 times the water equivalent (`Rain`) when the
 #' temperature (`AirTemp`) is below freezing.
-#' @param in_file filepath to a feather file containing the hourly geoknife data
-munge_notaro_to_glm <- function(in_file) {
-
-  raw_data <- arrow::read_feather(in_file)
+#' @return a tibble of the munged data
+munge_notaro_to_glm <- function(raw_data) {
 
   # This line will fail if the units don't match our assumptions
   validate_notaro_units_assumptions(raw_data)
 
-  daily_data <- raw_data %>%
+  # Munge the raw data
+  munged_data <- raw_data %>%
 
     # Create a column with the actual date
     convert_notaro_dates() %>%
 
     # Pivot to long format first to get cells as a column.
     pivot_longer(cols = -c(date, variable, statistic, units),
-                 names_to = "cell", values_to = "val") %>%
-    mutate(cell = as.numeric(cell)) %>%
+                 names_to = "cell_no", values_to = "val") %>%
+    mutate(cell_no = as.numeric(cell_no)) %>%
 
     # Now pivot wider to makes each variable a column for easy, readable munging
     # Also, removes `units` and `statistic` columns which are specific to each variable
-    pivot_wider(id_cols = c("date", "cell"), names_from = variable, values_from = val) %>%
+    pivot_wider(id_cols = c("date", "cell_no"), names_from = variable, values_from = val) %>%
 
     # Unit conversions to get GLM-ready variables from GCM ones
     mutate(
@@ -368,9 +527,15 @@ munge_notaro_to_glm <- function(in_file) {
            Rain = ifelse(AirTemp < 0, 0, Rain)
     ) %>%
 
+    # Catch NA values generated through calculations for Rain and Snow variables
+    # should be NaN values to be consistent with other variables and for writing to netCDF
+    mutate(Snow = ifelse(is.na(Snow), NaN, Snow),
+           Rain = ifelse(is.na(Rain), NaN, Rain)
+    ) %>%
+
     # Keep only the columns we need
     select(time = date,
-           cell,
+           cell_no,
            Shortwave,
            Longwave,
            AirTemp,
@@ -380,11 +545,7 @@ munge_notaro_to_glm <- function(in_file) {
            Snow
     )
 
-  # Save the daily data
-  out_file <- gsub("_raw.feather", "_munged.feather", in_file)
-  arrow::write_feather(daily_data, out_file)
-
-  return(out_file)
+  return(munged_data)
 }
 
 #' @title Check that units for variables downloaded match our assumptions.

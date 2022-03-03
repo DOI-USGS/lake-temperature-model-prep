@@ -36,22 +36,21 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
   # Read in all data for the current (tar_group) GCM
   gcm_data <- purrr::map_df(gcm_raw_files, function(gcm_raw_file) {
     arrow::read_feather(gcm_raw_file)
-  }) %>% arrange(cell)
+  }) %>% arrange(cell_no)
 
   # Pull vector of unique dates and convert to POSIXct
   gcm_dates <- as.POSIXct(unique(gcm_data$time), tz='GMT')
 
   # Pull vector of unique cell numbers
-  gcm_cells <- unique(gcm_data$cell)
+  gcm_cells <- unique(gcm_data$cell_no)
   gcm_cells_dim_name <- "gcm_cell_id"
 
   # Get WGS84 latitude and longitude of cell centroids
   cell_coords <- spatial_info %>%
     mutate(lon = sf::st_coordinates(.)[,1], lat = sf::st_coordinates(.)[,2]) %>%
-    rename(cell = cell_no) %>%
     sf::st_set_geometry(NULL) %>%
-    arrange(cell) %>%
-    filter(cell %in% gcm_cells)
+    arrange(cell_no) %>%
+    filter(cell_no %in% gcm_cells)
 
   # Get vectors of cell centroid latitudes and longitudes
   cell_centroid_lats <- cell_coords %>% pull(lat)
@@ -66,13 +65,9 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
                               lon = "WGS84 longitude of downscaled grid cell centroid")
 
   # Pivot data to long format to set up for filtering by variable
-  # Replace all NA values with NaN as RNetCDF (used to write the data to
-  # netCDF within the `write_timeseries_dsg()` function) seems to expect
-  # NA values to be coded as NaN
   gcm_data_long <- gcm_data %>%
-    pivot_longer(cols = -c(time, cell), names_to = "variable", values_to = "value") %>%
-    mutate(value = ifelse(is.na(value), NaN, value)) %>%
-    arrange(cell)
+    pivot_longer(cols = -c(time, cell_no), names_to = "variable", values_to = "value") %>%
+    arrange(cell_no)
 
   # Loop over data variables to populate NetCDF using ncdfgeom::write_timeseries_dsg()
   for (variable in vars_info$var_name) {
@@ -80,7 +75,7 @@ generate_gcm_nc <- function(nc_file, gcm_raw_files, vars_info, grid_params, spat
     variable_metadata <- vars_info %>% filter(var_name == variable)
     var_data <- gcm_data_long %>%
       filter(variable == !!variable) %>%
-      pivot_wider(id_cols = c("time"), names_from = cell, values_from = value) %>%
+      pivot_wider(id_cols = c("time"), names_from = cell_no, values_from = value) %>%
       select(-time) %>%
       as.data.frame() %>%
       setNames(gcm_cells)
