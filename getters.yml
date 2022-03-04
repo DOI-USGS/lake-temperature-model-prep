@@ -93,6 +93,9 @@ targets:
   1_crosswalk_fetch/out/ndgf_lakesvw.rds:
     command: gd_get('1_crosswalk_fetch/out/ndgf_lakesvw.rds.ind')
 
+  1_crosswalk_fetch/out/ned_centroid_elevations.csv:
+    command: gd_get('1_crosswalk_fetch/out/ned_centroid_elevations.csv.ind')
+
   #### 2_crosswalk_munge ####
   2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind')
