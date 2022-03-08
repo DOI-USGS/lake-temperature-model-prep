@@ -1,10 +1,11 @@
 version: 0.3.0
 name: 7_config_merge/out/nml_H_A_values.rds.ind
 type: file
-hash: 14cfd63416bf875ef59ff3dbdaaa4890
-time: 2022-03-04 14:29:13 UTC
+hash: f59c73270b0fc5a90736b150e29c068c
+time: 2022-03-08 11:59:10 UTC
 depends:
   7_config_merge/out/canonical_lakes_area.rds.ind: c1ce5e91b7c50c64db9f2ea29dc18365
+  1_crosswalk_fetch/out/ned_centroid_elevations.feather.ind: 1c649150a1146bc1b28c52b1670fd4dd
   4_params_munge/out/mndow_02_bathy.rds.ind: f78e63d8e319008e10694bd75f26159b
   4_params_munge/out/mndow_01_bathy.rds.ind: ae3803e4f04f22fae59dd8a834da82b7
   4_params_munge/out/mndow_perc_bathy.rds.ind: 615a5c63780e5bfb2f70252266630cf6
@@ -25,5 +26,5 @@ depends:
 fixed: 37bf3ba36be40671d1febad554c5aece
 code:
   functions:
-    munge_H_A: 2352d5bb0021f91b758cf42667ca1c8c
+    munge_H_A: e0af6d442ab272194a10bb0be8dad3d3
 
