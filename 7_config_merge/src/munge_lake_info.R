@@ -76,9 +76,9 @@ munge_Kw <- function(out_ind, kw_varying_ind, ...){
 #'
 #' For lakes that are parameterized with data for max depth,
 #' H and A will be two values, a zero area max depth, and a surface area zero depth
-munge_H_A <- function(out_ind, areas_ind, ...){
+munge_H_A <- function(out_ind, areas_ind, elev_ind, ...){
   lake_areas <- scipiper::sc_retrieve(areas_ind) %>% readRDS()
-  crest_height <- 320 # magic number for now, elevation of lakes, assumed average for now...
+  lake_elev <- scipiper::sc_retrieve(elev_ind) %>% arrow::read_feather()
 
   H_A <- vector("list", length = nrow(lake_areas)) %>%
     setNames(lake_areas$site_id)
@@ -93,6 +93,7 @@ munge_H_A <- function(out_ind, areas_ind, ...){
 
     if (basename(ind_file) %>% stringr::str_detect('bathy')){
       H_A[use_ids] <- lapply(X = use_ids, FUN = function(x) {
+        crest_height <- lake_elev %>% filter(site_id == x) %>% pull(elevation)
         # for reservoirs, use value in depths column, which is assumed to be elevation
         filter(depth_data, site_id == x) %>% arrange(desc(depths)) %>%
           rowwise() %>%
@@ -102,6 +103,7 @@ munge_H_A <- function(out_ind, areas_ind, ...){
       })
     } else { # is max depth
       H_A[use_ids] <- lapply(X = use_ids, FUN = function(x) {
+        crest_height <- lake_elev %>% filter(site_id == x) %>% pull(elevation)
         z_max <- filter(depth_data, site_id == x) %>% pull(z_max) %>% head(1)
         surface_area <- filter(lake_areas, site_id == x) %>% pull(areas_m2) %>% head(1)
         data.frame(H = c(crest_height - z_max, crest_height), A = c(0, surface_area))

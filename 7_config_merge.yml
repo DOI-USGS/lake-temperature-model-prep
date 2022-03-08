@@ -45,6 +45,7 @@ targets:
   7_config_merge/out/nml_H_A_values.rds.ind:
     command: munge_H_A(target_name,
       areas_ind = '7_config_merge/out/canonical_lakes_area.rds.ind',
+      elev_ind = '1_crosswalk_fetch/out/ned_centroid_elevations.feather.ind',
       '4_params_munge/out/mndow_02_bathy.rds.ind',
       '4_params_munge/out/mndow_01_bathy.rds.ind',
       '4_params_munge/out/mndow_perc_bathy.rds.ind',
