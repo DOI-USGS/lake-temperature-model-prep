@@ -80,7 +80,7 @@ fetch_ned_points <- function(out_ind, zoom, points_sf_ind, box_res, dummy, ...){
     packages = c('elevatr','dplyr', 'readr', 'sf'),
     sources = sources,
     final_targets = data_file,
-    finalize_funs = 'bind_to_csv',
+    finalize_funs = 'bind_to_feather',
     tickquote_combinee_objects=TRUE,
     as_promises=TRUE)
 

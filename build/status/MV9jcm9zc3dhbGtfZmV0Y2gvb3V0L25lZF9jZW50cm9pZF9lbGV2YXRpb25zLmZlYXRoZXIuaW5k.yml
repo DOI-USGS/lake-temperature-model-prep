@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/ned_centroid_elevations.feather.ind
+type: file
+hash: 1c649150a1146bc1b28c52b1670fd4dd
+time: 2022-03-08 11:23:19 UTC
+depends:
+  2_crosswalk_munge/out/centroid_lakes_sf.rds.ind: 7ffeb0780958d841e25ccdbe6b502cca
+  1_crosswalk_fetch/src/get_ned_points.R: 16d9f18ef45b20ea0096c0064f8a83a0
+fixed: 9b8bd32992baff8e7ac55ed7b73a5e49
+code:
+  functions:
+    fetch_ned_points: 7cd7325910ee0a8ab02593819748dbf8
+
