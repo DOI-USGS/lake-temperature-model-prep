@@ -10,95 +10,69 @@ parse_UniversityofMissouri_LimnoProfiles_2017_2020 <- function(inind, outind) {
   files_from_zip <- unzip(infile, exdir = unzip_dir)
   on.exit(unlink(unzip_dir, recursive = TRUE))
 
-  # Set grouping variables and define relevant column names for each data set -------------
-
   # Files fall into roughly 5 categories, as defined below.
   # A few notes on the files in `files_2017_hw`:
   # (1) `~/092_08-02-2017 HW.csv` is duplicated as `~/092_08_02_2017 HW.csv`.
   # (2) The file format for both files in (1) doesn't match any other file in the 2017 HW files
   # Issues (1) and (2) are resolved by removing them both from the `files_2017_hw`
   # and then adding one (`092_08_02_2017 HW.csv`) into it's own vector
-  files_2017 <- files_from_zip[grepl("_2017_.*cleaned", files_from_zip)]
-  files_2018_2020 <- files_from_zip[grepl('_2018.*cleaned|_2019|_2020',files_from_zip)]
-  files_2017_hw <- files_from_zip[grepl('_2017_', files_from_zip)] %>%
-    .[grepl('HW', .)] %>%
-    .[!grepl('092_08_02_2017|092_08-02-2017', .)]
-  files_2017_092_hw <-  files_from_zip[grepl('092_08_02_2017 HW.csv', files_from_zip)]
-  files_2018_hw <- files_from_zip[grepl('_2018.*HW', files_from_zip)]
+  files_tbl <- tibble(filepath = files_from_zip) %>%
+    mutate(func_name = case_when(
+      str_detect(filepath, '_2017_.*cleaned') ~
+        'read_files_2017',
+      str_detect(filepath, '_2018.*cleaned|_2019|_2020') ~
+        'read_files_2018_2020',
+      str_detect(filepath, '_2017_') & str_detect(filepath, 'HW') & !str_detect(filepath, '092_08_02_2017|092_08-02-2017') ~
+        'read_files_2017_hw',
+      str_detect(filepath, '092_08_02_2017 HW.csv') ~
+        'read_files_2017_092_hw',
+      str_detect(filepath, '_2018.*HW') ~
+        'read_files_2018_hw'
+      # if a file doesn't below to a group, this column will be NA:
+    )) %>% filter(!is.na(func_name))
 
   # Sanity check for data consistency after grouping
   # subtracting 1 from `length(files_from_zip)` because of removal of
   # duplicate file `~/092_08-02-2017 HW.csv`
-  groupings <- c(files_2017_hw, files_2017_092_hw, files_2018_hw,
-                 files_2017, files_2018_2020)
-  if ((length(files_from_zip) - 1) != lapply(groupings, length) %>% unlist %>% sum) {
+  if ((length(files_from_zip) - 1) != nrow(files_tbl)) {
     stop('Number of files in subfolders does not match grouping')
   }
 
-  # column selection for each data grouping
-  # column names will be forced `tolower` in the parsers because
-  # case is inconsistent file-to-file
-  keep_cols_2017 <- c('Date', 'Time', 'Dep.M', 'X.C')
-  keep_cols_2018_2020 <- c('Date..MM.DD.YYYY.', 'Time..HH.MM.SS.',
-                           'Depth.m', 'Temp..C')
 
-  # Clean data from 2017 with consistent formatting --------------------
-  dat_2017 <- files_2017 %>%
-    purrr::map_dfr(~ read_subset_consistent_data(., keep_cols = keep_cols_2017)) %>%
-    dplyr::mutate(
-      DateTime = lubridate::mdy(date),
-      time = strftime(time, "%H:%M"),
-      Timezone = NA,
-      depth = dep.m,
-      temp = x.c,
-      Missouri_ID = lake_id,
-      .keep = 'none'
-    )
+  read_files_2017 <- function(df){
+    read_subset_consistent_data(df, keep_cols = c('Date', 'Time', 'Dep.M', 'X.C'),
+                                temp_col = 'x.c')
 
-  # Clean data from 2018-2020 with consistent formatting --------------------
-  dat_2018_2020 <- files_2018_2020 %>%
-    purrr::map_dfr(~ read_subset_consistent_data(., keep_cols = keep_cols_2018_2020)) %>%
-    dplyr::mutate(
-      DateTime = lubridate::mdy(date..mm.dd.yyyy.),
-      time = strftime(time..hh.mm.ss., "%H:%M"),
-      Timezone = NA,
-      depth = depth.m,
-      temp = temp..c,
-      Missouri_ID = lake_id,
-      .keep = 'none'
-    )
+  }
+  read_files_2018_2020 <- function(df){
+    read_subset_consistent_data(df, keep_cols = c('Date..MM.DD.YYYY.', 'Time..HH.MM.SS.',
+                                      'Depth.m', 'Temp..C'),
+                                date_col = 'date..mm.dd.yyyy.', time_col = 'time..hh.mm.ss.',
+                                depth_col = 'depth.m', temp_col = 'temp..c')
+  }
 
-  # Clean 2017 & 2018 data from hand-transcribed field sheets ----------------------
+  read_files_2017_hw <- function(df){
+    read_subset_hw_files(df)
+  }
 
-  dat_2017_hw <- files_2017_hw %>%
-    purrr::map_dfr(~ read_subset_hw_files(.))
+  read_files_2017_092_hw <- function(df){
+    read_subset_hw_files(df, skip_rows = 15,
+                         skip_cols = 2,
+                         depth_position = 16,
+                         temp_position = 3)
+  }
 
-  dat_2017_hw_092 <- read_subset_hw_files(files_2017_092_hw,
-                                          skip_rows = 15,
-                                          skip_cols = 2,
-                                          depth_position = 16,
-                                          temp_position = 3)
+  read_files_2018_hw <- function(df){
+    read_subset_hw_files(df, skip_rows = 0)
+  }
 
-  dat_2018_hw <- files_2018_hw %>%
-    purrr::map_dfr(~ read_subset_hw_files(., skip_rows = 0))
+  # this goes through all rows of the data.frame and dispatches to the functions
+  # we assigned above. Since all functions return the same type of data.frame,
+  # they can be combined with `bind_rows`
+  data_clean <- purrr::pmap(files_tbl, function(filepath, func_name){
+    exec(func_name, filepath)
+  }) %>% bind_rows
 
-  all_hw_files <- dplyr::bind_rows(dat_2017_hw, dat_2017_hw_092, dat_2018_hw) %>%
-    dplyr::mutate(
-      DateTime = date,
-      time = time,
-      Timezone = NA,
-      depth = depth,
-      temp = temp,
-      Missouri_ID = lake_id,
-      .keep = 'none'
-    )
-
-  # combine all data sets together ------------------------------------------
-  data_clean <- dplyr::bind_rows(
-    dat_2017,
-    dat_2018_2020,
-    all_hw_files
-  )
 
   saveRDS(object = data_clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -112,18 +86,23 @@ parse_UniversityofMissouri_LimnoProfiles_2017_2020 <- function(inind, outind) {
 #' @param full_path chr, full file path
 #' @param keep_cols chr, vector of column names to keep
 #'
-read_subset_consistent_data <- function(full_path, keep_cols) {
+read_subset_consistent_data <- function(full_path, keep_cols, date_col = 'date',
+                                        time_col = 'time', depth_col = 'dep.m', temp_col) {
+
   dat <- suppressMessages(readr::read_csv(full_path, name_repair = 'universal',
-                                          locale = locale(encoding = "latin1")))
-
-  # convert field names to lowercase because field names are consistent but
-  # use of capitalization is not
-  names(dat) <- tolower(names(dat))
-  dat <- dat %>% dplyr::select(all_of(tolower(keep_cols)))
-
-  # extract lake id from file name because
-  # use of `Site.Name` field is inconsistent
-  dat$lake_id <- paste('Missouri_', extract_umo_lake_id(full_path), sep = '')
+                                          locale = locale(encoding = "latin1"))) %>%
+    # convert field names to lowercase because field names are consistent but
+    # use of capitalization is not
+    rename_all(tolower) %>%
+    dplyr::select(all_of(tolower(keep_cols))) %>%
+    mutate(DateTime = lubridate::mdy(get(date_col)),
+           time = strftime(get(time_col), "%H:%M"),
+           Timezone = NA,
+           depth = get(depth_col),
+           temp = get(temp_col),
+           # extract lake id from file name because use of `Site.Name` field is inconsistent
+           Missouri_ID = paste('Missouri_', extract_umo_lake_id(full_path), sep = ''),
+           .keep = 'none')
 
   return(dat)
 }
@@ -156,13 +135,14 @@ read_subset_hw_files <- function(full_path, skip_cols = 0, skip_rows = 2,
 
   dat <- dat %>%
     dplyr::mutate(
+      DateTime = extract_umo_date(full_path),
+      time = NA, # skipping time for now, in the manual files the time moves around
+      Timezone = NA,
       depth = as.numeric(.[[(depth_position - skip_cols)]]),
       temp = as.numeric(.[[(temp_position - skip_cols)]]),
-      date = extract_umo_date(full_path),
-      time = NA, # skipping time for now, in the manual files the time moves around
-      lake_id = paste('Missouri_', extract_umo_lake_id(full_path), sep = '')
-    ) %>%
-    dplyr::select(depth, temp, date, time, lake_id) # name of temp and depth vary
+      Missouri_ID = paste('Missouri_', extract_umo_lake_id(full_path), sep = ''),
+      .keep = 'none'
+    )
 
   return(dat)
 }
