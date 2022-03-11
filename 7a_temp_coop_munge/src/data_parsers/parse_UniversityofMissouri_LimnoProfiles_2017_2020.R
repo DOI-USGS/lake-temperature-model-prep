@@ -40,14 +40,11 @@ parse_UniversityofMissouri_LimnoProfiles_2017_2020 <- function(inind, outind) {
 
 
   read_files_2017 <- function(df){
-    read_subset_consistent_data(df, keep_cols = c('Date', 'Time', 'Dep.M', 'X.C'),
-                                temp_col = 'x.c')
+    read_subset_consistent_data(df, temp_col = 'x.c')
 
   }
   read_files_2018_2020 <- function(df){
-    read_subset_consistent_data(df, keep_cols = c('Date..MM.DD.YYYY.', 'Time..HH.MM.SS.',
-                                      'Depth.m', 'Temp..C'),
-                                date_col = 'date..mm.dd.yyyy.', time_col = 'time..hh.mm.ss.',
+    read_subset_consistent_data(df, date_col = 'date..mm.dd.yyyy.', time_col = 'time..hh.mm.ss.',
                                 depth_col = 'depth.m', temp_col = 'temp..c')
   }
 
@@ -56,9 +53,7 @@ parse_UniversityofMissouri_LimnoProfiles_2017_2020 <- function(inind, outind) {
   }
 
   read_files_2017_092_hw <- function(df){
-    read_subset_hw_files(df, skip_rows = 15,
-                         skip_cols = 2,
-                         depth_position = 16,
+    read_subset_hw_files(df, skip_rows = 15, skip_cols = 2, depth_position = 16,
                          temp_position = 3)
   }
 
@@ -70,7 +65,7 @@ parse_UniversityofMissouri_LimnoProfiles_2017_2020 <- function(inind, outind) {
   # we assigned above. Since all functions return the same type of data.frame,
   # they can be combined with `bind_rows`
   data_clean <- purrr::pmap(files_tbl, function(filepath, func_name){
-    exec(func_name, filepath)
+    rlang::exec(func_name, filepath)
   }) %>% bind_rows
 
 
@@ -85,16 +80,17 @@ parse_UniversityofMissouri_LimnoProfiles_2017_2020 <- function(inind, outind) {
 #'
 #' @param full_path chr, full file path
 #' @param keep_cols chr, vector of column names to keep
-#'
-read_subset_consistent_data <- function(full_path, keep_cols, date_col = 'date',
-                                        time_col = 'time', depth_col = 'dep.m', temp_col) {
+#' @param time_col the string name for the time column in this file
+#' @param depth_col the string name for the depth column in this file
+#' @param temp_col the string name for the temperature column in this file
+read_subset_consistent_data <- function(full_path, date_col = 'date', time_col = 'time',
+                                        depth_col = 'dep.m', temp_col) {
 
   dat <- suppressMessages(readr::read_csv(full_path, name_repair = 'universal',
                                           locale = locale(encoding = "latin1"))) %>%
     # convert field names to lowercase because field names are consistent but
     # use of capitalization is not
     rename_all(tolower) %>%
-    dplyr::select(all_of(tolower(keep_cols))) %>%
     mutate(DateTime = lubridate::mdy(get(date_col)),
            time = strftime(get(time_col), "%H:%M"),
            Timezone = NA,
