@@ -105,7 +105,7 @@ create_coop_munge_makefile <- function(target_name, taskplan, parser_files_yml, 
   create_task_makefile(
     makefile = target_name,
     task_plan = taskplan,
-    packages = c('scipiper', 'dplyr', 'readxl', 'assertthat', 'tidyselect'),
+    packages = c('scipiper', 'dplyr', 'readxl', 'assertthat', 'tidyselect', 'stringr', 'rlang'),
     file_extensions = c("ind"),
     include = c('6_temp_coop_fetch.yml', '7a_temp_coop_munge.yml'),
     sources = c(parser_files,
