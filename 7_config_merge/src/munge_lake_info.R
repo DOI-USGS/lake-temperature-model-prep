@@ -67,8 +67,8 @@ munge_Kw <- function(out_ind, kw_varying_ind, ...){
 }
 
 #' @Title Resample incoming hypsography
-#' @decription Resample the A (area) values to set of elevation intervals set
-#' based on the depth of the lake
+#' @decription Resample the A (area) values to a set of elevation intervals
+#' defined based on the depth of the lake
 #' @param site_id id of lake for which hypso is being resampled
 #' @param lake_hypso a dataframe of H (elevation) values and A (area) values
 #' @return a dataframe of the resampled H and A values
