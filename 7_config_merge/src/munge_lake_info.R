@@ -66,6 +66,44 @@ munge_Kw <- function(out_ind, kw_varying_ind, ...){
   gd_put(out_ind, data_file)
 }
 
+#' @Title Resample incoming hypsography
+#' @decription Resample the H and A values baesd on the depth of the lake
+#' @param site_id id of lake for which hypso is being resampled
+#' @param lake_hypso a dataframe of H (elevation) values and A (area) values
+#' @return a dataframe of the resampled H and A values
+resample_hypso <- function(site_id, lake_hypso) {
+
+  # Determine lake depth
+  lake_depth = diff(range(lake_hypso$H))
+
+  # Use lake depth to determine the elevation interval for the resampled hypsography
+  interval <- case_when(
+    lake_depth >= 8 ~ 1,
+    lake_depth >= 5 & lake_depth < 8 ~ 0.5,
+    TRUE ~ 0.25
+  )
+
+  # Resample hypso to defined interval, using approx() to resample the
+  # radii rather than the raw area, per Lindsay's approach in lake-temperature-out:
+  # https://github.com/USGS-R/lake-temperature-out/blob/main/2_process/src/calculate_toha.R#L302-L313
+  # Add an additional row for the deepest (final) raw H value so we don’t
+  # end up with with a lake shallower than the lake depth param.
+  # Then remove duplicate rows if any exist, which they will if the
+  # final H value from the raw H vector lines up with the set interval
+  lake_hypso$radii = sqrt(lake_hypso$A/pi)
+  hypso_resampled <- bind_rows(tibble(H=seq(floor(min(lake_hypso$H)), floor(max(lake_hypso$H)), by=interval),
+                                      new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=H, rule=2)$y),
+                               tibble(new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=max(lake_hypso$H), rule=2)$y, H=max(lake_hypso$H))) %>%
+    distinct() %>%
+    mutate(A = pi * new_radii^2) %>%
+    dplyr::select(-new_radii)
+
+  # check that the resampled area values are monotonically increasing with elevation
+  stopifnot(all(hypso_resampled$A == cummax(hypso_resampled$A)))
+
+  return(hypso_resampled)
+}
+
 #' combines hypsographic data w/ max depth data.
 #' @param out_ind out indicator file
 #' @param areas_ind indicator file for data.frame that includes site_id and areas_m2
@@ -113,8 +151,18 @@ munge_H_A <- function(out_ind, areas_ind, elev_ind, ...){
 
   H_A[which(sapply(H_A, is.null))] <- NULL
 
+  # Resample hypsography unless lake has only 2 specified elevations because
+  # only max depth is available for that lake
+  resampled_H_A <- purrr::map2(names(H_A), H_A, function(site_id, lake_hypso) {
+    if (length(lake_hypso$H) > 2) {
+      lake_hypso <- resample_hypso(site_id, lake_hypso)
+    }
+    return(lake_hypso)
+  }) %>%
+    setNames(names(H_A))
+
   data_file <- scipiper::as_data_file(out_ind)
-  saveRDS(H_A, data_file)
+  saveRDS(resampled_H_A, data_file)
   gd_put(out_ind, data_file)
 }
 
