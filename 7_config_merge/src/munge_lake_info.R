@@ -92,7 +92,7 @@ resample_hypso <- function(site_id, lake_hypso) {
   # Then remove duplicate rows if any exist, which they will if the
   # final H value from the raw H vector lines up with the set interval
   lake_hypso$radii = sqrt(lake_hypso$A/pi)
-  hypso_resampled <- bind_rows(tibble(H=seq(floor(min(lake_hypso$H)), floor(max(lake_hypso$H)), by=interval),
+  hypso_resampled <- bind_rows(tibble(H=seq(floor(min(lake_hypso$H)/interval)*interval, floor(max(lake_hypso$H)/interval)*interval, by=interval),
                                       new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=H, rule=2)$y),
                                tibble(new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=max(lake_hypso$H), rule=2)$y, H=max(lake_hypso$H))) %>%
     distinct() %>%
