@@ -87,15 +87,15 @@ resample_hypso <- function(site_id, lake_hypso) {
   # Resample hypso to defined interval, using approx() to resample the
   # radii rather than the raw area, per Lindsay's approach in lake-temperature-out:
   # https://github.com/USGS-R/lake-temperature-out/blob/main/2_process/src/calculate_toha.R#L302-L313
-  # Add an additional row for the deepest (final) raw H value so we don’t
-  # end up with with a lake shallower than the lake depth param.
-  # Then remove duplicate rows if any exist, which they will if the
-  # final H value from the raw H vector lines up with the set interval
   lake_hypso$radii = sqrt(lake_hypso$A/pi)
-  hypso_resampled <- bind_rows(tibble(H=seq(floor(min(lake_hypso$H)/interval)*interval, floor(max(lake_hypso$H)/interval)*interval, by=interval),
-                                      new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=H, rule=2)$y),
-                               tibble(new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=max(lake_hypso$H), rule=2)$y, H=max(lake_hypso$H))) %>%
-    distinct() %>%
+  hypso_resampled <- bind_rows(
+    # Add an additional row for the minimum (initial, deepest) raw H value so we retain the original area at the bottom of the lake
+    tibble(new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=min(lake_hypso$H), rule=2)$y, H=min(lake_hypso$H)),
+    # Between min and max elevation (non-inclusive), interpolate based on specified interval
+    tibble(H=seq(floor((min(lake_hypso$H)+interval)/interval)*interval, floor((max(lake_hypso$H)-interval)/interval)*interval, by=interval),
+           new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=H, rule=2)$y),
+    # Add an additional row for the maximum (final, surface) raw H value so we retain the original surface area
+    tibble(new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=max(lake_hypso$H), rule=2)$y, H=max(lake_hypso$H))) %>%
     mutate(A = pi * new_radii^2) %>%
     dplyr::select(-new_radii)
 
