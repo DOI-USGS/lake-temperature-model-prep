@@ -212,38 +212,6 @@ targets_list <- list(
     return(out_file)
   }, format = 'file'),
 
-  # Create feather files that can be used in the GLM pipeline without
-  # having to be munged and extracted via NetCDF. Temporary solution
-  # while we work out some NetCDF challenges.
-  # TODO: delete once we finish the NetCDF DSG build (see issue #252)
-  tar_target(
-    out_skipnc_feather, {
-      out_dir <- "7_drivers_munge/out_skipnc"
-      gcm_name <- str_extract(glm_ready_gcm_data_feather, paste(gcm_names, collapse="|"))
-      out_files <- read_feather(glm_ready_gcm_data_feather) %>%
-        # Split into data per cell and per time period
-        mutate(projectperiod = case_when(
-          time <= as.Date("2010-01-01") ~ "1980_1999",
-          time <= as.Date("2070-01-01") ~ "2040_2059",
-          TRUE ~ "2080_2099",
-        )) %>%
-        unite("cell_no.projperiod", c("cell_no", "projectperiod"), sep = ".") %>%
-        split(.$cell_no.projperiod) %>%
-        purrr::map(., function(data) {
-          data <- separate(data, cell_no.projperiod, into = c("cell_no", "projection_period"), sep = "\\.")
-          cell_no <- unique(data$cell_no)
-          projection_period <- unique(data$projection_period)
-          data_to_save <- data %>% select(-cell_no, -projection_period)
-          out_file <- sprintf("%s/GCM_%s_%s_%s.feather", out_dir, gcm_name, projection_period, cell_no)
-          write_feather(data_to_save, out_file)
-          return(out_file)
-        }) %>% unlist()
-      return(out_files)
-    },
-    pattern = map(glm_ready_gcm_data_feather),
-    format = "file"
-  ),
-
   # Group daily feather files by GCM to map over and include
   # file hashes to trigger rebuilds for groups as needed
   tar_target(gcm_data_daily_feather_group_by_gcm,
