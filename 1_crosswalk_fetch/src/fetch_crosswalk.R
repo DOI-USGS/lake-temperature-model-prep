@@ -263,9 +263,16 @@ fetch_Iowa_points <- function(out_ind, csv_ind){
   Iowa_data <- scipiper::sc_retrieve(csv_ind) %>%
     read_csv(col_types = 'icccddc')
 
-  st_as_sf(Iowa_data, coords = c('UTM (NAD83)_E','UTM (NAD83)_N'), crs=26915) %>%
+  ia_utm14 <- Iowa_data %>% filter(Zone == "14T")
+  ia_utm15 <- Iowa_data %>% filter(Zone == "15T")
+
+  ia_utm14_to_latlong <- st_as_sf(ia_utm14, coords = c('UTM (NAD83)_E','UTM (NAD83)_N'), crs=26914) %>%
+    st_transform(crs = 4326)
+  ia_utm15_to_latlong <- st_as_sf(ia_utm15, coords = c('UTM (NAD83)_E','UTM (NAD83)_N'), crs=26915) %>%
+    st_transform(crs = 4326)
+
+  rbind(ia_utm14_to_latlong, ia_utm15_to_latlong) %>%
     mutate(site_id = sprintf("Iowa_%s", LakeID), .keep="unused", .before=1) %>%
-    st_transform(crs=4326) %>%
     saveRDS(file = outfile)
 
   gd_put(out_ind, outfile)
