@@ -49,7 +49,8 @@ targets:
   new_feature_centroids:
     command: readRDS("2_crosswalk_munge/out/centroid_lakes_sf.rds")
 
-  NLDAS_grid: # info from OPeNDAP: https://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FORA0125_H.002
+  # info from OPeNDAP: https://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FORA0125_H.002
+  NLDAS_grid:
     command: create_ldas_grid(x0 = I(-124.9375), y0 = I(25.0625), x_num = I(464), y_num = I(224), cell_res = I(0.125))
 
   old_feature_NLDAS_cells:
