@@ -66,16 +66,43 @@ munge_Kw <- function(out_ind, kw_varying_ind, ...){
   gd_put(out_ind, data_file)
 }
 
+#' @title Utility function to resample provided hypso
+#' @description This helper function resamples the provided hypso,
+#' `hypso`, to a new set of elevations `new_H`. The hypsography is
+#' resampled using approx() to estimate the radii rather than the
+#' raw area, per Lindsay's approach in lake-temperature-out:
+#' https://github.com/USGS-R/lake-temperature-out/blob/main/2_process/src/calculate_toha.R#L302-L313
+#' @param hypso the original hypsography for the lake. A dataframe
+#' of H (elevation) values and A (area) values
+#' @param new_H a vector of elevations to which the raw hypsography
+#' should be resampled
+#' @returns a dataframe of the resampled hypsography, with a column for
+#' H (elevation) and A (area)
+resample_hypso_util <- function(hypso, new_H) {
+
+  # `rule = 2`: repeats top or bottom known hypso for any depths outside of known hypso
+  hypso$radii <- sqrt(hypso$A / pi)
+  new_radii <- approx(hypso$H, hypso$radii, xout=new_H, rule = 2)$y
+
+  # Now calculate area from new radii
+  new_A <- pi * new_radii^2
+
+  # Create hypso at these new depths
+  return(data.frame(H = new_H, A = new_A))
+}
+
 #' @Title Resample incoming hypsography
 #' @decription Resample the A (area) values to a set of elevation intervals
-#' defined based on the depth of the lake
+#' defined based on the depth of the lake. This is in response to the
+#' discovery that high-resolution hypsography cause some GLM runs to fail,
+#' see https://github.com/USGS-R/lake-temperature-model-prep/issues/293
 #' @param site_id id of lake for which hypso is being resampled
 #' @param lake_hypso a dataframe of H (elevation) values and A (area) values
 #' @return a dataframe of the resampled H and A values
 resample_hypso <- function(site_id, lake_hypso) {
 
   # Determine lake depth
-  lake_depth = diff(range(lake_hypso$H))
+  lake_depth <- diff(range(lake_hypso$H))
 
   # Use lake depth to determine the elevation interval for the resampled hypsography
   interval <- case_when(
@@ -84,20 +111,22 @@ resample_hypso <- function(site_id, lake_hypso) {
     TRUE ~ 0.25
   )
 
+  # Define new series of elevation values, based on set interval
+  new_interval_elevations <- c(
+    # Add the minimum (bottom) raw H value so we will later retain the original area at the bottom of the lake
+    min(lake_hypso$H),
+    # Between min and max elevation (non-inclusive), interpolate based on specified interval
+    seq(from = floor((min(lake_hypso$H)+interval)/interval)*interval,
+        to = floor((max(lake_hypso$H)-interval)/interval)*interval,
+        by=interval),
+    # Add the maximum (surface) raw H value so we will later retain the original surface area
+    max(lake_hypso$H)
+  )
+
   # Resample hypso to defined interval, using approx() to resample the
   # radii rather than the raw area, per Lindsay's approach in lake-temperature-out:
   # https://github.com/USGS-R/lake-temperature-out/blob/main/2_process/src/calculate_toha.R#L302-L313
-  lake_hypso$radii = sqrt(lake_hypso$A/pi)
-  hypso_resampled <- bind_rows(
-    # Add an additional row for the minimum (initial, deepest) raw H value so we retain the original area at the bottom of the lake
-    tibble(new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=min(lake_hypso$H), rule=2)$y, H=min(lake_hypso$H)),
-    # Between min and max elevation (non-inclusive), interpolate based on specified interval
-    tibble(H=seq(floor((min(lake_hypso$H)+interval)/interval)*interval, floor((max(lake_hypso$H)-interval)/interval)*interval, by=interval),
-           new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=H, rule=2)$y),
-    # Add an additional row for the maximum (final, surface) raw H value so we retain the original surface area
-    tibble(new_radii=approx(lake_hypso$H, lake_hypso$radii, xout=max(lake_hypso$H), rule=2)$y, H=max(lake_hypso$H))) %>%
-    mutate(A = pi * new_radii^2) %>%
-    dplyr::select(-new_radii)
+  hypso_resampled <- resample_hypso_util(lake_hypso, new_interval_elevations)
 
   # check that the resampled area values are monotonically increasing with elevation
   stopifnot(all(hypso_resampled$A == cummax(hypso_resampled$A)))
