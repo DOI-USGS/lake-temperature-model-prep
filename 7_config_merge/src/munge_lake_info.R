@@ -66,6 +66,74 @@ munge_Kw <- function(out_ind, kw_varying_ind, ...){
   gd_put(out_ind, data_file)
 }
 
+#' @title Utility function to resample provided hypso
+#' @description This helper function resamples the provided hypso,
+#' `hypso`, to a new set of elevations `new_H`. The hypsography is
+#' resampled using approx() to estimate the radii rather than the
+#' raw area, per Lindsay's approach in lake-temperature-out:
+#' https://github.com/USGS-R/lake-temperature-out/blob/main/2_process/src/calculate_toha.R#L302-L313
+#' @param hypso the original hypsography for the lake. A dataframe
+#' of H (elevation) values and A (area) values
+#' @param new_H a vector of elevations to which the raw hypsography
+#' should be resampled
+#' @returns a dataframe of the resampled hypsography, with a column for
+#' H (elevation) and A (area)
+resample_hypso_util <- function(hypso, new_H) {
+
+  # `rule = 2`: repeats top or bottom known hypso for any depths outside of known hypso
+  hypso$radii <- sqrt(hypso$A / pi)
+  new_radii <- approx(hypso$H, hypso$radii, xout=new_H, rule = 2)$y
+
+  # Now calculate area from new radii
+  new_A <- pi * new_radii^2
+
+  # Create hypso at these new depths
+  return(data.frame(H = new_H, A = new_A))
+}
+
+#' @Title Resample incoming hypsography
+#' @decription Resample the A (area) values to a set of elevation intervals
+#' defined based on the depth of the lake. This is in response to the
+#' discovery that high-resolution hypsography cause some GLM runs to fail,
+#' see https://github.com/USGS-R/lake-temperature-model-prep/issues/293
+#' @param site_id id of lake for which hypso is being resampled
+#' @param lake_hypso a dataframe of H (elevation) values and A (area) values
+#' @return a dataframe of the resampled H and A values
+resample_hypso <- function(site_id, lake_hypso) {
+
+  # Determine lake depth
+  lake_depth <- diff(range(lake_hypso$H))
+
+  # Use lake depth to determine the elevation interval for the resampled hypsography
+  interval <- case_when(
+    lake_depth >= 8 ~ 1,
+    lake_depth >= 5 & lake_depth < 8 ~ 0.5,
+    TRUE ~ 0.25
+  )
+
+  # Define new series of elevation values, based on set interval
+  new_interval_elevations <- c(
+    # Add the minimum (bottom) raw H value so we will later retain the original area at the bottom of the lake
+    min(lake_hypso$H),
+    # Between min and max elevation (non-inclusive), interpolate based on specified interval
+    seq(from = floor((min(lake_hypso$H)+interval)/interval)*interval,
+        to = floor((max(lake_hypso$H)-interval)/interval)*interval,
+        by=interval),
+    # Add the maximum (surface) raw H value so we will later retain the original surface area
+    max(lake_hypso$H)
+  )
+
+  # Resample hypso to defined interval, using approx() to resample the
+  # radii rather than the raw area, per Lindsay's approach in lake-temperature-out:
+  # https://github.com/USGS-R/lake-temperature-out/blob/main/2_process/src/calculate_toha.R#L302-L313
+  hypso_resampled <- resample_hypso_util(lake_hypso, new_interval_elevations)
+
+  # check that the resampled area values are monotonically increasing with elevation
+  stopifnot(all(hypso_resampled$A == cummax(hypso_resampled$A)))
+
+  return(hypso_resampled)
+}
+
 #' combines hypsographic data w/ max depth data.
 #' @param out_ind out indicator file
 #' @param areas_ind indicator file for data.frame that includes site_id and areas_m2
@@ -113,8 +181,18 @@ munge_H_A <- function(out_ind, areas_ind, elev_ind, ...){
 
   H_A[which(sapply(H_A, is.null))] <- NULL
 
+  # Resample hypsography unless lake has only 2 specified elevations because
+  # only max depth is available for that lake
+  resampled_H_A <- purrr::map2(names(H_A), H_A, function(site_id, lake_hypso) {
+    if (length(lake_hypso$H) > 2) {
+      lake_hypso <- resample_hypso(site_id, lake_hypso)
+    }
+    return(lake_hypso)
+  }) %>%
+    setNames(names(H_A))
+
   data_file <- scipiper::as_data_file(out_ind)
-  saveRDS(H_A, data_file)
+  saveRDS(resampled_H_A, data_file)
   gd_put(out_ind, data_file)
 }
 
