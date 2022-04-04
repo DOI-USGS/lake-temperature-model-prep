@@ -1,10 +1,10 @@
 
-merge_lake_data <- function(out_ind, temp_data_fl, lake_depth_ind, lake_names_ind, lake_loc_ind, lake_data_ind,
+merge_lake_data <- function(out_ind, temp_data_ind, lake_depth_ind, lake_names_ind, lake_loc_ind, lake_data_ind,
                             lagos_xwalk_ind, MGLP_xwalk_ind, WBIC_xwalk_ind, Micorps_xwalk_ind,
                             MNDOW_xwalk_ind, Winslow_xwalk_ind, NDGF_xwalk_ind, kw_ind,
                             meteo_ind, meteo_files_ind, toha_varying_kw_ind, digitzing_hypos_ind){
 
-  temp_dat <- feather::read_feather(temp_data_fl)
+  temp_dat <- feather::read_feather(sc_retrieve(temp_data_ind))
   main_source <- temp_dat %>% group_by(site_id, source_id) %>% tally() %>%
     slice(which.max(n)) %>% ungroup %>% dplyr::select(site_id, main_source = source_id)
   lake_names <- readRDS(sc_retrieve(lake_names_ind))
