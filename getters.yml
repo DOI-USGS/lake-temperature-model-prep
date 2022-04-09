@@ -21,6 +21,9 @@ targets:
   1_crosswalk_fetch/in/Norfork_temperature_locations.csv:
     command: gd_get('1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
 
+  1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv:
+    command: gd_get('1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv.ind')
+
   1_crosswalk_fetch/in/Navico_lakes_depths.csv:
     command: gd_get('1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
 
