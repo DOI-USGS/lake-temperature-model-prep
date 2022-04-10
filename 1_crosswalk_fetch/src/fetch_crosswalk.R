@@ -241,6 +241,19 @@ fetch_navico_points <- function(out_ind, csv_ind) {
   gd_put(out_ind, outfile)
 }
 
+fetch_UNDERC_points <- function(out_ind, csv_ind){
+  outfile <- as_data_file(out_ind)
+
+  scipiper::sc_retrieve(csv_ind) %>%
+    read_csv(col_types = 'dcccccdddccc') %>%
+    filter(!is.na(lat) & !is.na(long)) %>%
+    st_as_sf(coords = c('long','lat'), crs=4326) %>%
+    mutate(site_id = sprintf("UNDERC_%s", lakeID), .keep="unused", .before=1) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+}
+
 fetch_norfork_points <- function(out_ind, csv_ind) {
   outfile <- as_data_file(out_ind)
 

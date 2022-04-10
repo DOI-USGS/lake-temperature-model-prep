@@ -34,6 +34,7 @@ targets:
       - 1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind
       - 1_crosswalk_fetch/out/UniversityofMissouri_2017_2020_Profiles_sf.rds.ind
       - 1_crosswalk_fetch/out/ned_centroid_elevations.feather.ind
+      - 1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind
 
 # create the trigger file, which will not be checked into git
 # I see no reason to have different trigger files for different sections of the pipeline
@@ -134,6 +135,10 @@ targets:
   1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind:
     command: fetch_navico_points(target_name,
       csv_ind = '1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
+
+  1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind:
+    command: fetch_UNDERC_points(target_name,
+      csv_ind = '1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv.ind')
 
   1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind:
     command: fetch_norfork_points(target_name,

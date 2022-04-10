@@ -24,6 +24,9 @@ targets:
   1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv:
     command: gd_get('1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv.ind')
 
+  1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind:
+    command: gd_get('1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds')
+
   1_crosswalk_fetch/in/Navico_lakes_depths.csv:
     command: gd_get('1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
 
@@ -178,6 +181,9 @@ targets:
   2_crosswalk_munge/out/univ_mo_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/univ_mo_nhdhr_xwalk.rds.ind')
 
+  2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds.ind')
+
   #### 3_params_fetch #####
 
   3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip:
@@ -265,6 +271,9 @@ targets:
 
   4_params_munge/out/lagos_depths.rds:
     command: gd_get('4_params_munge/out/lagos_depths.rds.ind')
+
+  4_params_munge/out/UNDERC_depths.rds:
+    command: gd_get('4_params_munge/out/UNDERC_depths.rds.ind')
 
   4_params_munge/out/wbic_depths.rds:
     command: gd_get('4_params_munge/out/wbic_depths.rds.ind')

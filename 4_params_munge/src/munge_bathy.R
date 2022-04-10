@@ -47,6 +47,24 @@ munge_navico_depths <- function(out_ind, navico_depth_ind, navico_xwalk_ind) {
   gd_put(out_ind, data_file)
 }
 
+munge_UNDERC_depths <- function(out_ind, UNDERC_depth_ind, UNDERC_xwalk_ind){
+  data_file <- scipiper::as_data_file(out_ind)
+
+  xwalk <- sc_retrieve(UNDERC_xwalk_ind) %>% readRDS() %>%
+    dplyr::select(site_id, UNDERC_ID)
+
+  sc_retrieve(UNDERC_depth_ind) %>%
+    readRDS() %>%
+    filter(!is.na(maxDepth)) %>%
+    st_drop_geometry() %>%
+    rename(UNDERC_ID = site_id) %>%
+    inner_join(xwalk, by = 'UNDERC_ID') %>%
+    dplyr::select(site_id, UNDERC_ID, z_max = maxDepth) %>%
+    saveRDS(data_file)
+
+  gd_put(out_ind, data_file)
+}
+
 collapse_multi_bathy <- function(data_in){
   bathy_data <- purrr::map(unique(data_in$site_id), function(x){
 

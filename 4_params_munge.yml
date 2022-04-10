@@ -41,6 +41,7 @@ targets:
       - 4_params_munge/out/lagos_depths.rds.ind
       - 4_params_munge/out/lagos_secchi.rds.ind
       - 4_params_munge/out/navico_depths.rds.ind
+      - 4_params_munge/out/UNDERC_depths.rds.ind
 
 
   4_params_munge/out/toha_varying_kw.rds.ind:
@@ -81,6 +82,11 @@ targets:
     command: munge_navico_depths(target_name,
       navico_depth_ind = '1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind',
       navico_xwalk_ind = '2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind')
+
+  4_params_munge/out/UNDERC_depths.rds.ind:
+    command: munge_UNDERC_depths(target_name,
+      UNDERC_depth_ind = '1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind',
+      UNDERC_xwalk_ind = '2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds.ind')
 
   4_params_munge/out/lagos_secchi.rds.ind:
     command: munge_lagos_secchi(target_name,
