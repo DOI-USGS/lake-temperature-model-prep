@@ -32,7 +32,7 @@ process_wbic_lakes <- function(file_out = '1_crosswalk_fetch/out/wbic_lakes_sf.r
   saveRDS(wbic_lakes, file = file_out)
 }
 
-fetch_isro_lakes <- function(out_ind, zip_ind, remove_IDs = c(), gdb_filename, use_layers){
+fetch_isro_lakes <- function(out_ind, zip_ind, remove_IDs = c(), gdb_filename, use_geoms){
   outfile <- as_data_file(out_ind)
 
   zip_file <- sc_retrieve(zip_ind)
@@ -47,9 +47,10 @@ fetch_isro_lakes <- function(out_ind, zip_ind, remove_IDs = c(), gdb_filename, u
                        n_feature = st_layer_info$features,
                        n_col = st_layer_info$fields)
 
+  # could replace this comment with sprintf for "use_geoms"
   message('...dropping any layer that is not Multi Polygon, likely more than five lost...')
 
-  use_layers <- layer_info %>% filter(!is.na(geom_type) & n_feature > 1 & geom_type == 'Multi Polygon') %>%
+  use_layers <- layer_info %>% filter(!is.na(geom_type) & n_feature > 1 & geom_type == use_geoms) %>%
   # all but one remaining have 8 cols (one has 9)
   # depth field is "Avg_Depth" for many even though that name is misleading, seems an int
   # or "Depth_calc" when 9 cols
@@ -141,6 +142,18 @@ slice_iadnr_contour <- function(out_ind, contour_ind){
   gd_put(out_ind, outfile)
 }
 
+#' get the top/shallow layer as a single polygon to represent the lake surface
+slice_isro_contour <- function(out_ind, contour_ind){
+  outfile <- as_data_file(out_ind)
+
+  # need to merge/dissolve all, since these contours are filled polygons
+  contours_sf <- sc_retrieve(contour_ind) %>% readRDS() %>%
+    group_by(site_id) %>%
+    dplyr::summarize(geometry = st_union(geometry)) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+}
 
 fetch_mndow_lakes <- function(ind_file, layer, dummy){
   data_file <- scipiper::as_data_file(ind_file)

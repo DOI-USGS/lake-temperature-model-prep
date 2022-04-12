@@ -1,0 +1,15 @@
+version: 0.3.0
+name: 4_params_munge/out/isro_bathy.rds.ind
+type: file
+hash: 1d793497d278f8c7aee1839a7426da93
+time: 2022-04-12 15:34:12 UTC
+depends:
+  1_crosswalk_fetch/out/isro_contours_sf.rds.ind: c9f1c549236718386573ff9c5bf1c31d
+  1_crosswalk_fetch/out/isro_lakes_sf.rds.ind: 23ead31633bc565933cb27aba80880eb
+  2_crosswalk_munge/out/isro_nhdhr_xwalk.rds.ind: be6200a555bb7e57da25a295c21ff0f2
+fixed: b4d16e589fc731f7a4634a3cb1fb100c
+code:
+  functions:
+    collapse_multi_bathy: cbf973cf97dfe7e39a35801bf2431175
+    munge_isro_bathy: c5753eb0a5ae0a78d63dfefc09126943
+

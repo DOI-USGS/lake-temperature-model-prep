@@ -176,6 +176,51 @@ munge_indnr_bathy <- function(out_ind, contour_zip_ind, layer, lake_surface_ind,
 }
 
 
+#' get ISRO (Isle Royale) bathymetry into the normal hypsographic format
+#'
+munge_isro_bathy <- function(out_ind, contour_ind, surface_ind, xwalk_ind){
+  # we now use sf > v1.0, which causes issues with some NHD polygons and the spherical coordinates
+  # see info on the change: https://r-spatial.org/r/2020/06/17/s2.html#sf-10-goodbye-flat-earth-welcome-s2-spherical-geometry
+
+  # to avoid these NHD issues, we'd either need to edit the files or avoid the error by avoiding use of the
+  # S2 engine. We do that by toggling off use of S2 here.
+  sf::sf_use_s2(FALSE)
+  on.exit(sf::sf_use_s2(TRUE))
+  xwalk <- sc_retrieve(xwalk_ind) %>% readRDS()
+
+  lake_surface <- sc_retrieve(surface_ind) %>% readRDS %>% group_by(site_id) %>%
+    summarise(depths = 0, areas = sum(as.numeric(st_area(geometry)))) %>%
+    st_drop_geometry()
+
+
+  contours <- sc_retrieve(contour_ind) %>% readRDS %>%
+    rename(depths = m_depth) %>%
+    # remove the top contour, since that is what was used for the zero area:
+    arrange(site_id, depths) %>% group_by(site_id) %>% slice(-1) %>%
+    group_by(site_id, depths) %>%
+    summarise(contour_area = sum(as.numeric(st_area(geometry)))) %>%
+    st_drop_geometry() %>%
+    group_by(site_id) %>%
+    # these are area slices (donuts) so we also have to sum the areas of deeper:
+    arrange(site_id, desc(depths)) %>% mutate(areas = cumsum(contour_area)) %>%
+    # add the dissolved full surface area polys:
+    bind_rows(lake_surface) %>%
+    arrange(site_id, depths) %>%
+    ungroup() %>%
+    dplyr::select(ISRO_ID = site_id, depths, areas) %>%
+    # join with crosswalk to get this into NHDHR ids:
+    left_join(xwalk, by = 'ISRO_ID') %>% filter(!is.na(site_id)) %>%
+    rename(other_ID = ISRO_ID)
+
+  data_file <- scipiper::as_data_file(out_ind)
+
+  collapse_multi_bathy(contours) %>%
+    saveRDS(data_file)
+  gd_put(out_ind, data_file)
+
+}
+
+
 
 munge_iadnr_bathy <- function(out_ind, iadnr_contour_ind, iadnr_surface_ind, xwalk_ind){
   # we now use sf > v1.0, which causes issues with some NHD polygons and the spherical coordinates

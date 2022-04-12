@@ -34,6 +34,7 @@ targets:
       - 4_params_munge/out/wbic_bathy.rds.ind
       - 4_params_munge/out/ndgf_bathy.rds.ind
       - 4_params_munge/out/iadnr_bathy.rds.ind
+      - 4_params_munge/out/isro_bathy.rds.ind
       - 4_params_munge/out/mglp_depths.rds.ind
       - 4_params_munge/out/wbic_depths.rds.ind
       - 4_params_munge/out/ndgf_depths.rds.ind
@@ -135,6 +136,14 @@ targets:
       iadnr_contour_ind = '1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind',
       iadnr_surface_ind = '1_crosswalk_fetch/out/iadnr_lakes_sf.rds.ind',
       xwalk_ind = '2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds.ind')
+
+  4_params_munge/out/isro_bathy.rds.ind:
+    command: munge_isro_bathy(
+      out_ind = target_name,
+      contour_ind = '1_crosswalk_fetch/out/isro_contours_sf.rds.ind',
+      surface_ind = '1_crosswalk_fetch/out/isro_lakes_sf.rds.ind',
+      xwalk_ind = '2_crosswalk_munge/out/isro_nhdhr_xwalk.rds.ind')
+
 
   4_params_munge/out/indnr_bathy.rds.ind:
     command: munge_indnr_bathy(

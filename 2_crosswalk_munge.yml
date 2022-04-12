@@ -28,6 +28,7 @@ targets:
       - 2_crosswalk_munge/out/lake_to_state_xwalk.rds.ind
       - 2_crosswalk_munge/out/ndgf_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/isro_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/mo_usace_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind
@@ -51,6 +52,20 @@ targets:
       target_name,
       intersect_ind_file = '2_crosswalk_munge/out/mglp_nhdhr_intersect.rds.ind',
       poly1_ID_name = I("MGLP_ID"))
+
+  2_crosswalk_munge/out/isro_nhdhr_intersect.rds.ind:
+    command: crosswalk_poly_intersect_poly(
+      target_name,
+      poly1_ind_file = '1_crosswalk_fetch/out/isro_lakes_sf.rds.ind',
+      poly2_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      poly1_ID_name = I("ISRO_ID"),
+      crs=I(26915))
+
+  2_crosswalk_munge/out/isro_nhdhr_xwalk.rds.ind:
+    command: choose1_poly_intersect_poly(
+      target_name,
+      intersect_ind_file = '2_crosswalk_munge/out/isro_nhdhr_intersect.rds.ind',
+      poly1_ID_name = I("ISRO_ID"))
 
   2_crosswalk_munge/out/iadnr_nhdhr_intersect.rds.ind:
     command: crosswalk_poly_intersect_poly(

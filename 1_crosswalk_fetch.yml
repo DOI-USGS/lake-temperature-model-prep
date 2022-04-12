@@ -130,9 +130,13 @@ targets:
 
   1_crosswalk_fetch/out/isro_contours_sf.rds.ind:
     command: fetch_isro_lakes(target_name,
-      use_layers = I('Multi Polygon'),
+      use_geoms = I('Multi Polygon'),
       gdb_filename = I('ISRO_GLKN_BathymetricData.gdb'),
       zip_ind = '3_params_fetch/in/ISRO_GLKN_Bathymetric_FinalData.zip.ind')
+
+  1_crosswalk_fetch/out/isro_lakes_sf.rds.ind:
+    command: slice_isro_contour(target_name,
+      contour_ind = '1_crosswalk_fetch/out/isro_contours_sf.rds.ind')
 
   1_crosswalk_fetch/out/mo_usace_sampling_locations_sf.rds.ind:
     command: fetch_mo_usace_points(target_name,
