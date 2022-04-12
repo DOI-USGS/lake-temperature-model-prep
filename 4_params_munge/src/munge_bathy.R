@@ -59,6 +59,7 @@ munge_UNDERC_depths <- function(out_ind, UNDERC_depth_ind, UNDERC_xwalk_ind){
     st_drop_geometry() %>%
     rename(UNDERC_ID = site_id) %>%
     inner_join(xwalk, by = 'UNDERC_ID') %>%
+    # confirmed this field is in "m" as "Maximum depth of the lake" from columnNames_allDatabaseTables_20210423.csv
     dplyr::select(site_id, UNDERC_ID, z_max = maxDepth) %>%
     saveRDS(data_file)
 

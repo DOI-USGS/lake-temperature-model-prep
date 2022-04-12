@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/isro_contours_sf.rds.ind
+type: file
+hash: c9f1c549236718386573ff9c5bf1c31d
+time: 2022-04-12 11:38:39 UTC
+depends:
+  3_params_fetch/in/ISRO_GLKN_Bathymetric_FinalData.zip.ind: 786de687a7c5a770d46f1b57880adcf8
+fixed: cad3067ea8a11f043e7163a929585900
+code:
+  functions:
+    fetch_isro_lakes: 35cd407dc5345b3cba1c07bad6727798
+

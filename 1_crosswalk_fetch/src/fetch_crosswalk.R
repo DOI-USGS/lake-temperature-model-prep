@@ -32,6 +32,53 @@ process_wbic_lakes <- function(file_out = '1_crosswalk_fetch/out/wbic_lakes_sf.r
   saveRDS(wbic_lakes, file = file_out)
 }
 
+fetch_isro_lakes <- function(out_ind, zip_ind, remove_IDs = c(), gdb_filename, use_layers){
+  outfile <- as_data_file(out_ind)
+
+  zip_file <- sc_retrieve(zip_ind)
+
+  gdb_path <- tempdir()
+  unzip(zip_file, exdir = gdb_path)
+
+
+  st_layer_info <- st_layers(file.path(gdb_path, gdb_filename))
+  layer_info <- tibble(layer_name = st_layer_info$name,
+                       geom_type = unlist(st_layer_info$geomtype),
+                       n_feature = st_layer_info$features,
+                       n_col = st_layer_info$fields)
+
+  message('...dropping any layer that is not Multi Polygon, likely more than five lost...')
+
+  use_layers <- layer_info %>% filter(!is.na(geom_type) & n_feature > 1 & geom_type == 'Multi Polygon') %>%
+  # all but one remaining have 8 cols (one has 9)
+  # depth field is "Avg_Depth" for many even though that name is misleading, seems an int
+  # or "Depth_calc" when 9 cols
+    mutate(depth_col = case_when(
+      n_col == 9 ~ "Depth_calc",
+      n_col == 8 ~ "Avg_Depth"
+    )) %>%
+    dplyr::select(layer_name, depth_col)
+
+  data_clean <- purrr::pmap(use_layers, function(layer_name, depth_col){
+    # get "Beaver" from "Beaver_CntrPolys" etc:
+    lake_name <- strsplit(layer_name, '_')[[1]][1]
+
+    st_read(file.path(gdb_path, gdb_filename), layer_name, quiet = TRUE) %>%
+      sf::st_zm() %>% st_transform(crs = 4326) %>%
+      rename(geometry = Shape) %>%
+      mutate(site_id = sprintf('isro_%s', lake_name)) %>%
+      dplyr::select(site_id, m_depth = one_of(depth_col)) %>%
+      arrange(m_depth) %>%
+      group_by(site_id, m_depth) %>%
+      # some depth intervals don't have much of a footprint, why?
+      # e.g., filter(site_id == 'isro_Beaver' & m_depth == 1)
+      summarize(geometry = sf::st_union(geometry), .groups = 'drop')
+  }) %>% bind_rows() %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+
+}
 
 #' we're using this contour shapefile because the other lake shapefile doesn't really
 #' have lake IDs, since most are empty. See issue here: https://github.com/USGS-R/lake-temperature-model-prep/issues/155

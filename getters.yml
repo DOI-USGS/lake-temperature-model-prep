@@ -244,6 +244,9 @@ targets:
   3_params_fetch/out/ndgf_lake_maxdepth.rds:
     command: gd_get('3_params_fetch/out/ndgf_lake_maxdepth.rds.ind')
 
+  3_params_fetch/in/ISRO_GLKN_Bathymetric_FinalData.zip:
+    command: gd_get('3_params_fetch/in/ISRO_GLKN_Bathymetric_FinalData.zip.ind')
+
   #### 4_params_munge ####
   4_params_munge/out/NY_manual_depths.rds:
     command: gd_get('4_params_munge/out/NY_manual_depths.rds.ind')
