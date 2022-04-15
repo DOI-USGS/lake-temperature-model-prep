@@ -8,13 +8,12 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
                                id_crosswalk, wbic_crosswalk,
                                dow_crosswalk, iowa_crosswalk,
                                missouri_crosswalk, mo_usace_crosswalk,
-                               navico_crosswalk, norfork_crosswalk) {
+                               navico_crosswalk, norfork_crosswalk, underc_crosswalk) {
 
   outfile <- as_data_file(outind)
 
   # modify DOWs to add leading zero if not 8 characters long
   dat <- merge_coop_dat(inind)
-
 
   idfile <- sc_retrieve(id_crosswalk)
   id2nhd <- readRDS(idfile)
@@ -41,6 +40,11 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   navico2nhd <- sc_retrieve(navico_crosswalk) %>% readRDS() %>% distinct()
 
   norfork2nhd <- sc_retrieve(norfork_crosswalk) %>% readRDS() %>% distinct()
+
+  underc2nhd <- sc_retrieve(underc_crosswalk) %>% readRDS() %>%
+    # this crosswalk has a WBIC field with some lakes, this isn't what
+    # we're using the for crosswalk (was point/poly instead)
+    dplyr::select(site_id, UNDERC_ID) %>% distinct()
 
   # merge each possible ID with nhdid
   # wbic
@@ -95,13 +99,17 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   dat_norfork <- filter(dat, !is.na(Norfork_ID)) %>%
     left_join(norfork2nhd)
 
+  # UNDERC
+  dat_underc <- filter(dat, !is.na(UNDERC_ID)) %>%
+    left_join(underc2nhd)
+
   # all together now
   # print out warning about what data you're dropping
   dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id, dat_iowa,
                               dat_missouri, dat_mousace,
-                              dat_navico, dat_norfork) %>%
+                              dat_navico, dat_norfork, dat_underc) %>%
     tidyr::pivot_longer(c(DOW, id, WBIC, Iowa_ID,
-                          Missouri_ID, mo_usace_id, Navico_ID, Norfork_ID),
+                          Missouri_ID, mo_usace_id, Navico_ID, Norfork_ID, UNDERC_ID),
                         names_to = "state_id_type", values_to = "state_id") %>%
     filter(!is.na(state_id))
 

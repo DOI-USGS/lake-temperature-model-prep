@@ -21,6 +21,12 @@ targets:
   1_crosswalk_fetch/in/Norfork_temperature_locations.csv:
     command: gd_get('1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
 
+  1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv:
+    command: gd_get('1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv.ind')
+
+  1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind:
+    command: gd_get('1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds')
+
   1_crosswalk_fetch/in/Navico_lakes_depths.csv:
     command: gd_get('1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
 
@@ -76,6 +82,12 @@ targets:
   1_crosswalk_fetch/out/micorps_sites.xlsx:
     command: gd_get('1_crosswalk_fetch/out/micorps_sites.xlsx.ind')
 
+  1_crosswalk_fetch/out/isro_lakes_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/isro_lakes_sf.rds.ind')
+
+  1_crosswalk_fetch/out/isro_contours_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/isro_contours_sf.rds.ind')
+
   1_crosswalk_fetch/out/iadnr_contours_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind')
 
@@ -111,6 +123,12 @@ targets:
 
   2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/iadnr_nhdhr_xwalk.rds.ind')
+
+  2_crosswalk_munge/out/isro_nhdhr_intersect.rds:
+    command: gd_get('2_crosswalk_munge/out/isro_nhdhr_intersect.rds.ind')
+
+  2_crosswalk_munge/out/isro_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/isro_nhdhr_xwalk.rds.ind')
 
   2_crosswalk_munge/out/winslow_nhdhr_intersect.rds:
     command: gd_get('2_crosswalk_munge/out/winslow_nhdhr_intersect.rds.ind')
@@ -175,6 +193,9 @@ targets:
   2_crosswalk_munge/out/univ_mo_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/univ_mo_nhdhr_xwalk.rds.ind')
 
+  2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds.ind')
+
   #### 3_params_fetch #####
 
   3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip:
@@ -235,6 +256,10 @@ targets:
   3_params_fetch/out/ndgf_lake_maxdepth.rds:
     command: gd_get('3_params_fetch/out/ndgf_lake_maxdepth.rds.ind')
 
+  3_params_fetch/in/ISRO_GLKN_Bathymetric_FinalData.zip:
+    command: gd_get('3_params_fetch/in/ISRO_GLKN_Bathymetric_FinalData.zip.ind')
+
+
   #### 4_params_munge ####
   4_params_munge/out/NY_manual_depths.rds:
     command: gd_get('4_params_munge/out/NY_manual_depths.rds.ind')
@@ -263,6 +288,9 @@ targets:
   4_params_munge/out/lagos_depths.rds:
     command: gd_get('4_params_munge/out/lagos_depths.rds.ind')
 
+  4_params_munge/out/UNDERC_depths.rds:
+    command: gd_get('4_params_munge/out/UNDERC_depths.rds.ind')
+
   4_params_munge/out/wbic_depths.rds:
     command: gd_get('4_params_munge/out/wbic_depths.rds.ind')
 
@@ -283,6 +311,9 @@ targets:
 
   4_params_munge/out/indnr_bathy.rds:
     command: gd_get('4_params_munge/out/indnr_bathy.rds.ind')
+
+  4_params_munge/out/isro_bathy.rds:
+    command: gd_get('4_params_munge/out/isro_bathy.rds.ind')
 
   4_params_munge/out/mndow_01_bathy.rds:
     command: gd_get('4_params_munge/out/mndow_01_bathy.rds.ind')

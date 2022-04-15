@@ -41,6 +41,9 @@ find_parser <- function(coop_wants, parser_filehash, trigger_file = NULL) {
     } else if (grepl('Norfolk_', coop_want_filenames[i])) {
       parsers[i] <- 'parse_norfork_files'
 
+    } else if (grepl('Solomon_LIMNO_PROFILES_', coop_want_filenames[i])) {
+      parsers[i] <- 'parse_Solomon'
+
     } else {
       parsers[i] <- paste0('parse_', tools::file_path_sans_ext(coop_want_filenames[i]))
     }

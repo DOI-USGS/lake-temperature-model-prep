@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind
+type: file
+hash: 2ef092c1b11a76370feb5993309d1ef5
+time: 2022-04-09 20:10:48 UTC
+depends:
+  1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv.ind: c64a9c6bf70cbaa7386f2d5de88332c5
+fixed: 0ca03f0ef3a476667728aa1d53ac0504
+code:
+  functions:
+    fetch_UNDERC_points: b474c2105ce8490f78e7d59b53020071
+

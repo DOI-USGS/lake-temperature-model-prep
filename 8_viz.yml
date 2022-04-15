@@ -19,7 +19,6 @@ targets:
 
   8_viz:
     depends:
-      - 8_viz/out/toha_lakes_summary_fig.html.ind
       - 8_viz/out/lakes_summary_fig.html.ind
       - 8_viz/out/lake_obs_counts.png
 
