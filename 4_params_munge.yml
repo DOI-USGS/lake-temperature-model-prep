@@ -97,7 +97,7 @@ targets:
 
   4_params_munge/out/lagos_depths.rds.ind:
     command: munge_lagos_depths(target_name,
-      lagos_depths_ind = '3_params_fetch/out/LAGOS_NE_depths.csv.ind',
+      lagos_depths_ind = '3_params_fetch/in/LAGOS_US_depths.csv.ind',
       lagos_xwalk_ind = '2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind')
 
   4_params_munge/out/wbic_depths.rds.ind:

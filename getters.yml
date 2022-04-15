@@ -233,8 +233,8 @@ targets:
   3_params_fetch/out/IN_lakes_bathymetry.zip:
     command: gd_get('3_params_fetch/out/IN_lakes_bathymetry.zip.ind')
 
-  3_params_fetch/out/LAGOS_NE_depths.csv:
-    command: gd_get('3_params_fetch/out/LAGOS_NE_depths.csv.ind')
+  3_params_fetch/in/LAGOS_US_depths.csv:
+    command: gd_get('3_params_fetch/in/LAGOS_US_depths.csv.ind')
 
   3_params_fetch/out/LAGOS_NE_secchi.csv:
     command: gd_get('3_params_fetch/out/LAGOS_NE_secchi.csv.ind')
