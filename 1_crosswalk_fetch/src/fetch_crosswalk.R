@@ -32,7 +32,7 @@ process_wbic_lakes <- function(file_out = '1_crosswalk_fetch/out/wbic_lakes_sf.r
   saveRDS(wbic_lakes, file = file_out)
 }
 
-fetch_isro_lakes <- function(out_ind, zip_ind, remove_IDs = c(), gdb_filename, use_geoms){
+fetch_isro_lakes <- function(out_ind, zip_ind, gdb_filename, use_geoms){
   outfile <- as_data_file(out_ind)
 
   zip_file <- sc_retrieve(zip_ind)
