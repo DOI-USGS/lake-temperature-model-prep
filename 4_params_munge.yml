@@ -21,6 +21,7 @@ sources:
   - 4_params_munge/src/munge_cd_from_nlcd.R
   - 4_params_munge/src/munge_wbic.R
   - 4_params_munge/src/munge_contours.R
+  - lib/src/generic_utils.R
 
 targets:
   4_params_munge:
