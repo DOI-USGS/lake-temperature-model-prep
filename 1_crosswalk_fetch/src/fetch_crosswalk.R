@@ -60,6 +60,10 @@ fetch_isro_lakes <- function(out_ind, zip_ind, gdb_filename, use_geoms){
     )) %>%
     dplyr::select(layer_name, depth_col)
 
+  # Richie_1mContours, Chickenbone_1mContours, Sargent_1mContours, Harvey_1mContours
+  # has "Contours" that are negative depths, can be st_cast, but all of these have
+  # multi polys as well, so we don't gain any
+
   data_clean <- purrr::pmap(use_layers, function(layer_name, depth_col){
     # get "Beaver" from "Beaver_CntrPolys" etc:
     lake_name <- strsplit(layer_name, '_')[[1]][1]
