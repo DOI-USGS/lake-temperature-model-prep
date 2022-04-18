@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/isro_lakes_sf.rds.ind
+type: file
+hash: 23ead31633bc565933cb27aba80880eb
+time: 2022-04-12 12:15:41 UTC
+depends:
+  1_crosswalk_fetch/out/isro_contours_sf.rds.ind: c9f1c549236718386573ff9c5bf1c31d
+fixed: 292f825b205099efb436563d84853f6a
+code:
+  functions:
+    slice_isro_contour: 5a1b9df897e0fe0f69e8239e6e29a6b6
+

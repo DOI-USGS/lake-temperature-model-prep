@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 4_params_munge/out/UNDERC_depths.rds.ind
+type: file
+hash: 9ea37cdd3d986ca1d11314e595e96382
+time: 2022-04-10 01:56:35 UTC
+depends:
+  1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind: 2ef092c1b11a76370feb5993309d1ef5
+  2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds.ind: e63878217f5b63f5aa8624c4160bf2bc
+fixed: ca811927d0af50245fa2e1b8408c44f1
+code:
+  functions:
+    munge_UNDERC_depths: 2b8da8f35877c124b50dfc4c351920e6
+

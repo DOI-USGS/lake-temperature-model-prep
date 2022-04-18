@@ -34,6 +34,8 @@ targets:
       - 1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind
       - 1_crosswalk_fetch/out/UniversityofMissouri_2017_2020_Profiles_sf.rds.ind
       - 1_crosswalk_fetch/out/ned_centroid_elevations.feather.ind
+      - 1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind
+      - 1_crosswalk_fetch/out/isro_lakes_sf.rds.ind
 
 # create the trigger file, which will not be checked into git
 # I see no reason to have different trigger files for different sections of the pipeline
@@ -127,6 +129,16 @@ targets:
     command: slice_iadnr_contour(target_name,
       contour_ind = '1_crosswalk_fetch/out/iadnr_contours_sf.rds.ind')
 
+  1_crosswalk_fetch/out/isro_contours_sf.rds.ind:
+    command: fetch_isro_lakes(target_name,
+      use_geoms = I('Multi Polygon'),
+      gdb_filename = I('ISRO_GLKN_BathymetricData.gdb'),
+      zip_ind = '3_params_fetch/in/ISRO_GLKN_Bathymetric_FinalData.zip.ind')
+
+  1_crosswalk_fetch/out/isro_lakes_sf.rds.ind:
+    command: slice_isro_contour(target_name,
+      contour_ind = '1_crosswalk_fetch/out/isro_contours_sf.rds.ind')
+
   1_crosswalk_fetch/out/mo_usace_sampling_locations_sf.rds.ind:
     command: fetch_mo_usace_points(target_name,
       xlsx_ind = '1_crosswalk_fetch/in/Missouri_USACE_samplingLocations.xlsx.ind')
@@ -134,6 +146,10 @@ targets:
   1_crosswalk_fetch/out/Navico_lakes_depths_sf.rds.ind:
     command: fetch_navico_points(target_name,
       csv_ind = '1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
+
+  1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind:
+    command: fetch_UNDERC_points(target_name,
+      csv_ind = '1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv.ind')
 
   1_crosswalk_fetch/out/Norfork_temperature_locations_sf.rds.ind:
     command: fetch_norfork_points(target_name,

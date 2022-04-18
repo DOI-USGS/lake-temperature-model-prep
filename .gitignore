@@ -56,6 +56,7 @@ rsconnect/
 *.xml
 *.xlsx
 *.Rdata
+*.Rproj
 # "in" cooperator data
 /6_temp_coop_fetch/in/*
 !/6_temp_coop_fetch/in/*.ind
