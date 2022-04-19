@@ -36,18 +36,23 @@ munge_lagos_depths <- function(out_ind, lagos_depths_ind, lagos_xwalk_ind){
   lagos_depths <- sc_retrieve(lagos_depths_ind) %>%
     read_csv(col_types = cols(
       lagoslakeid = col_double(),
-      nhdid = col_character(),
-      nhd_lat = col_double(),
-      nhd_long  = col_double(),
-      lagosname1 = col_character(),
-      meandepth = col_double(),
-      meandepthsource = col_character(),
-      zmaxobs = col_double(),
-      maxdepthsource = col_character(),
-      legacyid = col_character())) %>%
+      lake_namegnis = col_character(),
+      lake_states = col_character(),
+      lake_depth_state = col_character(),
+      lake_lat_decdeg = col_double(),
+      lake_lon_decdeg = col_double(),
+      lake_maxdepth_m = col_double(),
+      lake_meandepth_m = col_double(),
+      lake_waterarea_ha = col_double(),
+      lake_depth_sourcename = col_character(),
+      lake_depth_sourceurl = col_character(),
+      lake_maxdepth_effort = col_character(),
+      lake_meandepth_effort = col_character())) %>%
     mutate(LAGOS_ID = sprintf("lagos_%s", lagoslakeid)) %>%
+    # Missing sources came in as the string "NULL", changing to NA instead
+    mutate(z_max_source = ifelse(lake_depth_sourcename == "NULL", NA, lake_depth_sourcename)) %>%
     dplyr::inner_join(lagos_xwalk, by = 'LAGOS_ID') %>%
-    dplyr::select(site_id, LAGOS_ID, z_max_source = maxdepthsource, z_max = zmaxobs)
+    dplyr::select(site_id, LAGOS_ID, z_max_source, z_max = lake_maxdepth_m)
 
   data_file <- scipiper::as_data_file(out_ind)
   saveRDS(lagos_depths, data_file)

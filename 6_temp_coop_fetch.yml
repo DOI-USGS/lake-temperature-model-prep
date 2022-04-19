@@ -31,7 +31,7 @@ targets:
     command: files_in_drive(out_tind = target_name,
       gd_path = coop_file_upload_location,
       trigger_file = '1_crosswalk_fetch/out/always_stale_time.txt',
-      trigger_wait = 30)
+      trigger_wait = 120)
 
   coop_wants:
     command: filter_coop_all('6_temp_coop_fetch/out/coop_all_files.rds.tind',

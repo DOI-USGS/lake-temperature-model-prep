@@ -24,6 +24,7 @@ targets:
       - 6_wqp_fetch
       - 6_nwis_fetch
       - 6_temp_coop_fetch
+      - 7_config_merge
       - 7a_temp_coop_munge
       - 7a_wqp_munge
       - 7a_nwis_munge
