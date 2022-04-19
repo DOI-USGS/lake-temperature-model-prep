@@ -18,7 +18,7 @@ targets:
       - 2_crosswalk_munge/out/wqptemp_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/wqpsecchi_nhdhr_xwalk.rds.ind
-      - 2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/lagosus_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/mglp_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/wbic_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/micorps_nhdhr_xwalk.rds.ind
@@ -95,19 +95,10 @@ targets:
       intersect_ind_file = '2_crosswalk_munge/out/winslow_nhdhr_intersect.rds.ind',
       poly1_ID_name = I("WINSLOW_ID"))
 
-  2_crosswalk_munge/out/lagosne_nhdhr_intersect.rds.ind:
-    command: crosswalk_poly_intersect_poly(
-      target_name,
-      poly1_ind_file = '1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind',
-      poly2_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
-      poly1_ID_name = I("LAGOS_ID"),
-      crs=I(26915))
-
-  2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind:
-    command: choose1_poly_intersect_poly(
-      target_name,
-      intersect_ind_file = '2_crosswalk_munge/out/lagosne_nhdhr_intersect.rds.ind',
-      poly1_ID_name = I("LAGOS_ID"))
+  2_crosswalk_munge/out/lagosus_nhdhr_xwalk.rds.ind:
+    command: lagos_to_xwalk(
+      out_ind = target_name,
+      lakeinfo_ind = '1_crosswalk_fetch/in/LAGOS_US_lake_information.csv.ind')
 
   2_crosswalk_munge/out/mndow_nhdhr_intersect.rds.ind:
     command: crosswalk_poly_intersect_poly(

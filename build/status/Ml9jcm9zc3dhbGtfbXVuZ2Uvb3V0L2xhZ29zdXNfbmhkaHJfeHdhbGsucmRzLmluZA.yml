@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 2_crosswalk_munge/out/lagosus_nhdhr_xwalk.rds.ind
+type: file
+hash: c09dfbe8cdc0c629dbd6b50dd82e6252
+time: 2022-04-19 15:54:52 UTC
+depends:
+  1_crosswalk_fetch/in/LAGOS_US_lake_information.csv.ind: 2f6ee974d91a435d0af99acbf9009d0b
+fixed: 87dd53d5a5d8e0255fe9c12e45fc567e
+code:
+  functions:
+    lagos_to_xwalk: 4e9f4f5c02a5edad10a0b74d0bf37a10
+
