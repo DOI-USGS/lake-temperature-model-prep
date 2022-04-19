@@ -3,16 +3,17 @@ parse_Indiana_Glacial_Lakes_WQ_IN_DNR <- function(inind, outind) {
   outfile <- as_data_file(outind)
 
   raw <- readxl::read_excel(infile)
+
   clean <- raw %>%
     filter(grepl('temp', Parameter, ignore.case = TRUE)) %>%
-    mutate(id = paste(Lake, County, sep = '_')) %>%
+    mutate(IN_DNR_ID = paste("IN_DNR", Lake, County, sep = "_")) %>%
     rename('0' = Surface) %>%
     dplyr::select(-(Lake:County), -(Month:`Secchi (ft)`)) %>%
-    tidyr::gather(key = 'depth', value = 'temp', -id, -Date) %>%
+    tidyr::gather(key = 'depth', value = 'temp', -IN_DNR_ID, -Date) %>%
     mutate(temp = fahrenheit_to_celsius(temp),
            DateTime = as.Date(Date),
            depth = convert_ft_to_m(as.numeric(depth))) %>%
-    dplyr::select(DateTime, depth, temp, id)
+    dplyr::select(DateTime, depth, temp, IN_DNR_ID)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
@@ -25,14 +26,14 @@ parse_Indiana_CLP_lakedata_1994_2013 <- function(inind, outind) {
   raw <- readxl::read_excel(infile)
 
   clean <- raw %>%
-    mutate(id = paste(`Lake Name`, County, sep = '_'),
+    mutate(IN_CLP_ID = paste("IN_CLP_", 'Lake_ID', sep = ''),
            DateTime = as.Date(`Date Sampled`)) %>%
-    dplyr::select(DateTime, id, `Temp-0`:`T-35`) %>%
-    tidyr::gather(key = 'depth', value = 'temp', -id, -DateTime) %>%
+    dplyr::select(DateTime, IN_CLP_ID, `Temp-0`:`T-35`) %>%
+    tidyr::gather(key = 'depth', value = 'temp', -IN_CLP_ID, -DateTime) %>%
     mutate(depth = gsub('.+-', '', depth)) %>%
     mutate(depth = as.numeric(gsub('_', '\\.', depth))) %>%
     filter(!is.na(temp)) %>%
-    dplyr::select(DateTime, depth, temp, id)
+    dplyr::select(DateTime, depth, temp, IN_CLP_ID)
 
   saveRDS(object = clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)

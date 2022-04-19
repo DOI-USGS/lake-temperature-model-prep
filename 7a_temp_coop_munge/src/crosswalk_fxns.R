@@ -119,6 +119,8 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
     dplyr::summarize(all_missing = all(is.na(site_id)),
               sum_missing = sum(is.na(site_id)))
 
+  browser()
+
   warning(paste0('Dropping ', sum(is.na(dat_all_linked$site_id)), ' temperature observations due to missing NHD ids.'))
 
   dat_all_linked <- filter(dat_all_linked, !is.na(site_id)) %>%
