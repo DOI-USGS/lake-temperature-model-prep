@@ -42,12 +42,11 @@ MGLP_zip_to_sf <- function(out_ind, gdb_file, zip_ind, states){
 #' module at https://doi.org/10.6073/pasta/e5c2fb8d77467d3f03de4667ac2173ca
 #' Downloaded the `lake_information.csv` file and saved in our pipeline
 #' as `1_crosswalk_fetch/in/LAGOS_US_lake_information.csv`
-lagos_to_xwalk <- function(out_ind, lakeinfo_ind, states){
+lagos_to_xwalk <- function(out_ind, lakeinfo_ind){
 
   lakeinfo_file <- scipiper::sc_retrieve(lakeinfo_ind)
 
   lagos_nhdhr_xwalk <- readr::read_csv(lakeinfo_file) %>%
-    dplyr::filter(lake_states %in% states) %>%
     dplyr::mutate(LAGOS_ID = sprintf("lagos_%s", lagoslakeid),
                   site_id = sprintf("nhdhr_%s", lake_nhdid)) %>%
     dplyr::select(LAGOS_ID, site_id)

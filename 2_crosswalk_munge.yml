@@ -98,8 +98,7 @@ targets:
   2_crosswalk_munge/out/lagosus_nhdhr_xwalk.rds.ind:
     command: lagos_to_xwalk(
       out_ind = target_name,
-      lakeinfo_ind = '1_crosswalk_fetch/in/LAGOS_US_lake_information.csv.ind',
-      states = I(c("IA", "IN", "SD", "ND", "MI", "MN", "WI", "IL", "NY", "PA", "MO", "AR")))
+      lakeinfo_ind = '1_crosswalk_fetch/in/LAGOS_US_lake_information.csv.ind')
 
   2_crosswalk_munge/out/mndow_nhdhr_intersect.rds.ind:
     command: crosswalk_poly_intersect_poly(
