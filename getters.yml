@@ -57,11 +57,8 @@ targets:
   1_crosswalk_fetch/in/MGLP_lakes.zip:
     command: gd_get('1_crosswalk_fetch/in/MGLP_lakes.zip.ind')
 
-  1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip:
-    command: gd_get('1_crosswalk_fetch/in/LAGOS_NE_All_Lakes_4ha.zip.ind')
-
-  1_crosswalk_fetch/out/LAGOS_lakes_sf.rds:
-    command: gd_get('1_crosswalk_fetch/out/LAGOS_lakes_sf.rds.ind')
+  1_crosswalk_fetch/in/LAGOS_US_lake_information.csv:
+    command: gd_get('1_crosswalk_fetch/in/LAGOS_US_lake_information.csv.ind')
 
   1_crosswalk_fetch/out/MGLP_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/MGLP_lakes_sf.rds.ind')
@@ -136,11 +133,8 @@ targets:
   2_crosswalk_munge/out/winslow_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/winslow_nhdhr_xwalk.rds.ind')
 
-  2_crosswalk_munge/out/lagosne_nhdhr_intersect.rds:
-    command: gd_get('2_crosswalk_munge/out/lagosne_nhdhr_intersect.rds.ind')
-
-  2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds:
-    command: gd_get('2_crosswalk_munge/out/lagosne_nhdhr_xwalk.rds.ind')
+  2_crosswalk_munge/out/lagosus_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/lagosus_nhdhr_xwalk.rds.ind')
 
   2_crosswalk_munge/out/mndow_nhdhr_intersect.rds:
     command: gd_get('2_crosswalk_munge/out/mndow_nhdhr_intersect.rds.ind')

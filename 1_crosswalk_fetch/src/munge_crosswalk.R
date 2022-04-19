@@ -38,25 +38,23 @@ MGLP_zip_to_sf <- function(out_ind, gdb_file, zip_ind, states){
   gd_put(out_ind, data_file)
 }
 
+#' Use the LAGOS-US to NHDHR crosswalk provided in the LAGOS-US LOCUS
+#' module at https://doi.org/10.6073/pasta/e5c2fb8d77467d3f03de4667ac2173ca
+#' Downloaded the `lake_information.csv` file and saved in our pipeline
+#' as `1_crosswalk_fetch/in/LAGOS_US_lake_information.csv`
+lagos_to_xwalk <- function(out_ind, lakeinfo_ind, states){
 
+  lakeinfo_file <- scipiper::sc_retrieve(lakeinfo_ind)
 
-LAGOS_zip_to_sf <- function(out_ind, layer, zip_ind, states){
-
-
-  zip_file <- scipiper::sc_retrieve(zip_ind)
-
-  shp.path <- tempdir()
-  unzip(zip_file, exdir = shp.path)
-
-  shp <- sf::st_read(shp.path, layer = layer) %>%
-    filter(STATE %in% states) %>%
-    mutate(site_id = paste0('lagos_', lagoslakei)) %>% dplyr::select(site_id, geometry) %>%
-    st_transform(x, crs = 4326)
-
+  lagos_nhdhr_xwalk <- readr::read_csv(lakeinfo_file) %>%
+    dplyr::filter(lake_states %in% states) %>%
+    dplyr::mutate(LAGOS_ID = sprintf("lagos_%s", lagoslakeid),
+                  site_id = sprintf("nhdhr_%s", lake_nhdid)) %>%
+    dplyr::select(LAGOS_ID, site_id)
 
   # write, post, and promise the file is posted
   data_file <- scipiper::as_data_file(out_ind)
-  saveRDS(shp, data_file)
+  saveRDS(lagos_nhdhr_xwalk, data_file)
   gd_put(out_ind, data_file)
 }
 
