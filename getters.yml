@@ -21,6 +21,9 @@ targets:
   1_crosswalk_fetch/in/Norfork_temperature_locations.csv:
     command: gd_get('1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
 
+  1_crosswalk_fetch/in/SD_Lake_temp_export_scraped_latlong.csv:
+    command: gd_get('1_crosswalk_fetch/in/SD_Lake_temp_export_scraped_latlong.csv.ind')
+
   1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv:
     command: gd_get('1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv.ind')
 
@@ -29,6 +32,9 @@ targets:
 
   1_crosswalk_fetch/in/Navico_lakes_depths.csv:
     command: gd_get('1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
+
+  1_crosswalk_fetch/in/Indiana_CLP_lakedata_1994_2013_latlong.csv:
+    command: gd_get('1_crosswalk_fetch/in/Indiana_CLP_lakedata_1994_2013_latlong.csv.ind')
 
   1_crosswalk_fetch/in/Iowa_Lake_Locations.csv:
     command: gd_get('1_crosswalk_fetch/in/Iowa_Lake_Locations.csv.ind')
