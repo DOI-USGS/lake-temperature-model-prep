@@ -33,6 +33,8 @@ targets:
       - 1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind
       - 1_crosswalk_fetch/out/UniversityofMissouri_2017_2020_Profiles_sf.rds.ind
       - 1_crosswalk_fetch/out/SD_lake_pts_sf.rds.ind
+      - 1_crosswalk_fetch/out/IN_CLP_lake_pts_sf.rds.ind
+      - 1_crosswalk_fetch/out/IN_DNR_lake_pts_sf.rds.ind
       - 1_crosswalk_fetch/out/ned_centroid_elevations.feather.ind
       - 1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind
       - 1_crosswalk_fetch/out/isro_lakes_sf.rds.ind

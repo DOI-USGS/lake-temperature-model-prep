@@ -208,6 +208,12 @@ targets:
   2_crosswalk_munge/out/SD_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/SD_nhdhr_xwalk.rds.ind')
 
+  2_crosswalk_munge/out/IN_CLP_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/IN_CLP_nhdhr_xwalk.rds.ind')
+
+  2_crosswalk_munge/out/IN_DNR_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/IN_DNR_nhdhr_xwalk.rds.ind')
+
   #### 3_params_fetch #####
 
   3_params_fetch/in/USGS_Kd_Predictions_byNHDHR.zip:

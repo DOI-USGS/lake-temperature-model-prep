@@ -36,6 +36,8 @@ targets:
       - 2_crosswalk_munge/out/univ_mo_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds.ind
       - 2_crosswalk_munge/out/SD_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/IN_CLP_nhdhr_xwalk.rds.ind
+      - 2_crosswalk_munge/out/IN_DNR_nhdhr_xwalk.rds.ind
 
   2_crosswalk_munge/out/gnisname_nhdhr_xwalk.rds.ind:
     command: scmake(I('gnisname_nhdhr_xwalk.rds.ind_promise'), '1_crosswalk_fetch_nhd_tasks.yml')
@@ -229,3 +231,15 @@ targets:
       poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
       points_ind_file = '1_crosswalk_fetch/out/SD_lake_pts_sf.rds.ind',
       points_ID_name = I("SD_ID"))
+
+  2_crosswalk_munge/out/IN_CLP_nhdhr_xwalk.rds.ind:
+    command: crosswalk_points_in_poly(target_name,
+      poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      points_ind_file = '1_crosswalk_fetch/out/IN_CLP_lake_pts_sf.rds.ind',
+      points_ID_name = I("IN_CLP_ID"))
+
+  2_crosswalk_munge/out/IN_DNR_nhdhr_xwalk.rds.ind:
+    command: crosswalk_points_in_poly(target_name,
+      poly_ind_file = '1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind',
+      points_ind_file = '1_crosswalk_fetch/out/IN_DNR_lake_pts_sf.rds.ind',
+      points_ID_name = I("IN_DNR_ID"))
