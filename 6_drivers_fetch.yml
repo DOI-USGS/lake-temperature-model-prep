@@ -24,9 +24,6 @@ targets:
   replete_time_range:
     command: c(t0=I(0), t1 = I(359420)) # for doing one timechunk: 24999
 
-  append_time_range:
-    command: nldas_times_diff(replete_time_range, '6_drivers/in/nldas_times.rds')
-
   nccopy_time_stride:
     command: c(I(25000))
 
@@ -42,10 +39,6 @@ targets:
   cell_ind_dir:
     command: c(I("6_drivers/log/feather"))
 
-  # We are doing this because we don't want to expand the current .nc dataset _yet_. In the future, we'd only have "feature_centroids"
-  old_feature_centroids:
-    command: sf_file_centroids("2_crosswalk_munge/out/lakes_sf.rds")
-
   new_feature_centroids:
     command: readRDS("2_crosswalk_munge/out/centroid_lakes_sf.rds")
 
@@ -54,7 +47,7 @@ targets:
     command: create_ldas_grid(x0 = I(-124.9375), y0 = I(25.0625), x_num = I(464), y_num = I(224), cell_res = I(0.125))
 
   old_feature_NLDAS_cells:
-    command: cells_containing_points(NLDAS_grid, old_feature_centroids)
+    command: cells_containing_points(NLDAS_grid, new_feature_centroids)
 
   #feature_NLDAS_cells:
   #  command: cells_containing_points_within(NLDAS_grid, new_feature_centroids, x_range = I(c(202,335)), y_range = I(c(127, 191))) ]_y[94.126
@@ -71,61 +64,31 @@ targets:
   nldas_empty_box: # this is the domain that will require a FULL data pull in the time dimension
     command: nldas_diff_box(old_nldas_cells, '6_drivers/in/nldas_cells.rds')
 
-  nldas_partial_box:
-    command: nldas_update_box(old_nldas_cells, nldas_empty_box) # this is the domain that will require a PARTIAL time pull, where partial time could be 0 (complete)
-
   nldas_new_cube_files:
     command: calc_nldas_files(nldas_empty_box, replete_time_range, nccopy_time_stride, nc_dir = cube_data_dir)
-
-  nldas_append_cube_files:
-    command: calc_nldas_files(nldas_partial_box, append_time_range, nccopy_time_stride, nc_dir = cube_data_dir)
 
   nldas_new_cells:
     command: nldas_diff_cells(nldas_cells, '6_drivers/in/nldas_cells.rds')
 
-  nldas_append_cells:
-    command: nldas_update_cells(nldas_cells, nldas_new_cells, '6_drivers/in/nldas_times.rds')
-
   nldas_new_cube_plan:
     command: create_cube_task_plan(nldas_new_cube_files, max_steps = I(100), skip_on_exists = TRUE)
 
-  nldas_append_cube_plan:
-    command: create_cube_task_plan(nldas_append_cube_files)
-
   "6_fetch_new_cubes_tasks.yml":
     command: create_cube_task_makefile(target_name, nldas_new_cube_plan)
-
-  "6_fetch_append_cubes_tasks.yml":
-    command: create_cube_task_makefile(target_name, nldas_append_cube_plan)
 
   "6_drivers/log/6_fetch_new_cubes_tasks.ind":
     command: loop_tasks(
       task_plan = nldas_new_cube_plan,
       task_makefile = "6_fetch_new_cubes_tasks.yml")
 
-  "6_drivers/log/nc/6_fetch_append_cubes_tasks.ind":
-    command: loop_tasks(task_plan = nldas_append_cube_plan, task_makefile = "6_fetch_append_cubes_tasks.yml")
-
   new_cell_plan:
     command: create_new_cell_task_plan(nldas_new_cells, replete_time_range, cube_files_ind = "6_drivers/log/6_fetch_new_cubes_tasks.ind",
       cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir)
 
-  append_cell_plan:
-    command: create_update_cell_task_plan(nldas_append_cells, replete_time_range, nldas_append_cube_files,
-      cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir,
-      cube_data_dir = cube_data_dir, cube_ind_dir = cube_ind_dir, secondary_cube_files = nldas_new_cube_files)
-
   "6_fetch_new_cell_tasks.yml":
     command: create_cell_task_makefile(target_name, new_cell_plan)
-
-  "6_fetch_append_cell_tasks.yml":
-    command: create_cell_task_makefile(target_name, append_cell_plan)
 
   "6_drivers/log/feather/6_fetch_new_cell_tasks.ind":
     command: scmake(I("6_fetch_new_cell_tasks.ind_promise"), remake_file = "6_fetch_new_cell_tasks.yml")
     depends:
       - 6_drivers/log/6_fetch_new_cubes_tasks.ind
-
-  "6_drivers/log/feather/6_fetch_append_cell_tasks.ind":
-    command: loop_tasks(task_plan = append_cell_plan, task_makefile = "6_fetch_append_cell_tasks.yml")
-    # depends: nldas_update_cells
