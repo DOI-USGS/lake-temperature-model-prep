@@ -375,7 +375,7 @@ fetch_SD_points <- function(out_ind, csv_ind) {
   outfile <- as_data_file(out_ind)
 
   sd_pt_data <- scipiper::sc_retrieve(csv_ind) %>%
-    read_csv(col_types = 'cii')
+    read_csv(col_types = 'cdd')
 
   # convert data to sf object and save as rds
   # rename AU_ID to site id, so that rds can later be passed to `crosswalk_points_in_poly`
