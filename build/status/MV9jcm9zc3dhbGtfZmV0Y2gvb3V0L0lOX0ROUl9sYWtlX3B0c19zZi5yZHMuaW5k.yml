@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/IN_DNR_lake_pts_sf.rds.ind
+type: file
+hash: c4d789aeee0e67c3b684160197081b68
+time: 2022-04-19 19:21:39 UTC
+depends:
+  1_crosswalk_fetch/in/Indiana_CLP_lakedata_1994_2013_latlong.csv.ind: c24115f7d0621309423ddab89ad66c8f
+fixed: d604d498279fbdc9ee4add340f674264
+code:
+  functions:
+    fetch_IN_points: 9a18112eb5b1dca6099fc0c6f3962bdc
+

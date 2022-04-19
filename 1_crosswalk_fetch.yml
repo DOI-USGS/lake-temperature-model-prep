@@ -152,9 +152,17 @@ targets:
     command: fetch_Iowa_points(target_name,
       csv_ind = '1_crosswalk_fetch/in/Iowa_Lake_Locations.csv.ind')
 
-  # 1_crosswalk_fetch/out/Indiana_lake_pts_sf.rds.ind:
-  #   command: fetch_Indiana_points(target_name,
-  #     csv_ind = '1_crosswalk_fetch/in/Indiana_CLP_lakedata_1994_2013_latlong.csv.ind')
+  1_crosswalk_fetch/out/IN_CLP_lake_pts_sf.rds.ind:
+    command: fetch_IN_points(target_name,
+      csv_ind = '1_crosswalk_fetch/in/Indiana_CLP_lakedata_1994_2013_latlong.csv.ind',
+      site_id_tag = I('IN_CLP'),
+      col_name = I('CLP_Lake_ID'))
+
+  1_crosswalk_fetch/out/IN_DNR_lake_pts_sf.rds.ind:
+    command: fetch_IN_points(target_name,
+      csv_ind = '1_crosswalk_fetch/in/Indiana_CLP_lakedata_1994_2013_latlong.csv.ind',
+      site_id_tag = I('IN_DNR'),
+      col_name = I('Lake_County_Name'))
 
   1_crosswalk_fetch/out/SD_lake_pts_sf.rds.ind:
     command: fetch_SD_points(target_name,
