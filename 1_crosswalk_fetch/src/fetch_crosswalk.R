@@ -370,3 +370,19 @@ fetch_univ_mo_points <- function(out_ind, csv_ind) {
 
   gd_put(out_ind, outfile)
 }
+
+fetch_sd_points <- function(out_ind, csv_ind) {
+  outfile <- as_data_file(out_ind)
+
+  sd_pt_data <- scipiper::sc_retrieve(csv_ind) %>%
+    read_csv(col_types = 'cii')
+
+  # convert data to sf object and save as rds
+  # rename Site to site id, so that rds can later be passed to `crosswalk_points_in_poly`
+  # which expects input dataframe to have 'site_id' column
+  univ_mo_points_sf <- st_as_sf(sd_pt_data, coords = c('Longitude', 'Latitude'), crs = 4326) %>%
+    mutate(site_id = sprintf("SD_%s", AU_ID, .keep = "unused", .before = 1) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+}

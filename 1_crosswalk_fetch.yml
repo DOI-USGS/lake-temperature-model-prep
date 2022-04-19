@@ -159,6 +159,14 @@ targets:
     command: fetch_Iowa_points(target_name,
       csv_ind = '1_crosswalk_fetch/in/Iowa_Lake_Locations.csv.ind')
 
+  # 1_crosswalk_fetch/out/Indiana_lake_pts_sf.rds.ind:
+  #   command: fetch_Indiana_points(target_name,
+  #     csv_ind = '1_crosswalk_fetch/in/Indiana_CLP_lakedata_1994_2013_latlong.csv.ind')
+
+  1_crosswalk_fetch/out/SD_lake_pts_sf.rds.ind:
+    command: fetch_SD_points(target_name,
+      csv_ind = '1_crosswalk_fetch/in/SD_Lake_temp_export_scraped_latlong.csv.ind')
+
   1_crosswalk_fetch/out/UniversityofMissouri_2017_2020_Profiles_sf.rds.ind:
     command: fetch_univ_mo_points(target_name,
       csv_ind = '1_crosswalk_fetch/in/UniversityofMissouri_2017_2020_Profiles.csv.ind')
