@@ -66,4 +66,7 @@ targets:
       mo_usace_crosswalk = '2_crosswalk_munge/out/mo_usace_nhdhr_xwalk.rds.ind',
       navico_crosswalk = '2_crosswalk_munge/out/navico_nhdhr_xwalk.rds.ind',
       norfork_crosswalk = '2_crosswalk_munge/out/norfork_nhdhr_xwalk.rds.ind',
-      underc_crosswalk = '2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds.ind')
+      underc_crosswalk = '2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds.ind',
+      sd_crosswalk = '2_crosswalk_munge/out/SD_nhdhr_xwalk.rds.ind',
+      in_clp_crosswalk = '2_crosswalk_munge/out/IN_CLP_nhdhr_xwalk.rds.ind',
+      in_dnr_crosswalk = '2_crosswalk_munge/out/IN_DNR_nhdhr_xwalk.rds.ind')
