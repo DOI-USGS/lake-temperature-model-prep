@@ -26,7 +26,7 @@ parse_Indiana_CLP_lakedata_1994_2013 <- function(inind, outind) {
   raw <- readxl::read_excel(infile)
 
   clean <- raw %>%
-    mutate(IN_CLP_ID = paste("IN_CLP_", 'Lake_ID', sep = ''),
+    mutate(IN_CLP_ID = paste("IN_CLP_", Lake_ID, sep = ''),
            DateTime = as.Date(`Date Sampled`)) %>%
     dplyr::select(DateTime, IN_CLP_ID, `Temp-0`:`T-35`) %>%
     tidyr::gather(key = 'depth', value = 'temp', -IN_CLP_ID, -DateTime) %>%

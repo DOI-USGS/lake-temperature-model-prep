@@ -8,7 +8,7 @@ parse_SD_Lake_temp_export <- function(inind, outind) {
     mutate(depth = DepthToActivity_m,
            temp = ResultValue,
            DateTime = as.Date(SampleDateOnly),
-           SD_ID = AU_ID) %>%
+           SD_ID = paste('SD', AU_ID, sep = '_')) %>%
     dplyr::select(DateTime, depth, temp, SD_ID)
 
   saveRDS(object = clean, file = outfile)

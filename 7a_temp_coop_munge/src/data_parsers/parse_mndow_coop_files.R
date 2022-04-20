@@ -196,7 +196,7 @@ parse_Sand_Bay_All_2016 <- parse_Sand_Bay_all_2015 <- parse_Sand_Bay_all_2014 <-
     mutate(DateTime = as.Date(DateTime),
            temp = fahrenheit_to_celsius(temp),
            DOW = "69069400") %>%
-    dplyr::select(DateTime, time, timezone, depth, temp)
+    dplyr::select(DateTime, time, timezone, depth, temp, DOW)
 
   saveRDS(object = clean_sheet, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
