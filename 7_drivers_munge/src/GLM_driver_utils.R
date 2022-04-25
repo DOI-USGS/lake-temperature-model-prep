@@ -1,3 +1,19 @@
+write_NLDAS_drivers <- function(out_ind, cell_group_ind, ind_dir){
+
+  driver_task_plan <- create_driver_task_plan(cell_group_ind = cell_group_ind, ind_dir = ind_dir)
+
+  task_remakefile <- '7_drivers_munge_tasks.yml'
+  create_driver_task_makefile('7_drivers_munge_tasks.yml', driver_task_plan, final_target = out_ind)
+
+  browser()
+  scmake(remake_file = task_remakefile)
+  loop_tasks(driver_task_plan, task_makefile = task_remakefile)
+  data_file <- as_data_file(out_ind)
+  gd_put(out_ind, data_file)
+  file.remove(remakefile)
+
+}
+
 calc_feather_ind_files <- function(grid_cells, time_range, ind_dir){
   cell_list_to_df(grid_cells) %>%
     mutate(t0 = time_range[1], t1 = time_range[2]) %>%
@@ -17,6 +33,40 @@ calc_driver_files <- function(cell_group_table_ind, dirname){
     driver_files[i] <- create_meteo_filepath(times[1], times[2], x, y, dirname = dirname)
   }
   return(unique(driver_files))
+}
+
+add_parse_xy_cols <- function(df){
+  df %>% rowwise() %>%
+    mutate(x = parse_meteo_filepath(filepath, 'x'),
+           y = parse_meteo_filepath(filepath, 'y')) %>% ungroup
+}
+
+filter_task_files <- function(cell_group_table_ind, box_bounds, meteo_dir){
+
+
+  out_files <- calc_driver_files(cell_group_table_ind = cell_group_table_ind, meteo_dir)
+  xmin <- box_bounds[1]
+  xmax <- box_bounds[2]
+  ymin <- box_bounds[3]
+  ymax <- box_bounds[4]
+  box_sf <- st_sfc(st_polygon(x = list(matrix(c(xmin,xmax,xmax, xmin, xmin,
+                                                ymin,ymin,ymax,ymax,ymin), ncol = 2))))
+
+  cell_files <- sc_retrieve(cell_group_table_ind) %>% readRDS() %>%
+    add_parse_xy_cols() %>%
+    rename(featherpath = filepath)
+  driver_files <- tibble(filepath = out_files) %>% add_parse_xy_cols() %>%
+    rename(driverpath = filepath)
+
+  task_files_sf <- inner_join(cell_files, driver_files, by = c('x','y'))
+
+  cells_sf <- sf::st_as_sf(task_files_sf, coords = c("x", "y"))
+
+  cell_idx <- st_within(cells_sf, box_sf,sparse = F) %>% rowSums() %>% as.logical() %>% which()
+  # seems unnecessary because all of these are in the same grouped ind?:
+  cells_sf %>% st_drop_geometry() %>%
+    slice(cell_idx) %>%
+    dplyr::select(driverpath, featherpath, hash) %>% arrange(driverpath, featherpath)
 }
 
 #' combine a bunction of .yml files that are the result of `sc_indicate` into
@@ -61,80 +111,98 @@ filter_cell_group_table <- function(cell_group_table, pattern){
   filter(cell_group_table, grepl(pattern = pattern, x = filepath))
 }
 
-retrieve_and_readRDS <- function(in_ind){
-  sc_retrieve(in_ind) %>% readRDS
-}
+create_driver_task_plan <- function(cell_group_ind, ind_dir){
 
-create_driver_task_plan <- function(driver_files, cell_group_table, ind_dir){
+  # smaller to create more tasks, bigger makes the individual tasks take longer
+  # and be more at risk to fail
+  task_cell_size <- 10
 
-  # now use table...was ind_files
+  # hard-coding this, but it doesn't matter if it is wrong because main point is that it is a static grid
+  # and we'll error if any points are outside of it
+  NLDAS_box <- st_sfc(st_polygon(x = list(matrix(c(0,464,0, 0,224,0), ncol = 2))))
+  NLDAS_task_grid <- sf::st_make_grid(NLDAS_box, square = TRUE, cellsize = task_cell_size, offset = c(-0.5,-0.5))
+  file_info <- sc_retrieve(cell_group_ind) %>% readRDS() %>%
+    rowwise() %>%
+    mutate(x = parse_meteo_filepath(filepath, 'x'),
+           y = parse_meteo_filepath(filepath, 'y')) %>% ungroup
 
-  # we want to get the name of the object passed to `cell_group_table`, so we can refer to it elsewhere
-  cl <- sys.call(0)
-  f <- get(as.character(cl[[1]]), mode="function", sys.frame(-1))
-  cl <- match.call(definition=f, call=cl)
-  # **perhaps we should be using an .rds or .feather file here so we don't need to do this goofy arg-grabbing?**
-  cell_group_obj <- as.list(cl)[-1][['cell_group_table']] %>% as.character()
+  cells_sf <- sf::st_as_sf(file_info, coords = c("x", "y"))
+  overlapping_boxes <- st_intersects(NLDAS_task_grid, cells_sf, sparse = F) %>% rowSums() %>% as.logical() %>% which()
 
-  as_sub_group_table <- function(filename){
-    gsub(pattern = '\\[', '_', x = tools::file_path_sans_ext(filename)) %>%
-      gsub(pattern = '\\]', '', x = .) %>%
-      paste0("_cell_group_table")
-  }
-  subset_table_task_step <- create_task_step(
-    step_name = 'subset_table',
+  # the update we need is to create tasks that are based on the NLDAS task boxes
+  # and then filter the output files and input cell files relevant to those.
+
+  # each task is a group of driver outputs as a hash table, those all get run
+  # through bind at the end as a combiner and the final result is a huge
+  # hash table .ind file
+
+
+  file_filter_step <- create_task_step(
+
+    step_name = 'filter_files',
     target = function(task_name, step_name, ...) {
-      as_sub_group_table(task_name)
+
+      sprintf("box_%s_driver_filepaths", task_name)
     },
     command = function(target_name, task_name, ...) {
-      this_time <- parse_meteo_filepath(task_name, 'time') # better filtering needed?
-      this_x <- parse_meteo_filepath(task_name, 'x')
-      this_y <- parse_meteo_filepath(task_name, 'y')
-      # need to double escape to preserve the "\\"
-      pattern <- sprintf('time\\\\[%1.0f.%1.0f\\\\]_x\\\\[%1.0f\\\\]_y\\\\[%1.0f\\\\]', this_time[1], this_time[2], this_x, this_y)
-      sprintf('filter_cell_group_table(%s, pattern = I(\'%s\'))', cell_group_obj, pattern)
+
+      box_indx <- as.numeric(task_name)
+      this_bbox <- st_bbox(NLDAS_task_grid[box_indx])
+      sprintf('filter_task_files(cell_group_table_ind = \'%s\',
+      meteo_dir = I(\'%s\'),
+      box_bounds = I(c(%s, %s, %s, %s)))',
+              cell_group_ind,
+              ind_dir,
+              this_bbox[['xmin']], this_bbox[['xmax']], this_bbox[['ymax']], this_bbox[['ymin']])
     }
   )
 
+
+  #box_7_drivers_out: :
+  #   command: feathers_to_driver_files(driver_table = box_7_driver_filepaths)
   driver_task_step <- create_task_step(
     step_name = 'munge_drivers',
     target = function(task_name, step_name, ...) {
-      file.path(out_dir, task_name)
+      sprintf("box_%s_drivers_out", task_name)
     },
     command = function(target_name, task_name, ...) {
-      sub_group_table <- as_sub_group_table(task_name)
-      sprintf('feathers_to_driver_file(target_name, cell_group_table = %s)', sub_group_table)
+      sub_group_table <- sprintf("box_%s_driver_filepaths", task_name)
+      sprintf('feathers_to_driver_files(driver_table = %s)', sub_group_table)
     }
   )
 
-  out_dir <- dirname(driver_files) %>% unique()
-  stopifnot(length(out_dir) == 1) # more than one not supported with this pattern
-  filenames <- basename(driver_files)
-
-  create_task_plan(filenames, list(subset_table_task_step, driver_task_step), final_steps='munge_drivers', ind_dir = ind_dir, add_complete = FALSE)
+  create_task_plan(as.character(overlapping_boxes),
+                   list(file_filter_step, driver_task_step),
+                   final_steps='munge_drivers',
+                   ind_dir = ind_dir, add_complete = FALSE)
 }
 
-create_driver_task_makefile <- function(makefile, task_plan){
+create_driver_task_makefile <- function(makefile, task_plan, final_target){
   include <- "7_drivers_munge.yml"
-  packages <- c('dplyr', 'feather', 'readr','lubridate')
+  packages <- c('dplyr', 'feather', 'readr','lubridate', 'sf')
   sources <- '7_drivers_munge/src/GLM_driver_utils.R'
 
   create_task_makefile(
     task_plan, makefile = makefile,
     include = include, sources = sources,
+    finalize_funs = "combine_hash_tables",
+    final_targets = final_target,
     file_extensions=c('ind'), packages = packages)
 
 }
 
+feathers_to_driver_files <- function(driver_table){
+  driver_table %>% group_by(driverpath) %>%
+    summarize(hash = feathers_to_driver_file(driverpath[1], featherpath))
+}
 
 #' convert a bunch of variable-specific feather files into a single driver file
 #'
 #' @param filepath the output file to use
 #' @param cell_group_table a data.frame with `filepath` and `hash`, where `filepath`
 #'    points to the location of feather files to use for each cell
-feathers_to_driver_file <- function(filepath, cell_group_table){
+feathers_to_driver_file <- function(filepath, feather_filepaths){
 
-  feather_filepaths <- cell_group_table$filepath
 
   NLDAS_start <- as.POSIXct('1979-01-01 13:00', tz = "UTC")
   all_time_vec <- seq(NLDAS_start, by = 'hour', to = Sys.time())
@@ -161,6 +229,12 @@ feathers_to_driver_file <- function(filepath, cell_group_table){
   stopifnot(length(unique(diff(drivers_out$time))) == 1)
 
   readr::write_csv(x = drivers_out, path = filepath)
+  return(tools::md5sum(filepath))
+}
+
+combine_hash_tables <- function(ind_out, ...){
+  hash_table <- bind_rows(...)
+  browser()
 }
 
 index_local_drivers <- function(ind_out, depends){
@@ -193,3 +267,5 @@ qsat <- function(Ta, Pa){
   q <- 0.62197*(ew/(Pa-0.378*ew))                              # mb -> kg/kg
   return(q)
 }
+
+

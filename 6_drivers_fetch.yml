@@ -22,16 +22,7 @@ targets:
       - "6_drivers/log/feather/6_fetch_new_cell_tasks.ind"
 
   replete_time_range:
-    command: c(t0=I(0), t1 = I(359420)) # for doing one timechunk: 24999
-
-  nccopy_time_stride:
-    command: c(I(25000))
-
-  cube_data_dir:
-    command: c(I("/Volumes/ThunderBlade/NLDAS_nc"))
-
-  cube_ind_dir:
-    command: c(I("6_drivers/log/nc"))
+    command: c(t0=I(0), t1 = I(379366)) # for doing one timechunk: 24999
 
   cell_data_dir:
     command: c(I("/Volumes/ThunderBlade/NLDAS_feather/"))
@@ -46,43 +37,14 @@ targets:
   NLDAS_grid:
     command: create_ldas_grid(x0 = I(-124.9375), y0 = I(25.0625), x_num = I(464), y_num = I(224), cell_res = I(0.125))
 
-  old_feature_NLDAS_cells:
+  feature_NLDAS_cells:
     command: cells_containing_points(NLDAS_grid, new_feature_centroids)
 
-  #feature_NLDAS_cells:
-  #  command: cells_containing_points_within(NLDAS_grid, new_feature_centroids, x_range = I(c(202,335)), y_range = I(c(127, 191))) ]_y[94.126
-  # figure out what to adjust with `st_bbox(filter(NLDAS_grid, y > 191 & y < 200, x > 220 & x < 260))` x[228.265]_y[120.126]; x[202.335]_y[127.191]; x[387.408]_y[107.144]
-  feature_NLDAS_cells:
-    command: cells_all(NLDAS_grid, x_range = I(c(387, 408)), y_range = I(c(107, 144))) # was c(127,154) and c(155, 191) had to do this in two chunks do to memory issues I(c(166,201)), y_range = I(c(144,191))
-
-  old_nldas_cells:
-    command: as_OPeNDAP_cells(feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m'))) # switch back to old_feature_NLDAS_cells
-
-  nldas_cells:
+  nldas_new_cells:
     command: as_OPeNDAP_cells(feature_NLDAS_cells, variables=I(c('dlwrfsfc','pressfc','apcpsfc','vgrd10m','ugrd10m','dswrfsfc','spfh2m','tmp2m')))
 
-  nldas_empty_box: # this is the domain that will require a FULL data pull in the time dimension
-    command: nldas_diff_box(old_nldas_cells, '6_drivers/in/nldas_cells.rds')
-
-  nldas_new_cube_files:
-    command: calc_nldas_files(nldas_empty_box, replete_time_range, nccopy_time_stride, nc_dir = cube_data_dir)
-
-  nldas_new_cells:
-    command: nldas_diff_cells(nldas_cells, '6_drivers/in/nldas_cells.rds')
-
-  nldas_new_cube_plan:
-    command: create_cube_task_plan(nldas_new_cube_files, max_steps = I(100), skip_on_exists = TRUE)
-
-  "6_fetch_new_cubes_tasks.yml":
-    command: create_cube_task_makefile(target_name, nldas_new_cube_plan)
-
-  "6_drivers/log/6_fetch_new_cubes_tasks.ind":
-    command: loop_tasks(
-      task_plan = nldas_new_cube_plan,
-      task_makefile = "6_fetch_new_cubes_tasks.yml")
-
   new_cell_plan:
-    command: create_new_cell_task_plan(nldas_new_cells, replete_time_range, cube_files_ind = "6_drivers/log/6_fetch_new_cubes_tasks.ind",
+    command: create_new_cell_task_plan(nldas_new_cells, cube_files_ind = "6_drivers/in/6_fetch_new_cubes_tasks.ind",
       cell_data_dir = cell_data_dir, cell_ind_dir = cell_ind_dir)
 
   "6_fetch_new_cell_tasks.yml":
@@ -91,4 +53,4 @@ targets:
   "6_drivers/log/feather/6_fetch_new_cell_tasks.ind":
     command: scmake(I("6_fetch_new_cell_tasks.ind_promise"), remake_file = "6_fetch_new_cell_tasks.yml")
     depends:
-      - 6_drivers/log/6_fetch_new_cubes_tasks.ind
+      - 6_drivers/in/6_fetch_new_cubes_tasks.ind
