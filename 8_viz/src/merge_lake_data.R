@@ -15,7 +15,7 @@ merge_lake_data <- function(out_ind, temp_data_ind, lake_depth_ind, lake_names_i
 
   kw_file_ids <- readRDS(sc_retrieve(toha_varying_kw_ind)) %>% pull(site_id) %>% unique()
   kw_val_ids <- readRDS(sc_retrieve(kw_ind))[["site_id"]]
-  local_meteo_files <- readRDS(sc_retrieve(meteo_files_ind))[["local_driver"]]
+  local_meteo_files <- arrow::read_feather(sc_retrieve(meteo_files_ind))[["driverpath"]] %>% basename()
 
   meteo_file_ids <- readRDS(sc_retrieve(meteo_ind)) %>%
     filter(meteo_fl %in% local_meteo_files) %>% pull(site_id)

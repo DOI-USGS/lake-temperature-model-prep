@@ -346,8 +346,8 @@ targets:
   7_drivers_munge/out/cell_group_table.rds:
     command: gd_get('7_drivers_munge/out/cell_group_table.rds.ind')
 
-  7_drivers_munge/out/7_all_local_drivers.rds:
-    command: gd_get('7_drivers_munge/out/7_all_local_drivers.rds.ind')
+  7_drivers_munge/out/7_drivers_munged.feather:
+    command: gd_get('7_drivers_munge/out/7_drivers_munged.feather.ind')
 
   7_config_merge/out/canonical_lakes_area.rds:
     command: gd_get('7_config_merge/out/canonical_lakes_area.rds.ind')
