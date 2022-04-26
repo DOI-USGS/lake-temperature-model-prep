@@ -9,14 +9,15 @@ packages:
 sources:
   - 6_drivers/src/nldas_feather_utils.R
   - 7_drivers_munge/src/GLM_driver_utils.R
+  - 7_drivers_munge/src/GLM_driver_tasks.R
   - 7_drivers_munge/src/GCM_targets_wrapper.R
   - 7_drivers_munge/src/GCM_driver_utils.R
+
 
 targets:
   7_drivers_munge:
     depends:
-      - "7_drivers_munge/out/7_drivers_munge_tasks.ind"
-      - "7_drivers_munge/out/7_all_local_drivers.rds.ind"
+      - "7_drivers_munge/out/7_drivers_munged.feather.ind"
 
   meteo_file_dir:
     command: c(I("7_drivers_munge/out"))
@@ -29,10 +30,6 @@ targets:
     command: write_NLDAS_drivers(target_name,
       cell_group_ind = '7_drivers_munge/out/cell_group_table.rds.ind',
       ind_dir = meteo_file_dir)
-
-  7_drivers_munge/out/7_all_local_drivers.rds.ind:
-    command: index_local_drivers(target_name,
-      depends = "7_drivers_munge/out/7_drivers_munged.feather.ind")
 
   7_drivers_munge/out/7_GCM_driver_files.ind:
     command: build_GCM_pipeline(
