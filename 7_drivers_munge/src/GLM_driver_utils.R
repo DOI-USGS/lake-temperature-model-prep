@@ -1,13 +1,14 @@
 write_NLDAS_drivers <- function(out_ind, cell_group_ind, ind_dir){
 
-  driver_task_plan <- create_driver_task_plan(cell_group_ind = cell_group_ind, ind_dir = ind_dir)
+  sc_retrieve(cell_group_ind)
+  cell_group_file <- as_data_file(cell_group_ind)
+  driver_task_plan <- create_driver_task_plan(cell_group_file = cell_group_file, ind_dir = ind_dir)
 
   task_remakefile <- '7_drivers_munge_tasks.yml'
   create_driver_task_makefile('7_drivers_munge_tasks.yml', driver_task_plan, final_target = out_ind)
 
-  browser()
   scmake(remake_file = task_remakefile)
-  loop_tasks(driver_task_plan, task_makefile = task_remakefile)
+
   data_file <- as_data_file(out_ind)
   gd_put(out_ind, data_file)
   file.remove(remakefile)
@@ -21,19 +22,6 @@ calc_feather_ind_files <- function(grid_cells, time_range, ind_dir){
     pull(filepath)
 }
 
-calc_driver_files <- function(cell_group_table_ind, dirname){
-  cell_group_table <- sc_retrieve(cell_group_table_ind) %>% readRDS
-  feather_files <- cell_group_table$filepath
-  driver_files <- rep(NA_character_, length(feather_files))
-  for (i in seq_len(length(feather_files))){
-    feat_file <- feather_files[i]
-    times <- parse_feather_filename(feat_file, out = 'time')
-    x <- parse_feather_filename(feat_file, out = 'x')
-    y <- parse_feather_filename(feat_file, out = 'y')
-    driver_files[i] <- create_meteo_filepath(times[1], times[2], x, y, dirname = dirname)
-  }
-  return(unique(driver_files))
-}
 
 add_parse_xy_cols <- function(df){
   df %>% rowwise() %>%
@@ -41,32 +29,30 @@ add_parse_xy_cols <- function(df){
            y = parse_meteo_filepath(filepath, 'y')) %>% ungroup
 }
 
-filter_task_files <- function(cell_group_table_ind, box_bounds, meteo_dir){
+filter_task_files <- function(cell_group_table_file, box_bounds, meteo_dir){
 
-
-  out_files <- calc_driver_files(cell_group_table_ind = cell_group_table_ind, meteo_dir)
   xmin <- box_bounds[1]
   xmax <- box_bounds[2]
   ymin <- box_bounds[3]
   ymax <- box_bounds[4]
-  box_sf <- st_sfc(st_polygon(x = list(matrix(c(xmin,xmax,xmax, xmin, xmin,
-                                                ymin,ymin,ymax,ymax,ymin), ncol = 2))))
 
-  cell_files <- sc_retrieve(cell_group_table_ind) %>% readRDS() %>%
-    add_parse_xy_cols() %>%
+  cell_files <- readRDS(cell_group_table_file) %>%
+    mutate(x = stringr::str_extract(filepath, '(?<=x\\[).+?(?=\\])'),
+           y = stringr::str_extract(filepath, '(?<=y\\[).+?(?=\\])'),
+           time = stringr::str_extract(filepath, '(?<=time\\[).+?(?=\\])')) %>%
     rename(featherpath = filepath)
-  driver_files <- tibble(filepath = out_files) %>% add_parse_xy_cols() %>%
-    rename(driverpath = filepath)
 
-  task_files_sf <- inner_join(cell_files, driver_files, by = c('x','y'))
+  driver_files <- cell_files %>% dplyr::select(time, x, y) %>%
+    distinct() %>%
+    mutate(driverpath = file.path(meteo_dir,
+                                  sprintf('NLDAS_time[%s]_x[%s]_y[%s].csv', time, x, y))
+    )
 
-  cells_sf <- sf::st_as_sf(task_files_sf, coords = c("x", "y"))
-
-  cell_idx <- st_within(cells_sf, box_sf,sparse = F) %>% rowSums() %>% as.logical() %>% which()
-  # seems unnecessary because all of these are in the same grouped ind?:
-  cells_sf %>% st_drop_geometry() %>%
-    slice(cell_idx) %>%
-    dplyr::select(driverpath, featherpath, hash) %>% arrange(driverpath, featherpath)
+  inner_join(cell_files, driver_files, by = c('x','y', 'time')) %>%
+    mutate(x = as.numeric(x), y = as.numeric(y)) %>%
+    filter(x > xmin & x < xmax & y > ymin & y < ymax) %>%
+    dplyr::select(driverpath, featherpath, hash) %>% arrange(driverpath, featherpath) %>%
+    as_tibble()
 }
 
 #' combine a bunction of .yml files that are the result of `sc_indicate` into
@@ -98,7 +84,7 @@ create_meteo_filepath <- function(t0, t1, x, y, prefix = 'NLDAS', dirname){
 }
 
 parse_meteo_filepath <- function(filepath, out = c('y','x','time')){
-
+  # this is slow, should use str_extract(filepath, '(?<={out}\\[).+?(?=\\])') instead
   word_indx <- switch(out,
                       y = 3,
                       x = 2,
@@ -111,7 +97,7 @@ filter_cell_group_table <- function(cell_group_table, pattern){
   filter(cell_group_table, grepl(pattern = pattern, x = filepath))
 }
 
-create_driver_task_plan <- function(cell_group_ind, ind_dir){
+create_driver_task_plan <- function(cell_group_file, ind_dir){
 
   # smaller to create more tasks, bigger makes the individual tasks take longer
   # and be more at risk to fail
@@ -121,7 +107,7 @@ create_driver_task_plan <- function(cell_group_ind, ind_dir){
   # and we'll error if any points are outside of it
   NLDAS_box <- st_sfc(st_polygon(x = list(matrix(c(0,464,0, 0,224,0), ncol = 2))))
   NLDAS_task_grid <- sf::st_make_grid(NLDAS_box, square = TRUE, cellsize = task_cell_size, offset = c(-0.5,-0.5))
-  file_info <- sc_retrieve(cell_group_ind) %>% readRDS() %>%
+  file_info <- readRDS(cell_group_file) %>%
     rowwise() %>%
     mutate(x = parse_meteo_filepath(filepath, 'x'),
            y = parse_meteo_filepath(filepath, 'y')) %>% ungroup
@@ -148,12 +134,12 @@ create_driver_task_plan <- function(cell_group_ind, ind_dir){
 
       box_indx <- as.numeric(task_name)
       this_bbox <- st_bbox(NLDAS_task_grid[box_indx])
-      sprintf('filter_task_files(cell_group_table_ind = \'%s\',
+      sprintf('filter_task_files(cell_group_table_file = \'%s\',
       meteo_dir = I(\'%s\'),
       box_bounds = I(c(%s, %s, %s, %s)))',
-              cell_group_ind,
+              cell_group_file,
               ind_dir,
-              this_bbox[['xmin']], this_bbox[['xmax']], this_bbox[['ymax']], this_bbox[['ymin']])
+              this_bbox[['xmin']], this_bbox[['xmax']], this_bbox[['ymin']], this_bbox[['ymax']])
     }
   )
 
