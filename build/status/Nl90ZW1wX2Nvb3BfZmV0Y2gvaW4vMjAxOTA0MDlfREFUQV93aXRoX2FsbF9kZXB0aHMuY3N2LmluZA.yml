@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/20190409_DATA_with_all_depths.csv.ind
+type: file
+hash: c80c7ab5d42ca15df1a89cb9083b3f0b
+time: 2022-04-26 19:04:30 UTC
+depends: {}
+fixed: 3999cd168521f449fb4b4217e814b0ed
+code:
+  functions: {}
+
