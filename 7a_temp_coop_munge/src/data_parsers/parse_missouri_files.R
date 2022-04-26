@@ -1,4 +1,31 @@
 
+parse_20190409_DATA_with_all_depths <- function(inind, outind) {
+
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+  outfile <- as_data_file(outind)
+
+  dat_raw <- readr::read_csv(infile)
+
+  # split date and time
+  dat_datetime_split <- stringr::str_split_fixed(dat_raw$Timestamp, " ", 2) %>%
+    as_tibble %>%
+    rename('DateTime' = V1, 'time' = V2)
+
+  dat_clean <- dat_raw %>%
+    cbind(., dat_datetime_split) %>%
+
+    dplyr::mutate(DateTime = as.Date(DateTime),
+           depth = convert_ft_to_m(Depth),
+           temp = fahrenheit_to_celsius(`Temperature (F)`),
+           Missouri_ID = 'Missouri_100', # used for crosswalk
+           site = Site) %>%
+    dplyr::select(DateTime, time, depth, temp, Missouri_ID, site)
+
+  saveRDS(object = data_clean, file = outfile)
+  sc_indicate(ind_file = outind, data_file = outfile)
+
+}
+
 # Parse the ~300 files within the `Bull_Shoals_Lake_DO_and_Temp.zip` file
 
 parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
