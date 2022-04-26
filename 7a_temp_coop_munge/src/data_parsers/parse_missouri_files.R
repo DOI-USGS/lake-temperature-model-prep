@@ -62,7 +62,21 @@ parse_Temp_DO_BSL_MM_DD_YYYY <- function(inind, outind) {
   files_from_zip <- unzip(infile, exdir = unzip_dir)
   on.exit(unlink(unzip_dir, recursive = TRUE))
 
-  # stuff here
+  files_tbl <- tibble(file_path = files_from_zip) %>%
+    mut
+
+  # list files in the zip
+  # identify and read in sheets that start with "Pt"
+  # remove records where Timestamp is zero
+  # split Timestamp into 'DateTime' and 'time'
+  # convert depth from negative to postive
+  # convert depth from ft to me
+  # Note - `Unit ID` != site
+  read_Temp_DO_BSL_files <- function(file_path, y) {
+    list_sheets <- readxl::excel_sheets(file_path) %>%
+      .[grepl('^Pt', .)]
+
+  }
 
 
 
