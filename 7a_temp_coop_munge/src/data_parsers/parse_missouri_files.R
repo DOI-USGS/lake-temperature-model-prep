@@ -52,8 +52,28 @@ parse_Bull_Shoals_and_LOZ_profile_data_LMVP <- function(inind, outind) {
 
 }
 
-# Parse the ~300 files within the `Bull_Shoals_Lake_DO_and_Temp.zip` file
+parse_Temp_DO_BSL_MM_DD_YYYY <- function(inind, outind) {
+  infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
+  outfile <- as_data_file(outind)
 
+  # Unzip the file with all of Bull Shoals, then cleanup unzipped files
+  # which aren't needed externally before leaving the function.
+  unzip_dir <- tempdir()
+  files_from_zip <- unzip(infile, exdir = unzip_dir)
+  on.exit(unlink(unzip_dir, recursive = TRUE))
+
+  # stuff here
+
+
+
+  saveRDS(object = data_clean, file = outfile)
+  sc_indicate(ind_file = outind, data_file = outfile)
+
+}
+
+
+
+# Parse the ~300 files within the `Bull_Shoals_Lake_DO_and_Temp.zip` file
 parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
 
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
