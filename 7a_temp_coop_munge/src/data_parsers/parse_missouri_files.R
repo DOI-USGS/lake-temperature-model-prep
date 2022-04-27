@@ -11,7 +11,7 @@ parse_20190409_DATA_with_all_depths <- function(inind, outind) {
     as_tibble %>%
     rename('DateTime' = V1, 'time' = V2)
 
-  dat_clean <- dat_raw %>%
+  data_clean <- dat_raw %>%
     cbind(., dat_datetime_split) %>%
 
     dplyr::mutate(DateTime = as.Date(DateTime),
@@ -33,7 +33,7 @@ parse_Bull_Shoals_and_LOZ_profile_data_LMVP <- function(inind, outind) {
 
   dat_raw <- readxl::read_xlsx(infile)
 
-  dat_clean <- dat_raw %>%
+  data_clean <- dat_raw %>%
     dplyr::mutate(DateTime = as.Date(Date),
                   depth = `Depth m`,
                   temp = C,
