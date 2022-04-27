@@ -52,6 +52,8 @@ parse_Bull_Shoals_and_LOZ_profile_data_LMVP <- function(inind, outind) {
 
 }
 
+
+# Parse the 14 files in Temp_DO_BSL_MM_DD_YYY
 parse_Temp_DO_BSL_MM_DD_YYYY <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
@@ -62,32 +64,50 @@ parse_Temp_DO_BSL_MM_DD_YYYY <- function(inind, outind) {
   files_from_zip <- unzip(infile, exdir = unzip_dir)
   on.exit(unlink(unzip_dir, recursive = TRUE))
 
-  files_tbl <- tibble(file_path = files_from_zip) %>%
-    mut
-
-  # list files in the zip
-  # identify and read in sheets that start with "Pt"
-  # remove records where Timestamp is zero
-  # split Timestamp into 'DateTime' and 'time'
-  # convert depth from negative to postive
-  # convert depth from ft to me
-  # Note - `Unit ID` != site
-  read_Temp_DO_BSL_files <- function(file_path, y) {
-    list_sheets <- readxl::excel_sheets(file_path) %>%
-      .[grepl('^Pt', .)]
-
-  }
-
-
+  data_clean <- files_from_zip %>%
+    purrr::map_df(~ read_bullshoals_data(.,
+                                         new_col_names = c('DateTime', 'DO',
+                                                           'temp', 'site',
+                                                           'depth', 'unit_id')))
 
   saveRDS(object = data_clean, file = outfile)
   sc_indicate(ind_file = outind, data_file = outfile)
+}
 
+read_bullshoals_data <- function(file_path, new_col_names, keep_cols) {
+
+  # identify sheets with data
+  list_sheets <- readxl::excel_sheets(file_path) %>%
+    .[grepl('^Pt', .)]
+
+  # read in data and clean
+  clean <- list_sheets %>%
+    purrr::map_df(~ readxl::read_xlsx(path = file_path, sheet = .x)) %>%
+    purrr::discard(~all(is.na(.x))) %>%  # remove columns with all NA
+    dplyr::filter(!is.na(Timestamp)) %>% # remove rows without timestamp
+    dplyr::rename_with(~ new_col_names) %>%
+    mutate(
+      Timezone = c('CDT/CST'),
+      temp = fahrenheit_to_celsius(temp),
+      depth = -1 * depth,
+      Missouri_ID = 'Missouri_100' # value from Univ MO xwalk (https://drive.google.com/file/d/11w6-LXCDSDCjipFYPxUgJyf7YB9BtXYR/view?usp=sharing)
+    ) %>%
+    dplyr::select(DateTime, Timezone, depth, temp, site, Missouri_ID)
+
+  # a final fix on DateTime to accommodate
+  # one file `Temp _ DO BSL 09-26-2019.xlsx`
+  if(is.character(clean$DateTime)){clean$DateTime <- mdy_hm(clean$DateTime)}
+  clean$DateTime <- as.Date(clean$DateTime)
+
+  return(clean)
 }
 
 
 
-# Parse the ~300 files within the `Bull_Shoals_Lake_DO_and_Temp.zip` file
+
+
+
+# Parse the ~300 files within the `Bull_Shoals_Lake_DO_and_Temp.zip` file -------
 parse_Bull_Shoals_Lake_DO_and_Temp <- function(inind, outind) {
 
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
