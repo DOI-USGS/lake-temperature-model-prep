@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/SD_lake_pts_sf.rds.ind
+type: file
+hash: d846974cbeebd87274df5d89494b6b0b
+time: 2022-04-19 17:42:44 UTC
+depends:
+  1_crosswalk_fetch/in/SD_Lake_temp_export_scraped_latlong.csv.ind: 9f785a4f365def291faa878c4c103660
+fixed: d1a68fdffaf4103b029bcad7aa746a9a
+code:
+  functions:
+    fetch_SD_points: 004a99f76368476d6263ee00400045e6
+

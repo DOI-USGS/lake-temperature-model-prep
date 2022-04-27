@@ -8,7 +8,9 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
                                id_crosswalk, wbic_crosswalk,
                                dow_crosswalk, iowa_crosswalk,
                                missouri_crosswalk, mo_usace_crosswalk,
-                               navico_crosswalk, norfork_crosswalk, underc_crosswalk) {
+                               navico_crosswalk, norfork_crosswalk,
+                               underc_crosswalk, sd_crosswalk,
+                               in_clp_crosswalk, in_dnr_crosswalk) {
 
   outfile <- as_data_file(outind)
 
@@ -45,6 +47,14 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
     # this crosswalk has a WBIC field with some lakes, this isn't what
     # we're using the for crosswalk (was point/poly instead)
     dplyr::select(site_id, UNDERC_ID) %>% distinct()
+
+  sd2nhd <- sc_retrieve(sd_crosswalk) %>% readRDS() %>% distinct()
+
+  in_clp2nhd <- sc_retrieve(in_clp_crosswalk) %>% readRDS() %>% distinct() %>%
+    dplyr::select(site_id, IN_CLP_ID)
+
+  in_dnr2nhd <- sc_retrieve(in_dnr_crosswalk) %>% readRDS() %>% distinct() %>%
+    dplyr::select(site_id, IN_DNR_ID)
 
   # merge each possible ID with nhdid
   # wbic
@@ -103,13 +113,25 @@ crosswalk_coop_dat <- function(outind = target_name, inind,
   dat_underc <- filter(dat, !is.na(UNDERC_ID)) %>%
     left_join(underc2nhd)
 
+  # South Dakota
+  dat_sd <- filter(dat, !is.na(SD_ID)) %>% left_join(sd2nhd)
+
+  # Indiana CLP
+  dat_in_clp <- filter(dat, !is.na(IN_CLP_ID)) %>% left_join(in_clp2nhd)
+
+  # Indiana DNR
+  dat_in_dnr <- filter(dat, !is.na(IN_DNR_ID)) %>% left_join(in_dnr2nhd)
+
   # all together now
   # print out warning about what data you're dropping
   dat_all_linked <- bind_rows(dat_wbic, dat_dow, dat_id, dat_iowa,
                               dat_missouri, dat_mousace,
-                              dat_navico, dat_norfork, dat_underc) %>%
-    tidyr::pivot_longer(c(DOW, id, WBIC, Iowa_ID,
-                          Missouri_ID, mo_usace_id, Navico_ID, Norfork_ID, UNDERC_ID),
+                              dat_navico, dat_norfork,
+                              dat_underc, dat_sd,
+                              dat_in_clp, dat_in_dnr) %>%
+    tidyr::pivot_longer(c(DOW, id, WBIC, Iowa_ID, Missouri_ID, mo_usace_id,
+                          Navico_ID, Norfork_ID, UNDERC_ID, SD_ID, IN_CLP_ID,
+                          IN_DNR_ID),
                         names_to = "state_id_type", values_to = "state_id") %>%
     filter(!is.na(state_id))
 

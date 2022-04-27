@@ -21,6 +21,9 @@ targets:
   1_crosswalk_fetch/in/Norfork_temperature_locations.csv:
     command: gd_get('1_crosswalk_fetch/in/Norfork_temperature_locations.csv.ind')
 
+  1_crosswalk_fetch/in/SD_Lake_temp_export_scraped_latlong.csv:
+    command: gd_get('1_crosswalk_fetch/in/SD_Lake_temp_export_scraped_latlong.csv.ind')
+
   1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv:
     command: gd_get('1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv.ind')
 
@@ -29,6 +32,9 @@ targets:
 
   1_crosswalk_fetch/in/Navico_lakes_depths.csv:
     command: gd_get('1_crosswalk_fetch/in/Navico_lakes_depths.csv.ind')
+
+  1_crosswalk_fetch/in/Indiana_CLP_lakedata_1994_2013_latlong.csv:
+    command: gd_get('1_crosswalk_fetch/in/Indiana_CLP_lakedata_1994_2013_latlong.csv.ind')
 
   1_crosswalk_fetch/in/Iowa_Lake_Locations.csv:
     command: gd_get('1_crosswalk_fetch/in/Iowa_Lake_Locations.csv.ind')
@@ -93,6 +99,15 @@ targets:
 
   1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/Iowa_lake_pts_sf.rds.ind')
+
+  1_crosswalk_fetch/out/SD_lake_pts_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/SD_lake_pts_sf.rds.ind')
+
+  1_crosswalk_fetch/out/IN_CLP_lake_pts_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/IN_CLP_lake_pts_sf.rds.ind')
+
+  1_crosswalk_fetch/out/IN_DNR_lake_pts_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/IN_DNR_lake_pts_sf.rds.ind')
 
   # Shapefile download available at https://www.nd.gov/gis/apps/Download/?clipping=Full&coord=LL83&format=SHAPE&layers=NDGAMEFISH.NDGF_LAKESVW
   # Before uploading, I edited the lake id column using: `mutate(LAKE = sprintf("ndgf_%s", LAKE)) %>% rename(site_id = LAKE)`
@@ -189,6 +204,15 @@ targets:
 
   2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds:
     command: gd_get('2_crosswalk_munge/out/UNDERC_nhdhr_xwalk.rds.ind')
+
+  2_crosswalk_munge/out/SD_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/SD_nhdhr_xwalk.rds.ind')
+
+  2_crosswalk_munge/out/IN_CLP_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/IN_CLP_nhdhr_xwalk.rds.ind')
+
+  2_crosswalk_munge/out/IN_DNR_nhdhr_xwalk.rds:
+    command: gd_get('2_crosswalk_munge/out/IN_DNR_nhdhr_xwalk.rds.ind')
 
   #### 3_params_fetch #####
 

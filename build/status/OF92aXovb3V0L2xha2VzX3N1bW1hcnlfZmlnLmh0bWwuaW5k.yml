@@ -1,11 +1,19 @@
 version: 0.3.0
 name: 8_viz/out/lakes_summary_fig.html.ind
 type: file
+<<<<<<< HEAD
 hash: 43296e8be2df50c360bf1337ec10c644
 time: 2022-04-26 23:32:43 UTC
 depends:
   lake_data_map.Rmd: 489762de05bfbdb7acae35895fb0d600
   8_viz/inout/lakes_summary.feather.ind: e045b3061353d710ecd81144cf352ca2
+=======
+hash: 85c0ccdeb62a0453d783a3a1398193e1
+time: 2022-04-20 18:11:46 UTC
+depends:
+  lake_data_map.Rmd: 489762de05bfbdb7acae35895fb0d600
+  8_viz/inout/lakes_summary.feather.ind: c60180933fc2bd641235d93a18e9bb59
+>>>>>>> 5353236f65988d0eba2c5499e31a3c5cd23f0c88
 fixed: 5d6ae07a331d1340432bc59c57e3a311
 code:
   functions:
