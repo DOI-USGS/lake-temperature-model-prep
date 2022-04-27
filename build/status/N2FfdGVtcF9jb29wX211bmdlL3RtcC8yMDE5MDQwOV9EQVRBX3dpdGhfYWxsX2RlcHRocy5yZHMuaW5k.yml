@@ -1,0 +1,14 @@
+version: 0.3.0
+name: 7a_temp_coop_munge/tmp/20190409_DATA_with_all_depths.rds.ind
+type: file
+hash: ceb70b9090005a6068edca62197a078a
+time: 2022-04-27 14:22:25 UTC
+depends:
+  6_temp_coop_fetch/in/20190409_DATA_with_all_depths.csv.ind: c80c7ab5d42ca15df1a89cb9083b3f0b
+fixed: 12432212b6495f011ba95707a710dd7c
+code:
+  functions:
+    convert_ft_to_m: 77715c9da803b8ea0e48d1c40cc3126f
+    fahrenheit_to_celsius: 506e40538ddd649de2abbe761956f796
+    parse_20190409_DATA_with_all_depths: 806f072854b95a21e207c14a7817a775
+
