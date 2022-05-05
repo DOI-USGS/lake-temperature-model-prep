@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/Temp_DO_BSL_MM_DD_YYYY.zip.ind
+type: file
+hash: 7c7d1d1bd43ab8dedd6e1ac8e914cb73
+time: 2022-04-26 20:27:05 UTC
+depends: {}
+fixed: 4e0de85e786e0163136c501ebfc2ceef
+code:
+  functions: {}
+
