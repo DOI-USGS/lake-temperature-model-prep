@@ -1,8 +1,10 @@
+# Parse NorkfolkReservoir_AR_monthlyTempDO files ----------------------
 parse_NorkfolkReservoir_AR_monthlyTempDO(inind, outind) {
   infile <- scipiper::sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- scipiper::as_data_file(outind)
 
-  dat_raw <- readxl::read_xlsx(infile) %>% dplyr::arrange(Timestamp)
+  dat_raw <- readxl::read_xlsx(infile) %>%
+    dplyr::arrange(Timestamp)
 
   clean <- dat_raw %>%
     dplyr::arrange(Timestamp) %>%
@@ -38,13 +40,13 @@ parse_NorkfolkReservoir_AR_monthlyTempDO(inind, outind) {
 #'
 remove_incomplete_profiles <- function(df) {
   suspicious_dates <- df %>%
-    group_by(DateTime) %>%
-    tally() %>%
-    filter(n < 15) %>% # threshold was based on manual data inspection
-    pull(DateTime)
+    dplyr::group_by(DateTime) %>%
+    dplyr::tally() %>%
+    dplyr::filter(n < 15) %>% # threshold was based on manual data inspection
+    dplyr::pull(DateTime)
 
   df_filtered <- df %>%
-    filter(!(DateTime %in% suspicious_dates))
+    dplyr::filter(!(DateTime %in% suspicious_dates))
 
   return(df_filtered)
 }
@@ -60,14 +62,14 @@ remove_incomplete_profiles <- function(df) {
 #'
 add_depth_data <- function(df) {
   depth_vectors <- df %>%
-    group_by(DateTime) %>%
-    tally
+    dplyr::group_by(DateTime) %>%
+    dplyr::tally
 
   # Create a depth vector for each unique day
   # I chose to name the `out` df and to combine the list
   # of vectors at the end for potential troubleshooting down the line
   depth_vec_by_day <- depth_vectors %>%
-    pull(n) %>%
+    dplyr::pull(n) %>%
     # need to subtract 1 from .x because `0` is the first value
     purrr::map(~ seq(from = 0, to = ((.x -1) * 5), by = 5))
   names(depth_vec_by_day) <- depth_vectors$DateTime

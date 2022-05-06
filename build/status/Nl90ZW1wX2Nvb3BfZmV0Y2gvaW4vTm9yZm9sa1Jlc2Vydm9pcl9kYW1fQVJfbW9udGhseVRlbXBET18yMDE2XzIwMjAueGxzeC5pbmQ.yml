@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/NorfolkReservoir_dam_AR_monthlyTempDO_2016_2020.xlsx.ind
+type: file
+hash: e011c2e1ec44f561bd6722f87d66e9b0
+time: 2022-05-06 23:00:11 UTC
+depends: {}
+fixed: 913ef8c30179dbd1bd9e28c6b9f2cb0e
+code:
+  functions: {}
+

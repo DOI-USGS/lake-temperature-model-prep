@@ -44,7 +44,7 @@ find_parser <- function(coop_wants, parser_filehash, trigger_file = NULL) {
     } else if (grepl('Solomon_LIMNO_PROFILES_', coop_want_filenames[i])) {
       parsers[i] <- 'parse_Solomon'
 
-    } else if (grepl('NorfolksRservoir_', coop_want_filenames[i])) {
+    } else if (grepl('NorfolkRservoir_', coop_want_filenames[i])) {
       parsers[i] <- 'parse_NorkfolkReservoir_AR_monthlyTempDO'
 
     } else {

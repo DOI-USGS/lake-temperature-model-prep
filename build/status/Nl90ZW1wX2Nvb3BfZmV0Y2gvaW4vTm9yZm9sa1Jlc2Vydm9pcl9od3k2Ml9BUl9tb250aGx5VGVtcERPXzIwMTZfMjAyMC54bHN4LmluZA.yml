@@ -1,0 +1,10 @@
+version: 0.3.0
+name: 6_temp_coop_fetch/in/NorfolkReservoir_hwy62_AR_monthlyTempDO_2016_2020.xlsx.ind
+type: file
+hash: 67a39d50872d52fabf06891f8af1a6da
+time: 2022-05-06 23:03:12 UTC
+depends: {}
+fixed: 5d782c69fbd635ba1eba0273f264a7d2
+code:
+  functions: {}
+
