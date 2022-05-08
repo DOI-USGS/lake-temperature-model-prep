@@ -1,5 +1,5 @@
 # Parse NorkfolkReservoir_AR_monthlyTempDO files ----------------------
-parse_NorkfolkReservoir_AR_monthlyTempDO(inind, outind) {
+parse_NorkfolkReservoir_AR_monthlyTempDO <- function(inind, outind) {
   infile <- scipiper::sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- scipiper::as_data_file(outind)
 
@@ -22,7 +22,9 @@ parse_NorkfolkReservoir_AR_monthlyTempDO(inind, outind) {
   clean$depth <- add_depth_data(clean)
   clean$depth <- convert_ft_to_m(clean$depth)
 
-  return(clean)
+  # save data
+  saveRDS(object = clean, file = outfile)
+  sc_indicate(ind_file = outind, data_file = outfile)
 
 }
 
@@ -63,7 +65,7 @@ remove_incomplete_profiles <- function(df) {
 add_depth_data <- function(df) {
   depth_vectors <- df %>%
     dplyr::group_by(DateTime) %>%
-    dplyr::tally
+    dplyr::tally()
 
   # Create a depth vector for each unique day
   # I chose to name the `out` df and to combine the list
