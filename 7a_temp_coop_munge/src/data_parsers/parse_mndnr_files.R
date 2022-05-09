@@ -64,7 +64,7 @@ parse_temp_DO_PCA <- function(inind, outind) {
 }
 
 clean_temp_do_pca_files <- function(file_path) {
-  out <- readr::read_csv(file_path, , col_types = 'cnccnccnccccncc') %>%
+  out <- readr::read_csv(file_path, col_types = 'cnccnccnccccncc') %>%
     dplyr::filter(Parameter == 'Temperature, water') %>%
     dplyr::select(Lake_Name, DOWLKNUM, Date, Time,
                   Result, Upper_Depth) %>%
