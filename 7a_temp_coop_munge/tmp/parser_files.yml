@@ -7,7 +7,7 @@
 7a_temp_coop_munge/src/data_parsers/parse_manualentry_files.R: f92e5977418145ed4fb701c15960c67a
 7a_temp_coop_munge/src/data_parsers/parse_micorps_files.R: 3510befa5d5f23e9aafaa2edf568f5fc
 7a_temp_coop_munge/src/data_parsers/parse_missouri_files.R: 491d1e5c4586765f3d1fe3ba0c7d9de3
-7a_temp_coop_munge/src/data_parsers/parse_mndnr_files.R: 57b1b027d9ba7c1e821cd2fc7c8e7bdc
+7a_temp_coop_munge/src/data_parsers/parse_mndnr_files.R: d276f8e500996e8681ac830184169825
 7a_temp_coop_munge/src/data_parsers/parse_mndow_coop_files.R: 4749bc157e468e66ba2387730d8b1663
 7a_temp_coop_munge/src/data_parsers/parse_mo_usace.R: 2ea84d016036601b3b60e3d0ec40a160
 7a_temp_coop_munge/src/data_parsers/parse_navico_files.R: 0c9a041eede5b547e57f5478707c3c0f

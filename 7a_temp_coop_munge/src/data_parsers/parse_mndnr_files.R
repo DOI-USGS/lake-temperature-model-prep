@@ -64,7 +64,7 @@ parse_temp_DO_PCA <- function(inind, outind) {
 }
 
 clean_temp_do_pca_files <- function(file_path) {
-  out <- readr::read_csv(fl) %>%
+  out <- readr::read_csv(file_path, show_col_types = F) %>%
     dplyr::filter(Parameter == 'Temperature, water') %>%
     dplyr::select(Lake_Name, DOWLKNUM, Date, Time,
                   Result, Upper_Depth) %>%
@@ -83,7 +83,7 @@ clean_temp_do_pca_files <- function(file_path) {
 
 
 # parser and helper functions for Long29016100.zip -----------
-parse_Long29016100 <- function(inind, outind) {
+parse_Long_29016100 <- function(inind, outind) {
   infile <- sc_retrieve(inind, remake_file = '6_temp_coop_fetch_tasks.yml')
   outfile <- as_data_file(outind)
 
@@ -110,7 +110,7 @@ parse_Long29016100 <- function(inind, outind) {
 #' @param date_cell chr, Excel-style cell ID for the sample date
 #' @param omit_sheets chr, vector of sheets that should be omitted if encountered
 #'
-clean_Long29016100 <- function(file_path, skip = 2,
+clean_Long_29016100 <- function(file_path, skip = 2,
                                date_cell = 'E1', omit_sheets = NULL) {
 
   # read sheets and remove omitted sheets
