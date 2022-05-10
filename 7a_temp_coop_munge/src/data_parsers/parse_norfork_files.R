@@ -19,8 +19,7 @@ parse_NorkfolkReservoir_AR_monthlyTempDO <- function(inind, outind) {
     dplyr::mutate(depth = convert_ft_to_m(depth))
 
   # depth is manually assigned in the spreadsheet - not all files in the raw
-  # not all files in the raw data make it into
-  # the profile analysis
+  # data make it into the profile analysis
   clean <- remove_incomplete_profiles(clean)
   clean$depth <- add_depth_data(clean)
   clean$depth <- convert_ft_to_m(clean$depth)
