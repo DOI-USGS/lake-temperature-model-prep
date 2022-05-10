@@ -13,7 +13,10 @@ parse_NorkfolkReservoir_AR_monthlyTempDO <- function(inind, outind) {
                   time = strftime(Timestamp, format = '%H:%M', tz = 'GMT'),
                   Norfork_ID = paste0('Norfork_', `Unit ID`)) %>%
     dplyr::rename(temp = `Temperature (C)`) %>%
-    dplyr::select(DateTime, time, temp, Norfork_ID)
+    dplyr::select(DateTime, time, temp, Norfork_ID) %>%
+    remove_incomplete_profiles() %>%
+    dplyr::mutate(depth = add_depth_data(.)) %>%
+    dplyr::mutate(depth = convert_ft_to_m(depth))
 
   # depth is manually assigned in the spreadsheet - not all files in the raw
   # not all files in the raw data make it into
