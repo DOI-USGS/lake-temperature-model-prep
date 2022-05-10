@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 8_viz/out/lakes_summary_fig.html.ind
+type: file
+hash: c9f55ad106178779526c84b7b7ce64ea
+time: 2022-05-10 18:50:43 UTC
+depends:
+  lake_data_map.Rmd: 489762de05bfbdb7acae35895fb0d600
+  8_viz/inout/lakes_summary.feather.ind: cccbc0d046abd113433b5b739dca6f94
+fixed: 5d6ae07a331d1340432bc59c57e3a311
+code:
+  functions:
+    render_html: 54f8107e1ea9a6a8c5c798ce8ba3c437
+
