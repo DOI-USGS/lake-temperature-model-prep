@@ -1,4 +1,4 @@
-create_new_cell_task_plan <- function(cells, time_range, cube_files_ind, cell_data_dir, cell_ind_dir){
+create_new_cell_task_plan <- function(cells, cube_files_ind, cell_data_dir, cell_ind_dir){
 
   # from https://stackoverflow.com/questions/17256834/getting-the-arguments-of-a-parent-function-in-r-with-names
   # we want to get the name of the object passed to `cells`, so we can refer to it elsewhere
@@ -7,7 +7,43 @@ create_new_cell_task_plan <- function(cells, time_range, cube_files_ind, cell_da
   cl <- match.call(definition=f, call=cl)
   cell_obj <- as.list(cl)[-1][['cells']] %>% as.character()
 
+  # for each of the variable and regional groups, create a task to write the feather files
+  # use a data.frame of region and var (repeated)
+  # filter first step to just the cells we want
+
+  # hard-coding this, but it doesn't matter if it is wrong because main point is that it is a static grid
+  # and we'll error if any points are outside of it
+  NLDAS_box <- st_sfc(st_polygon(x = list(matrix(c(0,464,0, 0,224,0), ncol = 2))))
+  NLDAS_task_grid <- sf::st_make_grid(NLDAS_box, square = TRUE, cellsize = 100, offset = c(-0.5,-0.5))
+
+  cells_sf <- sf::st_as_sf(cells, coords = c("x", "y"))
+  overlapping_boxes <- st_intersects(NLDAS_task_grid, cells_sf, sparse = F) %>% rowSums() %>% as.logical() %>% which()
+
   cube_files <- yaml.load_file(cube_files_ind) %>% names()
+  cube_info <- tibble(filepath = cube_files) %>% rowwise() %>%
+    mutate(t0 = parse_cellgroup_filename(filepath, 'time')[1],
+           t1 = parse_cellgroup_filename(filepath, 'time')[2])
+
+  # get the info for the min and max time index from the file info:
+  time_range <- list(t0 = min(cube_info$t0), t1 = max(cube_info$t1))
+  cell_filter_step <- create_task_step(
+
+    step_name = 'filter_cells',
+    target = function(task_name, step_name, ...) {
+      box_indx <- strsplit(task_name, '_')[[1]][2]
+      # need the name to include the filter stuff
+      this_var <- parse_cellgroup_filename(task_name, 'var')
+      sprintf("box_%s_%s_cells", box_indx, this_var)
+    },
+    command = function(target_name, task_name, ...) {
+      box_indx <- strsplit(task_name, '_')[[1]][2] %>% as.numeric()
+      this_bbox <- st_bbox(NLDAS_task_grid[box_indx])
+      sprintf('filter_task_cells(cells = %s, box_bounds = I(c(%s, %s, %s, %s)), var = I(\'%s\'))', cell_obj,
+              this_bbox[['xmin']], this_bbox[['xmax']], this_bbox[['ymax']], this_bbox[['ymin']],
+              parse_cellgroup_filename(task_name, 'var'))
+    }
+  )
+
   cube_task_step <- create_task_step(
     step_name = 'build_feathers',
     target = function(task_name, step_name, ...) {
@@ -15,12 +51,14 @@ create_new_cell_task_plan <- function(cells, time_range, cube_files_ind, cell_da
     },
     command = function(target_name, task_name, ...) {
       this_var <- parse_cellgroup_filename(task_name, 'var') # better filtering needed?
+      box_indx <- strsplit(task_name, '_')[[1]][2]
+      cell_obj_name <- sprintf("box_%s_%s_cells", box_indx, this_var)
       these_files <- cube_files[grepl(this_var, cube_files)] %>%
         paste0("\n       '", ., "'", collapse = ",")
       # cells = the data.frame object of cells to use
       # out_dir = the directory to write the feather files
       # ... = a vector of .nc data files
-      sprintf('cubes_to_cell_files(target_name, cells = %s, out_dir = I(\'%s\'), %s)', cell_obj, cell_data_dir, these_files)
+      sprintf('cubes_to_cell_files(target_name, cells = %s, out_dir = I(\'%s\'), %s)', cell_obj_name, cell_data_dir, these_files)
     }
   )
 
@@ -28,64 +66,20 @@ create_new_cell_task_plan <- function(cells, time_range, cube_files_ind, cell_da
     create_cellgroup_filename(t0 = time_range[['t0']], t1 = time_range[['t1']], variable = x, dirname = "")
   }, USE.NAMES = FALSE)
 
-  create_task_plan(variable_indicators, list(cube_task_step), final_steps='build_feathers', ind_dir=cell_ind_dir)
+  tasks <- rep(variable_indicators, length(overlapping_boxes)) %>% sort %>% paste('box', overlapping_boxes, ., sep = '_')
+  create_task_plan(tasks, list(cell_filter_step, cube_task_step), final_steps='build_feathers', ind_dir=cell_ind_dir)
 }
 
-create_update_cell_task_plan <- function(cells, time_range, cube_files, cell_data_dir, cell_ind_dir, cube_data_dir, cube_ind_dir, secondary_cube_files = c()){
-  stop('use cube_files_ind in place of cube_files and cube_data_dir, cube_ind_dir,...\n
-       update this code to follow the new pattern')
-  # we want to get the name of the object passed to `cells`, so we can refer to it elsewhere
-  cl <- sys.call(0)
-  f <- get(as.character(cl[[1]]), mode="function", sys.frame(-1))
-  cl <- match.call(definition=f, call=cl)
-  cell_obj <- as.list(cl)[-1][['cells']] %>% as.character()
-
-  cube_files <- c(cube_files, secondary_cube_files)
-
-  time_is_in_range <- function(filepath, times){
-    time_range <- parse_nc_filename(filepath, 'time')
-    return(all(time_range %in% times))
-  }
-
-  cube_task_step <- create_task_step(
-    step_name = 'build_feathers',
-    target = function(task_name, step_name, ...) {
-      file.path(cell_data_dir, task_name)
-    },
-    command = function(target_name, task_name, ...) {
-      src_filepath <- filter(cells, cell_filename == task_name) %>% pull(src_filepath)
-      this_var <- parse_feather_filename(task_name, 'var') # better filtering needed?
-      this_time <- parse_feather_filename(task_name, 'time')
-      that_time <- parse_feather_filename(src_filepath, 'time')
-      all_this_time <- this_time[1]:this_time[2]
-      all_that_time <- that_time[1]:that_time[2]
-
-      var_files <- cube_files[grepl(this_var, cube_files)] %>%
-        basename() %>% paste0('.ind') %>% file.path(cube_ind_dir, .)
-
-      # files in range of the timesteps we want
-      time_in_range <- sapply(var_files, time_is_in_range, times = all_this_time, USE.NAMES = FALSE)
-      # files that don't have all of their timesteps already covered by the src_filepath file
-      time_out_range <- !sapply(var_files, time_is_in_range, times = all_that_time, USE.NAMES = FALSE)
-      these_files <- var_files[time_in_range & time_out_range] %>%
-        paste0("\n       '", ., "'", collapse = ",")
-      # cells = the data.frame object of cells to use
-      # out_dir = the directory to write the feather files
-      # nc_dir = the directory where the .nc files live
-      # ... = a vector of .nc indicator filepaths that have a 1:1 relationship with the actual .nc data files
-      sprintf('cubes_to_cell_files(target_name, cells = %s, out_dir = I(\'%s\'), nc_dir = I(\'%s\'),\n       src_filepath = \'%s\', %s)',
-              cell_obj, cell_data_dir, cube_data_dir, src_filepath, these_files)
-    }
-  )
-
-  cell_filename <- sapply(seq_len(nrow(cells)), function(j) {
-    cell <- cells[j, ]
-    create_feather_filename(t0 = time_range[['t0']], t1 = time_range[['t1']], x = cell$x, y = cell$y, variable = cell$variable, dirname = '')
-  })
-
-  cells$cell_filename <- cell_filename
-
-  create_task_plan(cells$cell_filename, list(cube_task_step), final_steps='build_feathers', ind_dir=cell_ind_dir)
+filter_task_cells <- function(cells, box_bounds, var){
+  xmin <- box_bounds[1]
+  xmax <- box_bounds[2]
+  ymin <- box_bounds[3]
+  ymax <- box_bounds[4]
+  box_sf <- st_sfc(st_polygon(x = list(matrix(c(xmin,xmax,xmax, xmin, xmin,
+                                                ymin,ymin,ymax,ymax,ymin), ncol = 2))))
+  cells_sf <- sf::st_as_sf(cells, coords = c("x", "y"))
+  cell_idx <- st_within(cells_sf, box_sf,sparse = F) %>% rowSums() %>% as.logical() %>% which()
+  cells[cell_idx,] %>% filter(variable == var)
 }
 
 create_cellgroup_filename <- function(t0, t1, variable, dirname, prefix = 'cellgroup', ext = '.yml'){
@@ -122,34 +116,6 @@ create_cell_task_makefile <- function(makefile, cell_task_plan){
 
 }
 
-
-nldas_diff_cells <- function(new_cells_list, old_cells_df_filename){
-  old_cells_df <- readRDS(old_cells_df_filename)
-
-  # expand the list into a data.frame comprable to `old_cells_df`
-  new_cells_df <- cell_list_to_df(new_cells_list)
-
-  # leaves only the rows in `new_cells_df` that don't exist in `old_cells_df`
-  # these are cell locations where we don't have any data for that variable
-  diffed_cells <- dplyr::anti_join(new_cells_df, old_cells_df,  by = c('x','y','variable'))
-
-  return(diffed_cells)
-}
-
-#' returns the cells and variable names for the cells that are NOT part of the full/clean subset
-nldas_update_cells <- function(new_cells_list, pull_cells, old_times_df_filename){
-
-  old_times_df <- readRDS(old_times_df_filename)
-
-  new_cells_df <- cell_list_to_df(new_cells_list)
-
-  update_cells <- dplyr::anti_join(new_cells_df, pull_cells,  by = c('x','y','variable')) %>%
-    left_join(old_times_df, by = c('variable')) %>%
-    mutate(src_filepath = create_feather_filename(t0, t1, x, y, variable)) %>%
-    select(-t0, -t1)
-
-  return(update_cells)
-}
 
 create_feather_filename <- function(t0, t1, x, y, variable, prefix = 'NLDAS', dirname = '6_drivers/out/feather'){
   sapply(seq_len(length(t0)), function(i) {
@@ -212,31 +178,53 @@ cubes_to_cell_files <- function(filename, ..., cells, out_dir, nc_files = NULL, 
     cell_out[[cell_var]][time_indices] <- starter_cell_data[[cell_var]]
   }
 
+  min_x_cell <- min(file_info$x)
+  range_x_cell <- diff(range(file_info$x))
+  min_y_cell <- min(file_info$y)
+  range_y_cell <- diff(range(file_info$y))
   for (nc_file in nc_files){
     file_time_range <- parse_nc_filename(nc_file, 'time')
+    # the time values in this .nc file:
     time_indices <- seq(file_time_range[1], file_time_range[2]) + 1 # our data vectors aren't 0 indexed
 
     if (any(!time_indices %in% cell_time_indices)){
+      # fail if the cube has any _extra_ data that we're not using in the cell files
       stop('attempting to get cube data outside of bounds of cell data in ', nc_file, call. = FALSE)
     }
+    # + 1 because ncvar_get is not zero indexed
+    cube_x_vals <- parse_nc_filename(nc_file, 'x') %>% {seq(.[1], .[2])}
+    cube_y_vals <- parse_nc_filename(nc_file, 'y') %>% {seq(.[1], .[2])}
+    # start _is_ zero indexed
+    x_start <- which(cube_x_vals == min_x_cell)
+    y_start <- which(cube_y_vals == min_y_cell)
+    x_cnt <- range_x_cell + 1
+    y_cnt <- range_y_cell + 1
     # get all of the data from the cube, extract
     nc <- nc_open(nc_file, suppress_dimvals = TRUE)
-    cell_data <- ncvar_get(nc, varid = cell_var, start = c(1, 1, 1), count = c(-1, -1, -1))
-    nc_close(nc)
-    cube_x_range <- parse_nc_filename(nc_file, 'x')
-    cube_y_range <- parse_nc_filename(nc_file, 'y')
 
+    cell_data <- ncvar_get(nc, varid = cell_var,
+                           start = c(x_start, y_start, 1L),
+                           count = c(x_cnt, y_cnt, -1L))
+    nc_close(nc)
+
+    # necessary because not zero indexed; this is the subset we grabbed:
+    these_y_vals <- seq(cube_y_vals[y_start], length.out = y_cnt)
+    these_x_vals <- seq(cube_x_vals[x_start], length.out = x_cnt)
     # we are ok w/ some overwriting of data if there is a src_filepath, since it should be the same
 
     for (feather_file in file_info$filepath){
+      # need to do a spot check on lon/lat vs meteo
       x_index <- parse_feather_filename(feather_file, 'x')
       y_index <- parse_feather_filename(feather_file, 'y')
-      stopifnot(x_index %in% seq(cube_x_range[1], cube_x_range[2]))
-      stopifnot(y_index %in% seq(cube_y_range[1], cube_y_range[2]))
 
-      x_start <- x_index - cube_x_range[1] + 1 # our data vectors aren't 0 indexed
-      y_start <- y_index - cube_y_range[1] + 1 # our data vectors aren't 0 indexed
-      sparse_nc_list[[feather_file]][time_indices] <- cell_data[x_start, y_start, ]
+      # fail fast if the data we're looking for isn't here:
+      stopifnot(x_index %in% these_x_vals)
+      stopifnot(y_index %in% these_y_vals)
+
+      # grabbing the data by index is _relative_ to the subset
+      x_cell_start <- which(x_index == these_x_vals)
+      y_cell_start <- which(y_index == these_y_vals)
+      sparse_nc_list[[feather_file]][time_indices] <- cell_data[x_cell_start, y_cell_start, ]
     }
   }
   skip_write <- c()
@@ -246,7 +234,6 @@ cubes_to_cell_files <- function(filename, ..., cells, out_dir, nc_files = NULL, 
       # this cell is masked in the domain or missing all data
       skip_write <- c(skip_write, feather_file)
     } else if (any(is.na(data_out))){
-
       stop('cell has NA values after extracting data from cubes', call. = FALSE)
     } else {
       cell_out <- data.frame(x = data_out) %>% setNames(cell_var)

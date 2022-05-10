@@ -65,12 +65,15 @@ rsconnect/
 7_drivers_munge/mendota_out/*
 7_drivers_munge/sparkling_out/*
 6_drivers/in/*.csv
+6_drivers/log/feather/box_*
 !6_drivers/in/*.rds
 # tmp wqp indicators
 6_temp_wqp_fetch/tmp/*
 # tmp coop munged files/indicators
 7a_temp_coop_munge/tmp/*
 build/status/N2FfdGVtcF9jb29wX211bmdlL3RtcC9*
+# box_{n}_cellgroup_time...files:
+build/status/Nl9kcml2ZXJzL2xvZy9mZWF0aGVyL2JveF8*
 !7a_temp_coop_munge/tmp/parser_files.yml
 # tmp wqp munge indicators
 7a_temp_wqp_munge/tmp/*

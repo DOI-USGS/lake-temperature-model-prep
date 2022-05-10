@@ -9,14 +9,15 @@ packages:
 sources:
   - 6_drivers/src/nldas_feather_utils.R
   - 7_drivers_munge/src/GLM_driver_utils.R
+  - 7_drivers_munge/src/GLM_driver_tasks.R
   - 7_drivers_munge/src/GCM_targets_wrapper.R
   - 7_drivers_munge/src/GCM_driver_utils.R
+
 
 targets:
   7_drivers_munge:
     depends:
-      - "7_drivers_munge/out/7_drivers_munge_tasks.ind"
-      - "7_drivers_munge/out/7_all_local_drivers.rds.ind"
+      - "7_drivers_munge/out/7_drivers_munged.feather.ind"
 
   meteo_file_dir:
     command: c(I("7_drivers_munge/out"))
@@ -25,30 +26,10 @@ targets:
     command: merge_cell_group_files(target_name,
       cell_group_ind = '6_drivers/log/feather/6_fetch_new_cell_tasks.ind')
 
-  7_drivers_munge/out/cell_group_table.rds:
-    command: gd_get('7_drivers_munge/out/cell_group_table.rds.ind')
-
-  GLM_driver_files:
-    command: calc_driver_files(cell_group_table_ind = '7_drivers_munge/out/cell_group_table.rds.ind', dirname = meteo_file_dir)
-
-  cell_group_table:
-    command: retrieve_and_readRDS('7_drivers_munge/out/cell_group_table.rds.ind')
-
-  GLM_driver_plan:
-    command: create_driver_task_plan(GLM_driver_files,
-      cell_group_table = cell_group_table,
+  7_drivers_munge/out/7_drivers_munged.feather.ind:
+    command: write_NLDAS_drivers(target_name,
+      cell_group_ind = '7_drivers_munge/out/cell_group_table.rds.ind',
       ind_dir = meteo_file_dir)
-
-  7_drivers_munge_tasks.yml:
-    command: create_driver_task_makefile(target_name, GLM_driver_plan)
-
-  # using loop_tasks because of this error: * Error in NULL: object 'tmp2m' not found; debug with scmake("7_drivers_munge/out/NLDAS_time[0.359420]_x[223]_y[141].csv", "7_drivers_munge_tasks.yml")
-  7_drivers_munge/out/7_drivers_munge_tasks.ind:
-    command: scmake(I("7_drivers_munge_tasks.ind_promise"), remake_file = '7_drivers_munge_tasks.yml')
-
-  7_drivers_munge/out/7_all_local_drivers.rds.ind:
-    command: index_local_drivers(target_name,
-      depends = "7_drivers_munge/out/7_drivers_munge_tasks.ind")
 
   7_drivers_munge/out/7_GCM_driver_files.ind:
     command: build_GCM_pipeline(

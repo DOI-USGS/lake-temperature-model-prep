@@ -1,11 +1,11 @@
 version: 0.3.0
 name: 6_drivers/log/feather/6_fetch_new_cell_tasks.ind
 type: file
-hash: 68c9a4e5ba958898af4ba3979f6ead2c
-time: 2022-04-18 22:49:16 UTC
+hash: c7495fee7ff3a7ae0ac76fde1062ce46
+time: 2022-04-22 07:06:30 UTC
 depends:
-  6_fetch_new_cell_tasks.yml: b2d70f4db906b0b8e304dc802c341149
-  6_drivers/log/6_fetch_new_cubes_tasks.ind: 5ba0b07de9b632eec9136d6efde67ee0
+  6_fetch_new_cell_tasks.yml: 8ef94191de106073cf72d5112a40337f
+  6_drivers/in/6_fetch_new_cubes_tasks.ind: e2e68810682cece195c326189663e312
 fixed: d14c9eedf87d11755a940a53fe708abc
 code:
   functions: {}

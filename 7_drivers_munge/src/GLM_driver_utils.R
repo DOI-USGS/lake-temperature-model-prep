@@ -1,25 +1,51 @@
-calc_feather_ind_files <- function(grid_cells, time_range, ind_dir){
-  cell_list_to_df(grid_cells) %>%
-    mutate(t0 = time_range[1], t1 = time_range[2]) %>%
-    mutate(filepath = paste0(create_feather_filename(t0, t1, x = x, y = y, variable = variable, dirname = ind_dir), '.ind')) %>%
-    pull(filepath)
+
+
+#' from the comprehensive hash table of all driver cell feather files
+#' (these files are in `cell_group_table_file`), filter out the section of files
+#' that pertains to the area within `box_bounds`, which is a x,y indexed bounding
+#' box. For each cell, create a output driver filepath
+#'
+#' @param cell_group_table_file an .rds file containing `filepath` and `hash` for
+#' feather files
+#' @param box_bounds a vector of length 4 containing xmin/max, ymin/max
+#' @param meteo_dir the directory to use for driver filepaths that are created
+#'
+#' @returns a hash table with `driverpath`, `featherpath`, and `hash`
+filter_task_files <- function(cell_group_table_file, box_bounds, meteo_dir){
+
+  xmin <- box_bounds[1]
+  xmax <- box_bounds[2]
+  ymin <- box_bounds[3]
+  ymax <- box_bounds[4]
+
+  cell_files <- readRDS(cell_group_table_file) %>%
+    # a faster alternative to `parse_meteo_filepath()` is to use this regex:
+    mutate(x = stringr::str_extract(filepath, '(?<=x\\[).+?(?=\\])'),
+           y = stringr::str_extract(filepath, '(?<=y\\[).+?(?=\\])'),
+           time = stringr::str_extract(filepath, '(?<=time\\[).+?(?=\\])'),
+           x_num = as.numeric(x), y_num = as.numeric(y)) %>%
+    filter(x_num > xmin & x_num < xmax & y_num > ymin & y_num < ymax) %>%
+    rename(featherpath = filepath)
+
+  driver_files <- cell_files %>% dplyr::select(time, x, y, x_num, y_num) %>%
+    distinct() %>%
+    # split up the `time` format into two columns so we can use our shared meteo_filepath function:
+    tidyr::extract(time, '([0-9]+).([0-9]+)', into = c('t0','t1'),
+                   remove = FALSE, convert = TRUE) %>%
+    mutate(driverpath = create_meteo_filepath(t0, t1, x_num, y_num, prefix = 'NLDAS', dirname = meteo_dir)) %>%
+    dplyr::select(driverpath, x, y, time)
+
+  # join filtered driver files to filtered feather files, which expands/repeats
+  # driver files given each .csv has a .feather for each variable:
+  inner_join(cell_files, driver_files, by = c('x','y', 'time')) %>%
+    dplyr::select(driverpath, featherpath, hash) %>%
+    # sort so that we get a reliable hash table that doesn't register as stale
+    # for arbitrary reasons (e.g., "order"):
+    arrange(driverpath, featherpath) %>%
+    as_tibble()
 }
 
-calc_driver_files <- function(cell_group_table_ind, dirname){
-  cell_group_table <- sc_retrieve(cell_group_table_ind) %>% readRDS
-  feather_files <- cell_group_table$filepath
-  driver_files <- rep(NA_character_, length(feather_files))
-  for (i in seq_len(length(feather_files))){
-    feat_file <- feather_files[i]
-    times <- parse_feather_filename(feat_file, out = 'time')
-    x <- parse_feather_filename(feat_file, out = 'x')
-    y <- parse_feather_filename(feat_file, out = 'y')
-    driver_files[i] <- create_meteo_filepath(times[1], times[2], x, y, dirname = dirname)
-  }
-  return(unique(driver_files))
-}
-
-#' combine a bunction of .yml files that are the result of `sc_indicate` into
+#' combine a bunch of .yml files that are the result of `sc_indicate` into
 #'   a single file
 merge_cell_group_files <- function(ind_out, cell_group_ind){
 
@@ -43,12 +69,13 @@ merge_cell_group_files <- function(ind_out, cell_group_ind){
 }
 
 
+#' shared function for creating consistent references to the driver files
 create_meteo_filepath <- function(t0, t1, x, y, prefix = 'NLDAS', dirname){
   file.path(dirname, sprintf("%s_time[%1.0f.%1.0f]_x[%1.0f]_y[%1.0f].csv", prefix, t0, t1, x, y))
 }
 
 parse_meteo_filepath <- function(filepath, out = c('y','x','time')){
-
+  # this is slow (not vectorized), should use str_extract(filepath, '(?<={out}\\[).+?(?=\\])') instead
   word_indx <- switch(out,
                       y = 3,
                       x = 2,
@@ -57,84 +84,20 @@ parse_meteo_filepath <- function(filepath, out = c('y','x','time')){
   return(as.numeric(strsplit(char, '[.]')[[1]]))
 }
 
-filter_cell_group_table <- function(cell_group_table, pattern){
-  filter(cell_group_table, grepl(pattern = pattern, x = filepath))
+
+
+feathers_to_driver_files <- function(driver_table){
+  driver_table %>% group_by(driverpath) %>%
+    summarize(hash = feathers_to_driver_file(driverpath[1], featherpath))
 }
-
-retrieve_and_readRDS <- function(in_ind){
-  sc_retrieve(in_ind) %>% readRDS
-}
-
-create_driver_task_plan <- function(driver_files, cell_group_table, ind_dir){
-
-  # now use table...was ind_files
-
-  # we want to get the name of the object passed to `cell_group_table`, so we can refer to it elsewhere
-  cl <- sys.call(0)
-  f <- get(as.character(cl[[1]]), mode="function", sys.frame(-1))
-  cl <- match.call(definition=f, call=cl)
-  # **perhaps we should be using an .rds or .feather file here so we don't need to do this goofy arg-grabbing?**
-  cell_group_obj <- as.list(cl)[-1][['cell_group_table']] %>% as.character()
-
-  as_sub_group_table <- function(filename){
-    gsub(pattern = '\\[', '_', x = tools::file_path_sans_ext(filename)) %>%
-      gsub(pattern = '\\]', '', x = .) %>%
-      paste0("_cell_group_table")
-  }
-  subset_table_task_step <- create_task_step(
-    step_name = 'subset_table',
-    target = function(task_name, step_name, ...) {
-      as_sub_group_table(task_name)
-    },
-    command = function(target_name, task_name, ...) {
-      this_time <- parse_meteo_filepath(task_name, 'time') # better filtering needed?
-      this_x <- parse_meteo_filepath(task_name, 'x')
-      this_y <- parse_meteo_filepath(task_name, 'y')
-      # need to double escape to preserve the "\\"
-      pattern <- sprintf('time\\\\[%1.0f.%1.0f\\\\]_x\\\\[%1.0f\\\\]_y\\\\[%1.0f\\\\]', this_time[1], this_time[2], this_x, this_y)
-      sprintf('filter_cell_group_table(%s, pattern = I(\'%s\'))', cell_group_obj, pattern)
-    }
-  )
-
-  driver_task_step <- create_task_step(
-    step_name = 'munge_drivers',
-    target = function(task_name, step_name, ...) {
-      file.path(out_dir, task_name)
-    },
-    command = function(target_name, task_name, ...) {
-      sub_group_table <- as_sub_group_table(task_name)
-      sprintf('feathers_to_driver_file(target_name, cell_group_table = %s)', sub_group_table)
-    }
-  )
-
-  out_dir <- dirname(driver_files) %>% unique()
-  stopifnot(length(out_dir) == 1) # more than one not supported with this pattern
-  filenames <- basename(driver_files)
-
-  create_task_plan(filenames, list(subset_table_task_step, driver_task_step), final_steps='munge_drivers', ind_dir = ind_dir, add_complete = FALSE)
-}
-
-create_driver_task_makefile <- function(makefile, task_plan){
-  include <- "7_drivers_munge.yml"
-  packages <- c('dplyr', 'feather', 'readr','lubridate')
-  sources <- '7_drivers_munge/src/GLM_driver_utils.R'
-
-  create_task_makefile(
-    task_plan, makefile = makefile,
-    include = include, sources = sources,
-    file_extensions=c('ind'), packages = packages)
-
-}
-
 
 #' convert a bunch of variable-specific feather files into a single driver file
 #'
 #' @param filepath the output file to use
 #' @param cell_group_table a data.frame with `filepath` and `hash`, where `filepath`
 #'    points to the location of feather files to use for each cell
-feathers_to_driver_file <- function(filepath, cell_group_table){
+feathers_to_driver_file <- function(filepath, feather_filepaths){
 
-  feather_filepaths <- cell_group_table$filepath
 
   NLDAS_start <- as.POSIXct('1979-01-01 13:00', tz = "UTC")
   all_time_vec <- seq(NLDAS_start, by = 'hour', to = Sys.time())
@@ -161,6 +124,15 @@ feathers_to_driver_file <- function(filepath, cell_group_table){
   stopifnot(length(unique(diff(drivers_out$time))) == 1)
 
   readr::write_csv(x = drivers_out, path = filepath)
+  return(tools::md5sum(filepath))
+}
+
+combine_hash_tables <- function(ind_out, ...){
+  hash_table <- bind_rows(...)
+  data_file <- as_data_file(ind_out)
+
+  arrow::write_feather(x = hash_table, sink = data_file)
+  gd_put(ind_out, data_file)
 }
 
 index_local_drivers <- function(ind_out, depends){
@@ -193,3 +165,5 @@ qsat <- function(Ta, Pa){
   q <- 0.62197*(ew/(Pa-0.378*ew))                              # mb -> kg/kg
   return(q)
 }
+
+
