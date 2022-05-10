@@ -50,6 +50,7 @@
 6_temp_coop_fetch/in/Logger_Temps_2009_Open_Water.csv.ind: 733b90595702ecebdbf1bc0ff0b016eb
 6_temp_coop_fetch/in/Logger_Temps_2010_Open_Water.csv.ind: 83b1150192cf460ff32aaf3cfc896962
 6_temp_coop_fetch/in/Logger_Temps_2011_Open_Water.xlsx.ind: 27fa972e54f9f5cda8c7ab915fddcbe4
+6_temp_coop_fetch/in/Long_29016100.zip.ind: b0ffbcff4bf01f8bc15d3c4e11994360
 6_temp_coop_fetch/in/LotW_WQ_Gretchen_H.xlsx.ind: f01ee3987f4c88d3e31a29d8cac95b7c
 6_temp_coop_fetch/in/LOTW2018.csv.ind: 62e40807a8403d5aad68d2e2b11fa9bd
 6_temp_coop_fetch/in/lower_red_bottom_temp_DO_9metersdeep_2017.xlsx.ind: 94a1febd4d564b42f0c67b7eb3346a3d
@@ -85,6 +86,8 @@
 6_temp_coop_fetch/in/Norfolk_DAM-2018.xlsx.ind: 9683348b0e7749ba25353f2a0968c0c7
 6_temp_coop_fetch/in/Norfolk_DAM-2019.xlsx.ind: b1e029cac504953ddd8c5248b769fd94
 6_temp_coop_fetch/in/Norfolk_DAM-2020.xlsx.ind: b29792dd7a1b175832bdcb1c93e3b953
+6_temp_coop_fetch/in/NorfolkReservoir_dam_AR_monthlyTempDO_2016_2020.xlsx.ind: e011c2e1ec44f561bd6722f87d66e9b0
+6_temp_coop_fetch/in/NorfolkReservoir_hwy62_AR_monthlyTempDO_2016_2020.xlsx.ind: 67a39d50872d52fabf06891f8af1a6da
 6_temp_coop_fetch/in/ntl29_v10_0.csv.ind: edb7ae5089f907c94dd8323765c0d9d5
 6_temp_coop_fetch/in/Open_Water_Logger_2013.csv.ind: 223c2b44d9a642190bc46ae139288a1c
 6_temp_coop_fetch/in/ottertail_mnlakedata_historicalfiles_manualentry.xlsx.ind: e98f227b804f2f3b0fc170e06647fd33
@@ -104,6 +107,7 @@
 6_temp_coop_fetch/in/steele_swift_mnlakedata_historicalfiles_manualentry.xlsx.ind: a7f59f44169e053d721ea8d561225196
 6_temp_coop_fetch/in/stlouis_mnlakedata_historicalfiles_manualentry.xlsx.ind: bb55c84374031d83f489f9bba698ffab
 6_temp_coop_fetch/in/Temp_DO_BSL_MM_DD_YYYY.zip.ind: 7c7d1d1bd43ab8dedd6e1ac8e914cb73
+6_temp_coop_fetch/in/temp_DO_PCA.zip.ind: 29c328f1c394550e50942cdc6580fe96
 6_temp_coop_fetch/in/Temp_Logger_Data_2015.xlsx.ind: b336f6bdbe6f9d59dc68f7aca8cada6c
 6_temp_coop_fetch/in/Tenmile_1996_Temperatures.xls.ind: 168f5c29a9483c246bafd99fd87b6c1a
 6_temp_coop_fetch/in/Tenmile_1997_Temperatures.xls.ind: 6a83b1f30355676796503053a26bbdf7
