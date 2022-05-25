@@ -119,6 +119,9 @@ feathers_to_driver_file <- function(filepath, feather_filepaths){
     summarize(ShortWave = mean(ShortWave), LongWave = mean(LongWave),
               AirTemp = mean(AirTemp), RelHum = mean(RelHum),
               WindSpeed = mean(WindSpeed^3)^(1/3), Rain = mean(Rain), Snow = mean(Snow), n = length(time)) %>%
+    # odd GLM edge-case when ice is forming on a timestep that has _both_ rain and snow
+    # causing issues. Avoid by only
+    mutate(Rain = case_when(Snow > 0 ~ 0, TRUE ~ Rain)) %>%
     filter(n == 24) %>% rename(time = date) %>% dplyr::select(-n)
 
   stopifnot(length(unique(diff(drivers_out$time))) == 1)

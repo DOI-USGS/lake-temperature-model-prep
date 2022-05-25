@@ -1,11 +1,11 @@
-write_NLDAS_drivers <- function(out_ind, cell_group_ind, ind_dir){
+write_NLDAS_drivers <- function(out_ind, cell_group_ind, ind_dir, ...){
 
   sc_retrieve(cell_group_ind)
   cell_group_file <- as_data_file(cell_group_ind)
   driver_task_plan <- create_driver_task_plan(cell_group_file = cell_group_file, ind_dir = ind_dir)
 
   task_remakefile <- '7_drivers_munge_tasks.yml'
-  create_driver_task_makefile('7_drivers_munge_tasks.yml', driver_task_plan, final_target = out_ind)
+  create_driver_task_makefile('7_drivers_munge_tasks.yml', driver_task_plan, final_target = out_ind, ...)
 
   scmake(remake_file = task_remakefile)
 
@@ -86,10 +86,10 @@ create_driver_task_plan <- function(cell_group_file, ind_dir){
                    ind_dir = ind_dir, add_complete = FALSE)
 }
 
-create_driver_task_makefile <- function(makefile, task_plan, final_target){
+create_driver_task_makefile <- function(makefile, task_plan, final_target, ...){
   include <- "7_drivers_munge.yml"
   packages <- c('dplyr', 'feather', 'readr','lubridate', 'sf')
-  sources <- '7_drivers_munge/src/GLM_driver_utils.R'
+  sources <- c(...)
 
   create_task_makefile(
     task_plan, makefile = makefile,
