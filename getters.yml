@@ -48,6 +48,12 @@ targets:
   1_crosswalk_fetch/out/UniversityofMissouri_2017_2020_Profiles_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/UniversityofMissouri_2017_2020_Profiles_sf.rds.ind')
 
+  1_crosswalk_fetch/in/Max_Glines_LANDSAT_secchi_medians.csv:
+    command: gd_get('1_crosswalk_fetch/in/Max_Glines_LANDSAT_secchi_medians.csv.ind')
+
+  1_crosswalk_fetch/out/landsat_secchi.rds:
+    command: gd_get('1_crosswalk_fetch/out/landsat_secchi.rds.ind')
+
   1_crosswalk_fetch/out/canonical_lakes_sf.rds:
     command: gd_get('1_crosswalk_fetch/out/canonical_lakes_sf.rds.ind')
 

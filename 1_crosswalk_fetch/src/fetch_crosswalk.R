@@ -146,6 +146,16 @@ slice_iadnr_contour <- function(out_ind, contour_ind){
   gd_put(out_ind, outfile)
 }
 
+fetch_landsat_secchi <- function(out_ind, in_ind){
+  outfile <- as_data_file(out_ind)
+  sc_retrieve(in_ind) %>% read_csv() %>%
+    mutate(site_id = sprintf('nhdhr_%s', Prmnn_I)) %>%
+    dplyr::select(site_id, secchi) %>%
+    saveRDS(file = outfile)
+
+  gd_put(out_ind, outfile)
+}
+
 #' get the top/shallow layer as a single polygon to represent the lake surface
 slice_isro_contour <- function(out_ind, contour_ind){
   outfile <- as_data_file(out_ind)

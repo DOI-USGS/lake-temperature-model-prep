@@ -1,0 +1,12 @@
+version: 0.3.0
+name: 1_crosswalk_fetch/out/landsat_secchi.rds.ind
+type: file
+hash: f304e65b87d43507f130918d620e9397
+time: 2022-05-25 19:28:37 UTC
+depends:
+  1_crosswalk_fetch/in/Max_Glines_LANDSAT_secchi_medians.csv.ind: 1f07083f1d8fc66cfab59c9ba3799739
+fixed: fe3f3242d09bd461cb7148c7e8e3de75
+code:
+  functions:
+    fetch_landsat_secchi: b63bef29e163565b668c8d52618d19f5
+

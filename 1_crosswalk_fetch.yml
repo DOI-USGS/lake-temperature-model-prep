@@ -38,6 +38,7 @@ targets:
       - 1_crosswalk_fetch/out/ned_centroid_elevations.feather.ind
       - 1_crosswalk_fetch/out/UNDERC_lakes_depths_sf.rds.ind
       - 1_crosswalk_fetch/out/isro_lakes_sf.rds.ind
+      - 1_crosswalk_fetch/out/landsat_secchi.rds.ind
 
 # create the trigger file, which will not be checked into git
 # I see no reason to have different trigger files for different sections of the pipeline
@@ -165,6 +166,10 @@ targets:
       csv_ind = '1_crosswalk_fetch/in/Indiana_CLP_lakedata_1994_2013_latlong.csv.ind',
       site_id_tag = I('IN_DNR'),
       col_name = I('Lake_County_Name'))
+
+  1_crosswalk_fetch/out/landsat_secchi.rds.ind:
+    command: fetch_landsat_secchi(target_name,
+      in_ind = '1_crosswalk_fetch/in/Max_Glines_LANDSAT_secchi_medians.csv.ind')
 
   1_crosswalk_fetch/out/SD_lake_pts_sf.rds.ind:
     command: fetch_SD_points(target_name,
