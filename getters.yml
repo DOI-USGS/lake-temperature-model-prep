@@ -24,6 +24,9 @@ targets:
   1_crosswalk_fetch/in/SD_Lake_temp_export_scraped_latlong.csv:
     command: gd_get('1_crosswalk_fetch/in/SD_Lake_temp_export_scraped_latlong.csv.ind')
 
+  1_crosswalk_fetch/out/mo_usace_sampling_locations_sf.rds:
+    command: gd_get('1_crosswalk_fetch/out/mo_usace_sampling_locations_sf.rds.ind')
+
   1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv:
     command: gd_get('1_crosswalk_fetch/in/Solomon_LAKES_10.25390_caryinstitute.7438598.v5.csv.ind')
 
