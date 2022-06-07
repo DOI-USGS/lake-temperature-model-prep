@@ -87,3 +87,8 @@ build/status/Nl9kcml2ZXJzL2xvZy9mZWF0aGVyL2JveF8*
 # Ignore GCM pipeline intermediate files
 7_drivers_munge/tmp/*
 !7_drivers_munge/tmp/.empty
+
+# Files used for running on HPC
+gcm_sing.out
+*.sif
+tmp/*
