@@ -23,17 +23,22 @@ RUN Rscript -e 'library(remotes); \
                 install_github("richfitz/remake", upgrade = "never"); \
                 install_github("USGS-R/scipiper", upgrade = "never"); \
                 install_github("USGS-R/geoknife", upgrade = "never"); \
-                install_github("USGS-R/ncdfgeom", upgrade = "never");' \
+                install_github("USGS-R/ncdfgeom", upgrade = "never"); \
+                install_github("USGS-R/lakeattributes", upgrade = "never");' \
   && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
 # Install the necessary pipeline and parallelization packages for R
 RUN install2.r --error \
   arrow \
+  dataRetrieval \
   data.table \
   dplyr \
+  feather \
   ggplot2 \
   jsonlite \
+  MESS \
   ncdf4 \
+  odbc \
   purrr \
   readr \
   retry \
@@ -42,6 +47,7 @@ RUN install2.r --error \
   sbtools \
   scico \
   sf \
+  smoothr \
   targets \
   tidyr \
   && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
