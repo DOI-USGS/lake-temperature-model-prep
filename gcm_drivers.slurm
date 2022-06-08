@@ -16,5 +16,5 @@ ulimit -u 1541404
 
 srun singularity exec \
     lake-temperature-model-prep.sif \
-    Rscript gcm_download.R
+    Rscript -e "library(scipiper); scmake('7_drivers_munge/out/7_GCM_driver_files.ind')"
 
