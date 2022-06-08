@@ -168,3 +168,11 @@ gd_get('7b_temp_merge/out/temp_data_with_sources.feather.ind')
 scp 1_crosswalk_fetch/out/canonical_lakes_sf.rds tallgrass.cr.usgs.gov:/caldera/projects/usgs/water/iidd/datasci/lake-temp/lake-temperature-model-prep/1_crosswalk_fetch/out/
 scp 7b_temp_merge/out/temp_data_with_sources.feather tallgrass.cr.usgs.gov:/caldera/projects/usgs/water/iidd/datasci/lake-temp/lake-temperature-model-prep/7b_temp_merge/out/
 ```
+
+## Using the GCM driver data download pipeline
+
+The GCM drivers data pipeline is a separate [`{{targets}}`](https://docs.ropensci.org/targets/) pipeline within this bigger scipiper one (see `7_drivers_munge/out/7_GCM_driver_files.ind`). For the full footprint, we are running this pipeline on Tallgrass because it takes about 15 hours to complete.
+
+Logon to Tallgrass and navigate to the `lake-temperature-model-prep` directory on Caldera. From there, you can either 1) kick off a non-interactive job using the singularity container by running `sbatch gcm_drivers.slurm` and then watch the progress of your build by running `tail -f gcm_sing.out`, or 2) work on in an interactive RStudio session by running `sbatch launch-rstudio-container.slurm`, running `cat tmp/rstudio_[username].out` and then following the startup instructions (note that you may need to manually create the tmp dir by running `mkdir tmp`). 
+
+Before either the interactive or non-interactive versions would work, I needed to first run `googledriver::drive_auth()` in R to authorize a Google account outside of the build since targets doesn't allow any interactive inputs during its pipeline build.

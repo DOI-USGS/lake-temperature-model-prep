@@ -10,7 +10,7 @@ tar_option_set(packages = c(
   "scipiper",
   "ggplot2",
   "scico",
-  "geoknife",
+  "geoknife", # You need >= v1.6.6
   "arrow",
   "retry"
 ))
@@ -33,12 +33,9 @@ targets_list <- list(
   )),
 
   # Create larger tiles to use for querying GDP with groups of cells.
-  # Constructing tiles to be made of 225 cells in a 15x15 grid.
-  # TODO: this can be much larger! JR thinks GDP can handle ~1000 cells
-  # at a time. Since marching through timesteps on GDP is slower than
-  # scaling out spatially, it would make sense to do queries with as big
-  # of a spatial resolution as GDP will handle.
-  tar_target(grid_tiles_sf, construct_grid_tiles(grid_params, tile_dim=15)),
+  # Constructing tiles to be made of 400 cells in a 20x20 grid. Attempts
+  # at 23x23 and bigger resulted in timeouts.
+  tar_target(grid_tiles_sf, construct_grid_tiles(grid_params, tile_dim=20)),
 
   # Reconstruct GCM grid using grid parameters from GDP defined above
   tar_target(grid_cells_sf, reconstruct_gcm_grid(grid_params)),
@@ -46,6 +43,10 @@ targets_list <- list(
 
   ##### Prepare lake centroids for matching to grid #####
 
+  # Identify the lakes that we can model with GLM first
+  tar_target(nml_rds, gd_get('7_config_merge/out/nml_list.rds.ind'), format='file'),
+  tar_target(nml_site_ids, names(readRDS(nml_rds))),
+  
   # Load and prepare lake centroids for matching to the GCM grid using
   # the `centroid_lakes_sf.rds` file from our `scipiper` pipeline
   tar_target(lake_centroids_sf_rds, gd_get('2_crosswalk_munge/out/centroid_lakes_sf.rds.ind'), format='file'),
@@ -53,8 +54,10 @@ targets_list <- list(
   tar_target(query_lake_centroids_sf,
              readRDS(lake_centroids_sf_rds) %>%
                left_join(readRDS(lake_to_state_xwalk_rds), by = "site_id") %>%
-               # Subset to just MN for now
-               filter(state == "MN") %>%
+               # Subset to just lakes with NMLs, so that we aren't wasting
+               # time getting driver data for cells with lakes that can't
+               # be modeled using GLM anyways.
+               filter(site_id %in% nml_site_ids) %>%
                # Lake centroids should be in the same CRS as the GCM grid
                sf::st_transform(grid_params$crs)
   ),
@@ -149,8 +152,6 @@ targets_list <- list(
       query_vars = gcm_query_vars,
       query_dates = c(gcm_dates_df$start_datetime, gcm_dates_df$end_datetime)
     ),
-    # TODO: might need to split across variables, too. Once we scale up, our queries
-    # might be too large and chunking by variable could help.
     pattern = cross(query_cells_centroids_list_by_tile, gcm_names, gcm_dates_df),
     format = "file",
     error = "continue"
@@ -227,7 +228,6 @@ targets_list <- list(
   # Setup table of GLM variable definitions to use in NetCDF file metadata
   tar_target(glm_vars_info,
              tibble(
-               # TODO: MISSING LONGWAVE
                var_name = c("Rain", "Snow", "AirTemp", "RelHum", "Shortwave", "Longwave", "WindSpeed"),
                longname = c("Total daily rainfall",
                             "Total daily snowfall derived from precipitation and air temp",
