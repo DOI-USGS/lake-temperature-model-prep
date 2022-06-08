@@ -45,7 +45,9 @@ targets:
   # Note that the resulting files are only accessible on Caldera. This is 
   # a brittle component, but is similar to how the NLDAS driver files are
   # disconnected from the rest of the pipeline. There is currently not an
-  # easy way to connect Caldera & Google Drive, so we will continue to run
+  # easy way to connect Caldera & Google Drive, and the generated files are
+  # not used downstream in this `lake-temperature-model-prep` pipeline, so 
+  # we will continue to run this sub-pipeline separately
   # this sub-pipeline separately.
   7_drivers_munge/out/7_GCM_driver_files.ind:
     command: build_GCM_pipeline(
