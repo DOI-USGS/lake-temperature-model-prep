@@ -40,7 +40,7 @@ targets:
   7_GCM_driver_files_date:
     command: c(I('2022-06-07'))
   
-  # This .ind file returns hashes for the files used in downstream process
+  # This .ind file returns hashes for the files used in downstream processes
   # plus the PNG file that visualizes the cells & tiles used in the query.
   # Note that the resulting files are only accessible on Caldera. This is 
   # a brittle component, but is similar to how the NLDAS driver files are
