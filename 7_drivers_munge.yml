@@ -48,7 +48,6 @@ targets:
   # easy way to connect Caldera & Google Drive, and the generated files are
   # not used downstream in this `lake-temperature-model-prep` pipeline, so 
   # we will continue to run this sub-pipeline separately
-  # this sub-pipeline separately.
   7_drivers_munge/out/7_GCM_driver_files.ind:
     command: build_GCM_pipeline(
       target_name,
