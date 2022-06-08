@@ -29,27 +29,16 @@ RUN Rscript -e 'library(remotes); \
 
 # Install the necessary pipeline and parallelization packages for R
 RUN install2.r --error \
-  arrow \
   dataRetrieval \
-  data.table \
-  dplyr \
   feather \
-  ggplot2 \
-  jsonlite \
   MESS \
-  ncdf4 \
   odbc \
-  purrr \
-  readr \
   retry \
   RCurl \
-  RNetCDF \
   sbtools \
   scico \
-  sf \
   smoothr \
   targets \
-  tidyr \
   && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
 # Fix umask problems with RStudio in singularity
