@@ -5,5 +5,6 @@
 7_drivers_munge/out/GCM_MIROC5.nc: 0eea475e7628a7c83c393f412b9b730a
 7_drivers_munge/out/GCM_MRI.nc: 2902d3eb26b5067738d519fede922b7f
 7_drivers_munge/out/lake_cell_tile_xwalk.csv: bb6b236875b17d1c82f3fc74c84be1f7
-7_drivers_munge/out/query_tile_cell_map.png: 2d35b1d1c14d9b4be5947d345de22a7d
+7_drivers_munge/out/query_tile_cell_map.png: 6f73763c791bd1298a5e758f0555cb07
+7_drivers_munge/out/query_tile_cell_map_missing.png: 3eb77bf27703372dd348734ac6e7e410
 

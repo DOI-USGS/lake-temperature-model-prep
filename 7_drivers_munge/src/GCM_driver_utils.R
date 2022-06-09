@@ -263,7 +263,8 @@ map_tiles_cells <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_c
     summarize(nlakes = n())
 
   grid_tiles <- grid_tiles %>%
-    filter(tile_no %in% query_tiles)
+    filter(tile_no %in% query_tiles) %>% 
+    st_transform(usmap::usmap_crs())
 
   tile_labels <- grid_tiles %>%
     mutate(bbox=split(.,tile_no) %>% purrr::map(sf::st_bbox)) %>%
@@ -271,19 +272,70 @@ map_tiles_cells <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_c
 
   grid_cells <- grid_cells %>%
     filter(cell_no %in% query_cells) %>%
-    left_join(lakes_per_cell)
-
-  tile_cell_plot <- ggplot() +
+    left_join(lakes_per_cell) %>% 
+    st_transform(usmap::usmap_crs())
+  
+  tile_cell_plot <- usmap::plot_usmap(exclude = c("AK", "HI"), fill=NA) +
     geom_sf(data = grid_cells, aes(fill = nlakes)) +
     scico::scale_fill_scico(palette = "batlow", direction = -1) +
     geom_sf(data = grid_tiles, fill = NA, size = 2) +
-    geom_text(data = tile_labels, aes(label=tile_no,x=xmin, y=ymax), size=8, nudge_x = 15000, nudge_y = -30000, hjust = 0) +
+    geom_text(data = tile_labels, aes(label=tile_no,x=xmin, y=ymax), size=8, nudge_x = 15000, nudge_y = -90000, hjust = 0) +
     theme(axis.title.y=element_blank(),
         axis.title.x=element_blank())
 
   # save file
-  ggsave(out_file, tile_cell_plot, width=10, height=8, dpi=300)
+  ggsave(out_file, tile_cell_plot, width=10, height=8, dpi=300, bg="white")
 
+  return(out_file)
+}
+
+#' @title Map the missing cells
+#' @description Map the grid cells w/ lakes that did not have any driver data returned
+#' and indicate which cell they are using instead.
+#' @param out_file name of output png file
+#' @param lake_cell_tile_xwalk mapping of which lakes are in which cells and what their spatial
+#' cell vs their data cell are
+#' @param missing_cells vector of cells that contain lakes but are missing driver data
+#' @param grid_cells an `sf` object with square polygons representing the
+#' grid cells. Must contain a `cell_no` column which has
+#' the id of each of the cell polygons.
+#' @return a png of the xwalk grid cells, symbolized by n_lakes per cell, and the grid tiles
+map_missing_cells <- function(out_file, lake_cell_tile_xwalk, missing_cells, grid_cells) {
+  
+  cell_data_mapping <- lake_cell_tile_xwalk %>%
+    dplyr::select(spatial_cell_no, data_cell_no) %>%
+    unique()
+  
+  # Identify which cells that have data are being used for the cells without data
+  cells_being_used <- cell_data_mapping %>% filter(spatial_cell_no %in% missing_cells) %>% pull(data_cell_no) %>% unique() 
+  
+  grid_cells_tomap <- grid_cells %>%
+    left_join(cell_data_mapping, by = c("cell_no" = "spatial_cell_no")) %>% 
+    filter(cell_no %in% c(missing_cells, cells_being_used)) %>% 
+    mutate(is_missing_data = cell_no %in% missing_cells) %>% 
+    st_transform(usmap::usmap_crs()) 
+  
+  
+  # Limit the map to just the cells we need
+  bbox_tomap <- grid_cells_tomap %>% st_bbox()
+  
+  missing_cell_plot <- usmap::plot_usmap(include = c(), fill=NA) +
+    geom_sf(data = filter(grid_cells_tomap, is_missing_data), 
+            aes(fill = as.character(data_cell_no)), color = NA) +
+    geom_sf(data = filter(grid_cells_tomap, !is_missing_data), 
+            aes(fill = as.character(data_cell_no), color="Cell has data and is being used\nfor those missing data"), size = 0.5) +
+    scico::scale_fill_scico_d(name = sprintf("Cell being used for driver data (n = %s)", length(cells_being_used)), palette = "batlow", direction = -1) +
+    scale_color_manual(name = "", values = "red") + 
+    coord_sf(xlim = bbox_tomap[c("xmin", "xmax")], ylim = bbox_tomap[c("ymin", "ymax")], expand = FALSE) +
+    theme(axis.title.y=element_blank(),
+          axis.title.x=element_blank(),
+          legend.position="top") + 
+    ggtitle("What cells are missing driver data?", 
+            subtitle = sprintf("%s cells are being used to fill in missing driver data for %s cells", length(cells_being_used), length(missing_cells)))
+  
+  # save file
+  ggsave(out_file, missing_cell_plot, width=10, height=8, dpi=300, bg = "white")
+  
   return(out_file)
 }
 
