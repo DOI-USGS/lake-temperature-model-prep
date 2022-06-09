@@ -207,7 +207,7 @@ targets_list <- list(
              ),
   
   ##### Create an image showing missing cells from the query #####
-  tar_target(missing_cells, glm_ready_gcm_data_cell_info %>% filter(missing_data) %>% pull(cell_no)),
+  tar_target(missing_cells, glm_ready_gcm_data_cell_info %>% filter(missing_data) %>% pull(cell_no) %>% unique()),
   tar_target(
     query_tile_cell_map_missing_png,
     map_missing_cells(
