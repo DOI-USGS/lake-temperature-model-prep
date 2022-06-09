@@ -103,7 +103,7 @@ targets_list <- list(
              iteration = "list"),
 
   ##### Create an image showing the full query, with n_lakes per cell #####
-
+  
   tar_target(
     query_tile_cell_map_png,
     map_tiles_cells(
@@ -205,6 +205,19 @@ targets_list <- list(
              adjust_lake_cell_tile_xwalk(lake_cell_tile_spatial_xwalk_df, query_lake_centroids_sf,
                                          query_cell_centroids_sf, glm_ready_gcm_data_cell_info, x_buffer=3)
              ),
+  
+  ##### Create an image showing missing cells from the query #####
+  tar_target(missing_cells, glm_ready_gcm_data_cell_info %>% filter(missing_data) %>% pull(cell_no)),
+  tar_target(
+    query_tile_cell_map_missing_png,
+    map_missing_cells(
+      out_file = '7_drivers_munge/out/query_tile_cell_map_missing.png',
+      lake_cell_tile_xwalk = lake_cell_tile_xwalk_df,
+      missing_cells = missing_cells,
+      grid_cells = grid_cells_sf
+    ),
+    format='file'
+  ),
 
   # Save the revised lake-cell-tile mapping for use in `lake-temperature-process-models`
   tar_target(lake_cell_tile_xwalk_csv, {
@@ -266,7 +279,7 @@ targets_list <- list(
   ##### Get list of final output files to link back to scipiper pipeline #####
   tar_target(
     gcm_files_out,
-    c(gcm_nc, lake_cell_tile_xwalk_csv, query_tile_cell_map_png),
+    c(gcm_nc, lake_cell_tile_xwalk_csv, query_tile_cell_map_png, query_tile_cell_map_missing_png),
     format = 'file'
   )
 )
