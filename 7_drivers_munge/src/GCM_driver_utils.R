@@ -342,7 +342,7 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
     mutate(is_missing_data = cell_no %in% grid_cells_w_o_data)
   
   # Get GCM bounding box
-  data_bbox <- grid_cells %>%
+  gcm_bbox <- grid_cells %>%
     filter(cell_no %in% grid_cells_w_data) %>%   
     st_bbox() %>%
     st_as_sfc() %>%
@@ -358,9 +358,10 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
     st_bbox()
 
   # Generate the map
-  missing_cell_plot <- usmap::plot_usmap(fill=NA) +
+  missing_cell_plot <- ggplot() +
+    geom_sf(data = spData::us_states, fill=NA) +
     geom_sf(data = grid_cells_w_o_data_outside_gcm_bbox_sf, fill='grey80', color='grey60') +
-    geom_sf(data = data_bbox, fill=NA, color='dodgerblue') +
+    geom_sf(data = gcm_bbox, fill=NA, color='dodgerblue') +
     geom_sf(data = filter(grid_cells_tomap, is_missing_data), 
             aes(fill = as.character(data_cell_no)), color = NA) +
     geom_sf(data = filter(grid_cells_tomap, !is_missing_data), 
@@ -375,7 +376,9 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
             subtitle = paste(
               sprintf("%s cells are being used to fill in missing driver data for %s cells", length(cells_being_used), length(gcm_cells_w_o_data)),
               sprintf("%s queried cells (in grey) fell outside of the GCM footprint (blue box)",length(grid_cells_w_o_data_outside_gcm_bbox)),
-              sep='\n'))    
+              sep='\n')) +
+    theme_void() +
+    theme(legend.position="top")
   
   # save file
   ggsave(out_file, missing_cell_plot, width=10, height=8, dpi=300, bg = "white")
