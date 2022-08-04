@@ -157,8 +157,9 @@ get_lake_cell_tile_spatial_xwalk <- function(lake_centroids, grid_cells, cell_ti
 
 #' @title Adjust the lake-cell-tile xwalk by matching lakes to the queried cells
 #' that returned data.
-#' @description Using lake centroids, this spatially matches lakes to query cells
-#' that returned data. If the cell that the lake falls within is not missing data,
+#' @description Using lake centroids, this spatially matches lakes that fall within the
+#' bounding box of the returned GCM data to query cells that returned data. For lakes
+#' within the bounding box, if the cell that the lake falls within is not missing data,
 #' the lake will be matched to the cell that it falls within. If the cell that the
 #' lake falls within is missing data, the lake will be matched to a cell that did
 #' return data. The preference is to match such lakes to non-nan cells with the
@@ -178,6 +179,7 @@ get_lake_cell_tile_spatial_xwalk <- function(lake_centroids, grid_cells, cell_ti
 #' based on a spatial join
 #' @param lake_centroids an `sf` object of points representing the lake
 #' centroids.
+#' @param grid_cells a `sf` object with square polygons representing the grid cells.
 #' @param query_cell_centroids  an `sf` object of points representing the
 #' grid cell centroids for queried cells. Must contain a `cell_no` column
 #' which has the id of each of the cell centroids
@@ -192,7 +194,7 @@ get_lake_cell_tile_spatial_xwalk <- function(lake_centroids, grid_cells, cell_ti
 #' `spatial_tile_no`, `data_cell_no` and `data_tile_no`. The 'spatial_' prefix
 #' denotes the original spatial matching to all grid cells, while the 'data_' prefix
 #' denotes the adjusted matching to non-nan grid cells.
-adjust_lake_cell_tile_xwalk <- function(spatial_xwalk, lake_centroids, query_cell_centroids, cell_info, x_buffer) {
+adjust_lake_cell_tile_xwalk <- function(spatial_xwalk, lake_centroids, grid_cells, query_cell_centroids, cell_info, x_buffer) {
   # Pivot the cell_info tibble wider so that we have a single row per cell
   # and can track for how many gcms each cell is or is not missing data
   cell_status <- cell_info %>%
@@ -207,6 +209,17 @@ adjust_lake_cell_tile_xwalk <- function(spatial_xwalk, lake_centroids, query_cel
   # filter the cell centroids to only those cells with data
   cell_centroids_with_data <- query_cell_centroids %>%
     filter(cell_no %in% cells_with_data)
+
+  # get bounding box of grid cell polygons that returned data
+  cells_with_data_bbox <- grid_cells %>%
+    filter(cell_no %in% cells_with_data) %>%
+    st_bbox() %>%
+    st_as_sfc() %>%
+    st_as_sf()
+
+  # subset lakes to only those within the bounding box of the returned data
+  lake_centroids <- lake_centroids %>%
+    st_join(cells_with_data_bbox, join=st_within, left=FALSE)
 
   # match each lake to a cell that returned data. If the cell that the lake falls within
   # is not missing data, the lake will be matched to the cell that it falls within. If the
@@ -295,50 +308,80 @@ map_tiles_cells <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_c
 #' @param out_file name of output png file
 #' @param lake_cell_tile_xwalk mapping of which lakes are in which cells and what their spatial
 #' cell vs their data cell are
-#' @param missing_cells vector of cells that contain lakes but are missing driver data
+#' @param cell_info a table with one row per query cell-gcm combo, with columns for `gcm`, `tile_no`,
+#' `cell_no` and a clolumn for `missing_data`, indicating whether or not the cell is missing data for
+#' any variable for that gcm.
 #' @param grid_cells an `sf` object with square polygons representing the
 #' grid cells. Must contain a `cell_no` column which has
 #' the id of each of the cell polygons.
 #' @return a png of the xwalk grid cells, symbolized by n_lakes per cell, and the grid tiles
-map_missing_cells <- function(out_file, lake_cell_tile_xwalk, missing_cells, grid_cells) {
+map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_cells) {
+  # Identify which queried grid cells did and did not return data
+  grid_cells_w_data <- cell_info %>% filter(missing_data == FALSE) %>% pull(cell_no) %>% unique()
+  grid_cells_w_o_data <- cell_info %>% filter(missing_data) %>% pull(cell_no) %>% unique()
   
+  # Get unique spatial_ and data_ cell_no pairs
   cell_data_mapping <- lake_cell_tile_xwalk %>%
     dplyr::select(spatial_cell_no, data_cell_no) %>%
     unique()
   
   # Identify which cells that have data are being used for the cells without data
-  cells_being_used <- cell_data_mapping %>% filter(spatial_cell_no %in% missing_cells) %>% pull(data_cell_no) %>% unique() 
+  cells_being_used <- cell_data_mapping %>% filter(spatial_cell_no %in% grid_cells_w_o_data) %>% pull(data_cell_no) %>% unique() 
   
+  # Pull cell_nos of queried cells that did not return data that fell inside of the GCM bounding box
+  gcm_cells_w_o_data <- cell_data_mapping %>% filter(spatial_cell_no %in% grid_cells_w_o_data) %>% pull(spatial_cell_no) %>% unique()
+  
+  # Pull cell_nos of queried cells that did not return data that fell outside of the GCM bounding box
+  grid_cells_outside_data_bbox <- grid_cells_w_o_data[!(grid_cells_w_o_data %in% gcm_cells_w_o_data)]
+
+  # Pull subset of grid cells to map that includes cells without data within the GCM bounding box
+  # and the cells used as data for those missing cells
   grid_cells_tomap <- grid_cells %>%
     left_join(cell_data_mapping, by = c("cell_no" = "spatial_cell_no")) %>% 
-    filter(cell_no %in% c(missing_cells, cells_being_used)) %>% 
-    mutate(is_missing_data = cell_no %in% missing_cells) %>% 
-    st_transform(usmap::usmap_crs()) 
+    filter(cell_no %in% c(gcm_cells_w_o_data, cells_being_used)) %>% 
+    mutate(is_missing_data = cell_no %in% grid_cells_w_o_data)
   
-  
+  # Get GCM bounding box
+  data_bbox <- grid_cells %>%
+    filter(cell_no %in% grid_cells_w_data) %>%   
+    st_bbox() %>%
+    st_as_sfc() %>%
+    st_as_sf()
+ 
+  # Get spatial information for cells w/o data outside of gcm grid
+  grid_cells_outside_data_bbox_sf <- grid_cells %>% 
+    filter(cell_no %in% grid_cells_outside_data_bbox)
+
   # Limit the map to just the cells we need
-  bbox_tomap <- grid_cells_tomap %>% st_bbox()
-  
-  missing_cell_plot <- usmap::plot_usmap(include = c(), fill=NA) +
+  bbox_tomap <- grid_cells %>%
+    filter(cell_no %in% c(grid_cells_outside_data_bbox, grid_cells_w_data, gcm_cells_w_o_data, cells_being_used)) %>% 
+    st_bbox()
+
+  # Generate the map
+  missing_cell_plot <- usmap::plot_usmap(fill=NA) +
+    geom_sf(data = grid_cells_outside_data_bbox_sf, fill='grey80', color='grey60') +
+    geom_sf(data = data_bbox, fill=NA, color='dodgerblue') +
     geom_sf(data = filter(grid_cells_tomap, is_missing_data), 
             aes(fill = as.character(data_cell_no)), color = NA) +
     geom_sf(data = filter(grid_cells_tomap, !is_missing_data), 
             aes(fill = as.character(data_cell_no), color="Cell has data and is being used\nfor those missing data"), size = 0.5) +
     scico::scale_fill_scico_d(name = sprintf("Cell being used for driver data (n = %s)", length(cells_being_used)), palette = "batlow", direction = -1) +
     scale_color_manual(name = "", values = "red") + 
-    coord_sf(xlim = bbox_tomap[c("xmin", "xmax")], ylim = bbox_tomap[c("ymin", "ymax")], expand = FALSE) +
+    coord_sf(xlim = bbox_tomap[c("xmin", "xmax")], ylim = bbox_tomap[c("ymin", "ymax")], expand = TRUE, crs=st_crs(grid_cells)) +
     theme(axis.title.y=element_blank(),
           axis.title.x=element_blank(),
           legend.position="top") + 
     ggtitle("What cells are missing driver data?", 
-            subtitle = sprintf("%s cells are being used to fill in missing driver data for %s cells", length(cells_being_used), length(missing_cells)))
+            subtitle = paste(
+              sprintf("%s cells are being used to fill in missing driver data for %s cells", length(cells_being_used), length(gcm_cells_w_o_data)),
+              sprintf("%s queried cells fell outside of the GCM footprint (blue box)",length(grid_cells_outside_data_bbox)),
+              sep='\n'))    
   
   # save file
   ggsave(out_file, missing_cell_plot, width=10, height=8, dpi=300, bg = "white")
   
   return(out_file)
 }
-
 #' @title Convert an sf object into a geoknife::simplegeom, so that
 #' it can be used in the geoknife query.
 #' @description `geoknife` only works  with `sp` objects but not `sf`
