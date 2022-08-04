@@ -309,7 +309,7 @@ map_tiles_cells <- function(out_file, lake_cell_tile_xwalk, query_tiles, query_c
 #' @param lake_cell_tile_xwalk mapping of which lakes are in which cells and what their spatial
 #' cell vs their data cell are
 #' @param cell_info a table with one row per query cell-gcm combo, with columns for `gcm`, `tile_no`,
-#' `cell_no` and a clolumn for `missing_data`, indicating whether or not the cell is missing data for
+#' `cell_no` and a column for `missing_data`, indicating whether or not the cell is missing data for
 #' any variable for that gcm.
 #' @param grid_cells an `sf` object with square polygons representing the
 #' grid cells. Must contain a `cell_no` column which has
@@ -332,7 +332,7 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
   gcm_cells_w_o_data <- cell_data_mapping %>% filter(spatial_cell_no %in% grid_cells_w_o_data) %>% pull(spatial_cell_no) %>% unique()
   
   # Pull cell_nos of queried cells that did not return data that fell outside of the GCM bounding box
-  grid_cells_outside_data_bbox <- grid_cells_w_o_data[!(grid_cells_w_o_data %in% gcm_cells_w_o_data)]
+  grid_cells_w_o_data_outside_gcm_bbox <- grid_cells_w_o_data[!(grid_cells_w_o_data %in% gcm_cells_w_o_data)]
 
   # Pull subset of grid cells to map that includes cells without data within the GCM bounding box
   # and the cells used as data for those missing cells
@@ -349,17 +349,17 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
     st_as_sf()
  
   # Get spatial information for cells w/o data outside of gcm grid
-  grid_cells_outside_data_bbox_sf <- grid_cells %>% 
-    filter(cell_no %in% grid_cells_outside_data_bbox)
+  grid_cells_w_o_data_outside_gcm_bbox_sf <- grid_cells %>% 
+    filter(cell_no %in% grid_cells_w_o_data_outside_gcm_bbox)
 
   # Limit the map to just the cells we need
   bbox_tomap <- grid_cells %>%
-    filter(cell_no %in% c(grid_cells_outside_data_bbox, grid_cells_w_data, gcm_cells_w_o_data, cells_being_used)) %>% 
+    filter(cell_no %in% c(grid_cells_w_o_data_outside_gcm_bbox, grid_cells_w_data, gcm_cells_w_o_data, cells_being_used)) %>% 
     st_bbox()
 
   # Generate the map
   missing_cell_plot <- usmap::plot_usmap(fill=NA) +
-    geom_sf(data = grid_cells_outside_data_bbox_sf, fill='grey80', color='grey60') +
+    geom_sf(data = grid_cells_w_o_data_outside_gcm_bbox_sf, fill='grey80', color='grey60') +
     geom_sf(data = data_bbox, fill=NA, color='dodgerblue') +
     geom_sf(data = filter(grid_cells_tomap, is_missing_data), 
             aes(fill = as.character(data_cell_no)), color = NA) +
@@ -374,7 +374,7 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
     ggtitle("What cells are missing driver data?", 
             subtitle = paste(
               sprintf("%s cells are being used to fill in missing driver data for %s cells", length(cells_being_used), length(gcm_cells_w_o_data)),
-              sprintf("%s queried cells fell outside of the GCM footprint (blue box)",length(grid_cells_outside_data_bbox)),
+              sprintf("%s queried cells (in grey) fell outside of the GCM footprint (blue box)",length(grid_cells_w_o_data_outside_gcm_bbox)),
               sep='\n'))    
   
   # save file
