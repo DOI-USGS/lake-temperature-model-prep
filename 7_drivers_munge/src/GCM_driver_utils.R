@@ -360,7 +360,7 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
     filter(cell_no %in% grid_cells_w_o_data_outside_gcm_bbox)
 
   # Get spatial info for all grid cells w/ data in the gcm grid
-  data_cells <- grid_cells %>%
+  grid_cells_w_data_sf <- grid_cells %>%
     filter(cell_no %in% grid_cells_w_data)
 
   # Limit the map to just the cells we need
@@ -371,7 +371,7 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
   # Generate the map
   missing_cell_plot <- ggplot() +
     geom_sf(data = spData::us_states, fill=NA) +
-    geom_sf(data = data_cells, fill=NA, color='grey90') +
+    geom_sf(data = grid_cells_w_data_sf, fill=NA, color='grey90') +
     geom_sf(data = grid_cells_w_o_data_outside_gcm_bbox_sf, fill='grey80', color='grey60') +
     geom_sf(data = gcm_bbox, fill=NA, color='dodgerblue') +
     geom_sf(data = filter(grid_cells_tomap, is_missing_data), 
