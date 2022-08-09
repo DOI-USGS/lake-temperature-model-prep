@@ -192,7 +192,8 @@ targets_list <- list(
     bind_rows(glm_ready_gcm_data_list[grepl("cell_info", names(glm_ready_gcm_data_list))])
   ),
 
-  # Re-do mapping of which lakes are in which cells and tiles, using only the query
+  # For all lakes that fall within the bounding box of all queried cells that returned data,
+  # re-do the mapping of which lakes are in which cells and tiles, using only the query
   # cells that returned data and did not have missing data for any variables for any GCMs.
   # Here, the pool of cells to which lakes can be matched are those cells that returned data,
   # to ensure that lakes that fell within cells that were missing data are re-assigned to
@@ -202,18 +203,17 @@ targets_list <- list(
   # cell that did return data, regardless of row. This xwalk is being used in
   # `lake-temperature-process-models` to determine what meteorological data to pull for each lake.
   tar_target(lake_cell_tile_xwalk_df,
-             adjust_lake_cell_tile_xwalk(lake_cell_tile_spatial_xwalk_df, query_lake_centroids_sf,
+             adjust_lake_cell_tile_xwalk(lake_cell_tile_spatial_xwalk_df, query_lake_centroids_sf, grid_cells_sf,
                                          query_cell_centroids_sf, glm_ready_gcm_data_cell_info, x_buffer=3)
              ),
   
   ##### Create an image showing missing cells from the query #####
-  tar_target(missing_cells, glm_ready_gcm_data_cell_info %>% filter(missing_data) %>% pull(cell_no) %>% unique()),
   tar_target(
     query_tile_cell_map_missing_png,
     map_missing_cells(
       out_file = '7_drivers_munge/out/query_tile_cell_map_missing.png',
       lake_cell_tile_xwalk = lake_cell_tile_xwalk_df,
-      missing_cells = missing_cells,
+      cell_info = glm_ready_gcm_data_cell_info,
       grid_cells = grid_cells_sf
     ),
     format='file'
@@ -225,7 +225,7 @@ targets_list <- list(
     write_csv(lake_cell_tile_xwalk_df, out_file)
     return(out_file)
   }, format = 'file'),
-
+  
   # Group daily feather files by GCM to map over and include
   # file hashes to trigger rebuilds for groups as needed
   tar_target(gcm_data_daily_feather_group_by_gcm,
@@ -286,3 +286,4 @@ targets_list <- list(
 
 # Return the complete list of targets
 c(targets_list)
+
