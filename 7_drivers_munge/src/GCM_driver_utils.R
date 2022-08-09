@@ -348,9 +348,12 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
     filter(cell_no %in% c(gcm_cells_w_o_data, cells_being_used)) %>% 
     mutate(is_missing_data = cell_no %in% grid_cells_w_o_data)
   
+  # Get spatial info for all grid cells w/ data in the gcm grid
+  grid_cells_w_data_sf <- grid_cells %>%
+    filter(cell_no %in% grid_cells_w_data)
+
   # Get GCM bounding box
-  gcm_bbox <- grid_cells %>%
-    filter(cell_no %in% grid_cells_w_data) %>%   
+  gcm_bbox <- grid_cells_w_data_sf %>%
     st_bbox() %>%
     st_as_sfc() %>%
     st_as_sf()
@@ -358,10 +361,6 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
   # Get spatial information for cells w/o data outside of gcm grid
   grid_cells_w_o_data_outside_gcm_bbox_sf <- grid_cells %>% 
     filter(cell_no %in% grid_cells_w_o_data_outside_gcm_bbox)
-
-  # Get spatial info for all grid cells w/ data in the gcm grid
-  grid_cells_w_data_sf <- grid_cells %>%
-    filter(cell_no %in% grid_cells_w_data)
 
   # Limit the map to just the cells we need
   bbox_tomap <- grid_cells %>%
