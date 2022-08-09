@@ -217,9 +217,16 @@ adjust_lake_cell_tile_xwalk <- function(spatial_xwalk, lake_centroids, grid_cell
     st_as_sfc() %>%
     st_as_sf()
 
+  # pull out Lake of the Woods. It falls just outside of the bounding box of returned data,
+  # but has lots of data, so we want to keep it in our lake subset
+  lotw <- filter(lake_centroids, site_id=='nhdhr_123319728')
+
   # subset lakes to only those within the bounding box of the returned data
   lake_centroids <- lake_centroids %>%
     st_join(cells_with_data_bbox, join=st_within, left=FALSE)
+
+  # add back in Lake of the Woods
+  lake_centroids <- bind_rows(lake_centroids, lotw)
 
   # match each lake to a cell that returned data. If the cell that the lake falls within
   # is not missing data, the lake will be matched to the cell that it falls within. If the
