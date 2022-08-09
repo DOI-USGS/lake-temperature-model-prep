@@ -359,6 +359,10 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
   grid_cells_w_o_data_outside_gcm_bbox_sf <- grid_cells %>% 
     filter(cell_no %in% grid_cells_w_o_data_outside_gcm_bbox)
 
+  # Get spatial info for all grid cells w/ data in the gcm grid
+  data_cells <- grid_cells %>%
+    filter(cell_no %in% grid_cells_w_data)
+
   # Limit the map to just the cells we need
   bbox_tomap <- grid_cells %>%
     filter(cell_no %in% c(grid_cells_w_o_data_outside_gcm_bbox, grid_cells_w_data, gcm_cells_w_o_data, cells_being_used)) %>% 
@@ -367,6 +371,7 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
   # Generate the map
   missing_cell_plot <- ggplot() +
     geom_sf(data = spData::us_states, fill=NA) +
+    geom_sf(data = data_cells, fill=NA, color='grey90') +
     geom_sf(data = grid_cells_w_o_data_outside_gcm_bbox_sf, fill='grey80', color='grey60') +
     geom_sf(data = gcm_bbox, fill=NA, color='dodgerblue') +
     geom_sf(data = filter(grid_cells_tomap, is_missing_data), 
@@ -381,7 +386,8 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
           legend.position="top") + 
     ggtitle("What cells are missing driver data?", 
             subtitle = paste(
-              sprintf("%s cells are being used to fill in missing driver data for %s cells", length(cells_being_used), length(gcm_cells_w_o_data)),
+              sprintf("%s queried cells (hollow, light grey border) returned data", length(grid_cells_w_data)),
+              sprintf("%s of those cells (red border) are being used to fill in missing driver data for %s cells", length(cells_being_used), length(gcm_cells_w_o_data)),
               sprintf("%s queried cells (in grey) fell outside of the GCM footprint (blue box)",length(grid_cells_w_o_data_outside_gcm_bbox)),
               sep='\n')) +
     theme_void() +
