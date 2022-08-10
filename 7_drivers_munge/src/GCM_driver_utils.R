@@ -385,7 +385,7 @@ map_missing_cells <- function(out_file, lake_cell_tile_xwalk, cell_info, grid_ce
           legend.position="top") + 
     ggtitle("What cells are missing driver data?", 
             subtitle = paste(
-              sprintf("%s queried cells (hollow, light grey border) returned data", length(grid_cells_w_data)),
+              sprintf("%s queried cells (hollow, light grey border) returned data and have lakes present ", length(grid_cells_w_data)),
               sprintf("%s of those cells (red border) are being used to fill in missing driver data for %s cells", length(cells_being_used), length(gcm_cells_w_o_data)),
               sprintf("%s queried cells (in grey) fell outside of the GCM footprint (blue box)",length(grid_cells_w_o_data_outside_gcm_bbox)),
               sep='\n')) +
