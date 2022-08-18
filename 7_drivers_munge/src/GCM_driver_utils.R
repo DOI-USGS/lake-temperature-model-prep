@@ -506,13 +506,16 @@ download_gcm_data <- function(out_file_template, query_geom,
 #' '7_drivers_munge/tmp/7_GCM_{gcm_name}_{projection_period}_tile{tile_no}_raw.feather'
 #' @param gcm_names names of the six GCMs
 #' @param query_tiles vector of tile ids used in query to GDP
+#' @param wind_transform_info data.frame with offsets for transforming wind values to 
+#' better align with NLDAS wind distributions. See this GitHub issue for more info:
+#' https://github.com/USGS-R/lake-temperature-model-prep/issues/353
 #' @return a list with two elements: 1) `file_out` - the name of the output
 #' feather file, and 2) `cell_info` - a tibble with a row for each cell in the
 #' tile for which data are being munged, with the columns `gcm` - the gcm for which data is
 #' being munged, `tile_no` the tile for which data are being munged, `cell_no` for the cell
 #' number, and `missing_data` - a T/F logical indicating whether or not the cell is
 #' missing data for *any* variable for the gcm for which data are being munged.
-munge_gdp_output <- function(in_file, gcm_names, query_tiles) {
+munge_gdp_output <- function(in_file, gcm_names, query_tiles, wind_transform_info) {
   # Pull gcm name and tile_no
   gcm_name <- str_extract(in_file, paste(gcm_names, collapse="|"))
   tile_no <- str_extract(in_file, paste(query_tiles, collapse="|"))
@@ -522,15 +525,18 @@ munge_gdp_output <- function(in_file, gcm_names, query_tiles) {
 
   # munge the raw data
   munged_data <- munge_notaro_to_glm(raw_data)
-
+  
+  # apply the wind transform function
+  munged_data_windtransf <- apply_wind_transform(munged_data, wind_transform_info)
+  
   # generate a tibble with a row for every cell in the current tile
   # indicating which cells, if any, are missing data for *any* GLM variable
   # for the current GCM
-  cell_info <- identify_cells_missing_data(munged_data, gcm_name, tile_no)
+  cell_info <- identify_cells_missing_data(munged_data_windtransf, gcm_name, tile_no)
 
   # exclude cells that contain NaN from the munged data
   nan_cells <- filter(cell_info, missing_data==TRUE) %>% pull(cell_no)
-  munged_data_excl_nan_cells <- filter(munged_data, !(cell_no %in% nan_cells))
+  munged_data_excl_nan_cells <- filter(munged_data_windtransf, !(cell_no %in% nan_cells))
 
   # save the filtered munged data
   out_file <- gsub("_raw.feather", "_munged.feather", in_file)
@@ -754,4 +760,40 @@ convert_notaro_dates <- function(data_in) {
     # Keep the variable, corrected date, statistic, and units columns, as well as, any column
     # whose name only contains numbers (since those should represent all the grid cell's data)
     select(date = date_corrected, matches("[0-9]+"), variable, statistic, units)
+}
+
+#' Apply the wind transform
+#' 
+#' @description Jordan Read developed a wind transform function to adjust the GCM
+#' windspeeds during the contemporary period to have a more similar distribution
+#' to those of the NLDAS windspeeds. 
+#' @param munged_data_df the GCM driver data frame with at least a `WindSpeed` column
+#' @param wind_transform_info the data.frame with two columns, `low_bound` and `new_val` 
+#' representing the lower values of bins (`low_bound`) with the adjusted windspeed 
+#' value (`new_val`) that those windspeeds will use. This transform information was 
+#' created using code at https://github.com/USGS-R/lake-temperature-model-prep/issues/353#issuecomment-1212216800
+#' @param bin_max the maximum windspeed to use as the right value in the last windspeed bin
+#' @value a data.frame the same size as `munged_data_df` but with new values for
+#' the `WindSpeed` column.
+apply_wind_transform <- function(munged_data_df, wind_transform_info, bin_max = 100) {
+  
+  munged_data_DT <- data.table::setDT(munged_data_df)
+  
+  # Add the windspeed bins to both the transform info and the munged data. This
+  # creates a factor that we can group by and apply the offset
+  DT_offsets <- wind_transform_info %>% 
+    mutate(bin_id = cut(low_bound, breaks = c(wind_transform_info$low_bound, bin_max), right = FALSE)) %>% 
+    data.table::setDT()
+  munged_data_DT[, bin_id := cut(WindSpeed, breaks = c(wind_transform_info$low_bound, bin_max), right = FALSE)]
+  
+  # Merge the datasets together and then replace the GCM windspeeds with the new value based on the
+  # windspeed bin they end up in. Bins are 0.1 m/s.
+  merged_offset_wind <- merge(munged_data_DT, DT_offsets, by = 'bin_id', all.x = TRUE)
+  merged_offset_wind[, WindSpeed := new_val]
+  merged_offset_wind[, c("low_bound", "new_val", "bin_id") := NULL]
+  
+  # Convert back to a data.frame before returning
+  merged_offset_wind_df <- data.table::setDF(merged_offset_wind)
+
+  return(merged_offset_wind_df)
 }
