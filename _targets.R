@@ -12,7 +12,8 @@ tar_option_set(packages = c(
   "scico",
   "geoknife", # You need >= v1.6.6
   "arrow",
-  "retry"
+  "retry",
+  "data.table"
 ))
 
 source('7_drivers_munge/src/GCM_driver_utils.R')
@@ -159,6 +160,11 @@ targets_list <- list(
 
   ##### Munge GDP output into NetCDF files that will feed into GLM #####
 
+  # Load the wind transform information created by code from J. Read at
+  # https://github.com/USGS-R/lake-temperature-model-prep/issues/353#issuecomment-1212216800
+  tar_target(notaro_wind_transform_rds, '7_drivers_munge/in/notaro_wind_transform.rds', format = 'file'),
+  tar_target(notaro_wind_transform, readRDS(notaro_wind_transform_rds)),
+  
   # Munge GCM variables into useable GLM variables and correct units
   # For each tile-gcm combo this function returns a list with 2 elements:
   # 1) file_out - the name of the munged output file, which contains data
@@ -172,7 +178,7 @@ targets_list <- list(
   # beneath the surface to store that object target.
   tar_target(
     glm_ready_gcm_data_list,
-    munge_gdp_output(gcm_data_raw_feather, gcm_names, query_tiles),
+    munge_gdp_output(gcm_data_raw_feather, gcm_names, query_tiles, notaro_wind_transform),
     pattern = map(gcm_data_raw_feather)
   ),
 
