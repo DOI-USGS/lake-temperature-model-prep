@@ -792,8 +792,10 @@ apply_wind_transform <- function(munged_data_df, wind_transform_info, bin_max = 
   merged_offset_wind[, WindSpeed := new_val]
   merged_offset_wind[, c("low_bound", "new_val", "bin_id") := NULL]
   
-  # Convert back to a data.frame before returning
-  merged_offset_wind_df <- data.table::setDF(merged_offset_wind)
-
+  # Convert back to a data.frame and arrange to be the same order as it was
+  # before (increasing time and cell_no)
+  merged_offset_wind_df <- data.table::setDF(merged_offset_wind) %>% 
+    arrange(time, cell_no)
+  
   return(merged_offset_wind_df)
 }
