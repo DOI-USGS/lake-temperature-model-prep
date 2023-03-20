@@ -57,9 +57,6 @@ add_source_ids <- function(datin_ind, metadata_ind, datout_ind) {
   dat_source <- left_join(dat, metadata, by = 'file_name') %>%
     dplyr::select(site_id, date, depth, temp, source_id)
 
-  # fix wqp files
-  dat_source <-
-
   feather::write_feather(dat_source, as_data_file(datout_ind))
   gd_put(datout_ind, as_data_file(datout_ind))
 }
