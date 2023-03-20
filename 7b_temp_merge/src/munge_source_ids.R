@@ -39,11 +39,20 @@ gd_download_and_indicate <- function(source_metadata_loc, out_ind) {
 }
 
 add_source_ids <- function(datin_ind, metadata_ind, datout_ind) {
+
   metadata <- sc_retrieve(metadata_ind)
   metadata <- read.csv(metadata, stringsAsFactors = FALSE)
 
   dat <- feather::read_feather(sc_retrieve(datin_ind)) %>%
     mutate(file_name = gsub('(7a_temp_coop_munge/tmp/)(.*)(.rds)', '\\2', source, perl = TRUE))
+
+  # fix convert wqp file names to "wqp"
+  dat <- dat %>%
+    mutate(file_name =
+             case_when(stringr::str_detect(file_name, "wqp") ~ "wqp",
+                       TRUE ~ file_name
+                       )
+           )
 
   dat_source <- left_join(dat, metadata, by = 'file_name') %>%
     dplyr::select(site_id, date, depth, temp, source_id)
